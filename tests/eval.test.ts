@@ -11,6 +11,7 @@ import {
   writeLabels,
 } from "../lib/eval/corpus";
 import { ALL_MAIL_QUERY, exportCorpus, type ExportDeps } from "../lib/eval/export";
+import { candidates, nextUnlabeled, parseAmount, parseDate, parseKind, parseLink } from "../lib/eval/label";
 import { planExport, seededShuffle } from "../lib/eval/sample";
 import { scoreCases, wilson } from "../lib/eval/score";
 import { syncQuery } from "../lib/gmail";
@@ -255,5 +256,54 @@ describe("export sampling", () => {
   it("syncQuery matches the production query", () => {
     expect(syncQuery(null)).toMatch(/^-in:spam -in:trash \(.*newer_than:400d$/);
     expect(syncQuery(1700000000)).toMatch(/after:1700000000$/);
+  });
+});
+
+// ---- Task 4: labeling helpers ----
+
+describe("labeling helpers", () => {
+  const email = rawEmail("e1", {
+    subject: "Your receipt",
+    bodyText: "Total $9.99. Was $12.00. Renews Dec 14, 2026. Save $9.99! Annual plan $1234.00",
+    links: [
+      { href: "http://x.com/a", text: "a" },
+      { href: "https://x.com/cancel", text: "Cancel" },
+    ],
+  });
+
+  it("lists candidates from raw text, de-duplicated, https links only", () => {
+    expect(candidates(email)).toEqual({
+      amounts: [9.99, 12, 1234],
+      dates: ["2026-12-14"],
+      links: [{ href: "https://x.com/cancel", text: "Cancel" }],
+    });
+  });
+
+  it("parses picks, literals, and explicit none", () => {
+    const c = candidates(email);
+    expect(parseAmount("a2", c)).toEqual({ ok: true, value: 12 });
+    expect(parseAmount("$1,234.00", c)).toEqual({ ok: true, value: 1234 });
+    expect(parseAmount("-", c)).toEqual({ ok: true, value: null });
+    expect(parseDate("d1", c)).toEqual({ ok: true, value: "2026-12-14" });
+    expect(parseDate("2027-01-05", c)).toEqual({ ok: true, value: "2027-01-05" });
+    expect(parseDate("2026-02-30", c).ok).toBe(false);
+    expect(parseLink("l1", c)).toEqual({ ok: true, value: "https://x.com/cancel" });
+    expect(parseLink("-", c)).toEqual({ ok: true, value: null });
+    expect(parseLink("https://evil.example", c).ok).toBe(false);
+    expect(parseKind("3")).toEqual({ ok: true, value: "trial_ending" });
+  });
+
+  it("rejects empty input and out-of-range picks", () => {
+    const c = candidates(email);
+    for (const p of [parseAmount("", c), parseDate("  ", c), parseLink("", c), parseKind(""), parseKind("9"), parseAmount("a9", c), parseAmount("-5", c)]) {
+      expect(p.ok).toBe(false);
+    }
+  });
+
+  it("resumes at the first unlabeled email", () => {
+    const entries = ["e1", "e2", "e3"].map((id) => entry(id));
+    expect(nextUnlabeled(entries, { e1: { relevant: false, kind: "other" } })).toBe(1);
+    const all = Object.fromEntries(entries.map((e) => [e.email.id, { relevant: false, kind: "other" as const }]));
+    expect(nextUnlabeled(entries, all)).toBe(-1);
   });
 });
