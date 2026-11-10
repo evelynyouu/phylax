@@ -21,6 +21,23 @@ export interface SyncResult {
 }
 
 const LAST_SYNC = "last_sync_epoch";
+
+export interface SyncProgress {
+  running: boolean;
+  listed: number;
+  checked: number; // already stored + newly processed, for progress
+  processed: number;
+  relevant: number;
+  error: string | null;
+}
+
+// One sync at a time per server process (the app is single-user and local).
+let progress: SyncProgress = { running: false, listed: 0, checked: 0, processed: 0, relevant: 0, error: null };
+let skipped = 0;
+
+export function syncProgress(): SyncProgress {
+  return { ...progress };
+}
 const CONCURRENCY = 5;
 
 export async function inBatches<T, R>(items: T[], size: number, fn: (x: T) => Promise<R>): Promise<R[]> {
@@ -31,19 +48,49 @@ export async function inBatches<T, R>(items: T[], size: number, fn: (x: T) => Pr
   return out;
 }
 
-export async function runSync(): Promise<SyncResult> {
+export async function runSync(onProgress?: (p: SyncProgress) => void): Promise<SyncResult> {
+  progress = { running: true, listed: 0, checked: 0, processed: 0, relevant: 0, error: null };
+  skipped = 0;
+  try {
+    const result = await runSyncInner(onProgress);
+    progress = { ...progress, running: false };
+    return result;
+  } catch (e) {
+    progress = { ...progress, running: false, error: e instanceof Error ? e.message : "Sync failed" };
+    throw e;
+  }
+}
+
+function report(result: SyncResult, onProgress?: (p: SyncProgress) => void) {
+  progress = {
+    ...progress,
+    listed: result.listed,
+    checked: skipped + result.processed + result.errors,
+    processed: result.processed,
+    relevant: result.relevant,
+  };
+  onProgress?.(syncProgress());
+}
+
+async function runSyncInner(onProgress?: (p: SyncProgress) => void): Promise<SyncResult> {
   const source = dataSource();
   const result: SyncResult = { source, listed: 0, processed: 0, relevant: 0, llmUsed: 0, errors: 0 };
 
   if (source === "fixtures") {
     result.listed = FIXTURE_EMAILS.length;
+    report(result, onProgress);
     for (const email of FIXTURE_EMAILS) {
-      if (hasRecord(email.id)) continue;
+      if (hasRecord(email.id)) {
+        skipped++;
+        report(result, onProgress);
+        continue;
+      }
       const rec = await extractEmail(email);
       saveRecord(rec);
       result.processed++;
       if (rec.relevant) result.relevant++;
       if (rec.method === "llm") result.llmUsed++;
+      report(result, onProgress);
     }
     return result;
   }
@@ -58,6 +105,8 @@ export async function runSync(): Promise<SyncResult> {
   const ids = await listMessageIds(after);
   result.listed = ids.length;
   const fresh = ids.filter((id) => !hasRecord(id));
+  skipped = ids.length - fresh.length;
+  report(result, onProgress);
 
   await inBatches(fresh, CONCURRENCY, async (id) => {
     try {
@@ -68,8 +117,10 @@ export async function runSync(): Promise<SyncResult> {
       result.processed++;
       if (rec.relevant) result.relevant++;
       if (rec.method === "llm") result.llmUsed++;
+      report(result, onProgress);
     } catch {
       result.errors++;
+      report(result, onProgress);
     }
   });
 

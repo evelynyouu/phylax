@@ -178,3 +178,27 @@ describe("db: paid, reminders, manual cancels", () => {
     expect(paidKeys().size + reminderKeys().size + manualCancels().size).toBe(0);
   });
 });
+
+describe("sync progress", () => {
+  beforeEach(() => resetDbForTests());
+
+  it("reports progress while a sync runs and a summary when it ends", async () => {
+    const { runSync, syncProgress } = await import("../lib/sync");
+    const prev = process.env.DATA_SOURCE;
+    process.env.DATA_SOURCE = "fixtures";
+    const seen: number[] = [];
+    try {
+      const r = await runSync((p) => seen.push(p.processed));
+      expect(r.processed).toBe(45);
+      expect(seen.length).toBeGreaterThan(1);
+      expect(seen[seen.length - 1]).toBe(45);
+      expect(syncProgress()).toMatchObject({ running: false, listed: 45, processed: 45, checked: 45 });
+      // A second scan finds nothing new but still reports every email it looked at.
+      await runSync();
+      expect(syncProgress()).toMatchObject({ listed: 45, processed: 0, checked: 45 });
+    } finally {
+      if (prev === undefined) delete process.env.DATA_SOURCE;
+      else process.env.DATA_SOURCE = prev;
+    }
+  });
+});

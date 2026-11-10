@@ -34,22 +34,22 @@ export default function CancelAction({
   if (trusted) {
     return (
       <>
-        <a className="btn btn-cancel" href={url} target="_blank" rel="noopener noreferrer">
+        <a className="btn btn-danger btn-row" href={url} target="_blank" rel="noopener noreferrer">
           {label}
         </a>
-        <span className="host">Opens {host}</span>
+        <span className="link-host">Opens {host}</span>
       </>
     );
   }
 
   return (
     <>
-      <button type="button" className="btn btn-cancel" onClick={() => dialog.current?.showModal()}>
+      <button type="button" className="btn btn-danger btn-row" onClick={() => dialog.current?.showModal()}>
         {label}
       </button>
-      <span className="host">Check link: {host}</span>
-      <dialog ref={dialog} aria-labelledby={`dlg-${merchant}`}>
-        <h2 id={`dlg-${merchant}`}>This link is not on {merchant}&apos;s website</h2>
+      <span className="link-host">Check link: {host}</span>
+      <dialog ref={dialog} className="warn-dialog" aria-labelledby={`dlg-${merchant.replace(/[^a-z0-9]/gi, "")}`}>
+        <h2 id={`dlg-${merchant.replace(/[^a-z0-9]/gi, "")}`}>This link is not on {merchant}&apos;s website</h2>
         <p>The email sent this cancel link to:</p>
         <p className="host-big">{host}</p>
         <p>
@@ -57,11 +57,11 @@ export default function CancelAction({
           card number there.
         </p>
         <div className="dialog-actions">
-          <button type="button" className="btn btn-quiet" onClick={() => dialog.current?.close()}>
+          <button type="button" className="btn btn-ghost btn-row" onClick={() => dialog.current?.close()}>
             Go back
           </button>
           <a
-            className="btn btn-cancel"
+            className="btn btn-danger btn-row"
             href={url}
             target="_blank"
             rel="noopener noreferrer"

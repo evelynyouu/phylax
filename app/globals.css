@@ -33,9 +33,16 @@
   --cat-streaming: var(--mauve);
   --cat-software: var(--evergreen);
   --cat-storage: var(--sky);
-  --cat-shopping: #c9b18a;
+  /* Category bars on the dashboard (Dashboard.dc.html) */
+  --bar-software: var(--evergreen);
+  --bar-streaming: var(--sage);
+  --bar-learning: var(--mauve);
+  --bar-storage: var(--bill-dot);
+  --bar-shopping: #c2b2b9;
+  --bar-other: #d6cbd0;
+  --cat-shopping: var(--lavender);
   --cat-learning: var(--sage);
-  --cat-other: var(--lavender);
+  --cat-other: var(--hairline);
 
   /* Radii */
   --r-field: 14px;

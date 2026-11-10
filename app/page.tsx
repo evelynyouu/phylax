@@ -165,7 +165,7 @@ async function Dashboard({ searchParams }: { searchParams: SearchParams }) {
         <h1 className="brand">Subwatch</h1>
         <div className="top-actions">
           {source === "fixtures" && <span className="status-line">Sample data</span>}
-          {connected && <SyncButton label={isEmpty ? "Scan inbox" : "Sync now"} />}
+          {connected && <SyncButton />}
           {connected && source === "gmail" && <DisconnectButton />}
         </div>
       </header>

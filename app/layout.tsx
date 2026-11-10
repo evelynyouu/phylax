@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Gloock, Hanken_Grotesk } from "next/font/google";
 import "./globals.css";
 import "./ui.css";
+import "./pages.css";
 
 const gloock = Gloock({ weight: "400", subsets: ["latin"], variable: "--font-gloock", display: "swap" });
 const hanken = Hanken_Grotesk({ subsets: ["latin"], variable: "--font-hanken", display: "swap" });

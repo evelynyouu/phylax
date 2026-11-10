@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { guardMutation } from "@/lib/route-auth";
-import { runSync } from "@/lib/sync";
+import { getDashboard, runSync, syncProgress } from "@/lib/sync";
+import { userFromRequest } from "@/lib/route-auth";
 
 export const maxDuration = 300;
 
@@ -19,4 +20,18 @@ export async function POST(req: Request) {
   } finally {
     running = false;
   }
+}
+
+/** Progress of the running sync, plus what has been found so far. Used by sign-up step 3. */
+export async function GET(req: Request) {
+  if (!userFromRequest(req)) return NextResponse.json({ error: "signed out" }, { status: 401 });
+  const p = syncProgress();
+  const { dashboard } = await getDashboard();
+  return NextResponse.json({
+    ...p,
+    found: {
+      subscriptions: dashboard.subscriptions.filter((s) => s.status !== "cancelled").length,
+      bills: dashboard.bills.length,
+    },
+  });
 }

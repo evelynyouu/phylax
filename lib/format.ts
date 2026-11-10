@@ -46,3 +46,22 @@ export function hostOf(url: string): string | null {
     return null;
   }
 }
+
+/** "just now", "4 minutes ago", "3 hours ago", "2 days ago". */
+export function ago(iso: string, now: number = Date.now()): string {
+  const mins = Math.max(0, Math.round((now - Date.parse(iso)) / 60000));
+  if (mins < 1) return "just now";
+  if (mins < 60) return `${mins} minute${mins === 1 ? "" : "s"} ago`;
+  const hours = Math.round(mins / 60);
+  if (hours < 24) return `${hours} hour${hours === 1 ? "" : "s"} ago`;
+  const days = Math.round(hours / 24);
+  return `${days} day${days === 1 ? "" : "s"} ago`;
+}
+
+/** "Monday, November 9" for a YYYY-MM-DD date. */
+export function longDate(iso: string): string {
+  const [y, m, d] = iso.split("-").map(Number);
+  return new Intl.DateTimeFormat("en-US", { weekday: "long", month: "long", day: "numeric", timeZone: "UTC" }).format(
+    new Date(Date.UTC(y, m - 1, d))
+  );
+}

@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
-export default function SyncButton({ label = "Sync now" }: { label?: string }) {
+export default function SyncButton() {
   const router = useRouter();
   const [state, setState] = useState<"idle" | "syncing" | "done" | "error">("idle");
   const [message, setMessage] = useState("");
@@ -16,7 +16,7 @@ export default function SyncButton({ label = "Sync now" }: { label?: string }) {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "Sync failed");
       setState("done");
-      setMessage(data.processed === 0 ? "Already up to date" : `Read ${data.processed} new emails`);
+      setMessage(data.processed === 0 ? "Up to date" : `Read ${data.processed} new emails`);
       router.refresh();
     } catch (e) {
       setState("error");
@@ -25,13 +25,17 @@ export default function SyncButton({ label = "Sync now" }: { label?: string }) {
   }
 
   return (
-    <>
-      <span className="status-line" role="status" aria-live="polite">
+    <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
+      <span role="status" aria-live="polite" className={state === "error" ? "field-error" : "muted"} style={{ fontSize: 14 }}>
         {state === "syncing" ? "Reading your inbox" : message}
       </span>
-      <button type="button" className="btn" onClick={sync} disabled={state === "syncing"}>
-        {state === "syncing" ? "Syncing" : label}
+      <button type="button" className="btn btn-ghost btn-sm" onClick={sync} disabled={state === "syncing"}>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+          <path d="M20 12a8 8 0 1 1-2.3-5.7" />
+          <path d="M20 4v5h-5" />
+        </svg>
+        {state === "syncing" ? "Syncing" : "Sync now"}
       </button>
-    </>
+    </div>
   );
 }
