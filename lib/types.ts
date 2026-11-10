@@ -56,10 +56,12 @@ export interface Subscription {
   cancelUrlTrusted: boolean;
   evidenceEmailIds: string[];
   annualCost: number | null;
+  manualCancel: boolean; // the user said "I've cancelled it" and no newer receipt has arrived
 }
 
 export interface UpcomingPayment {
   merchant: string;
+  merchantKey: string;
   amount: number | null;
   currency: string;
   date: string;
@@ -68,7 +70,9 @@ export interface UpcomingPayment {
 }
 
 export interface DueItem {
+  key: string; // stable id: merchantKey|kind|date
   merchant: string;
+  merchantKey: string;
   label: string;
   amount: number | null;
   currency: string;
@@ -77,6 +81,29 @@ export interface DueItem {
   kind: "payment_due" | "trial_ending" | "renewal_notice";
   cancelUrl: string | null;
   cancelUrlTrusted: boolean;
+  paid: boolean; // payment_due only
+  reminder: boolean; // payment_due only
+}
+
+/** A bill (payment_due) with its due date, newest email per merchant and date. */
+export interface BillItem {
+  key: string; // merchantKey|dueDate
+  merchantKey: string;
+  merchant: string;
+  amount: number | null;
+  currency: string;
+  dueDate: string;
+  paid: boolean;
+  reminder: boolean;
+}
+
+/** A charge that already happened, from a receipt email. */
+export interface PastCharge {
+  merchantKey: string;
+  merchant: string;
+  amount: number | null;
+  currency: string;
+  date: string;
 }
 
 export interface Dashboard {
@@ -84,5 +111,7 @@ export interface Dashboard {
   subscriptions: Subscription[];
   upcoming: UpcomingPayment[];
   due: DueItem[];
+  bills: BillItem[];
+  receipts: PastCharge[];
   totals: { monthly: number; yearly: number; count: number };
 }

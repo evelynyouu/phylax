@@ -1,5 +1,5 @@
 import { FIXTURE_EMAILS } from "../fixtures/emails";
-import { dismissedKeys, getKv, hasRecord, loadRecords, saveRecord, setKv } from "./db";
+import { dismissedKeys, getKv, hasRecord, loadRecords, manualCancels, paidKeys, reminderKeys, saveRecord, setKv } from "./db";
 import { extractEmail } from "./extract";
 import { fetchEmail, gmailConfigured, isConnected, listMessageIds } from "./gmail";
 import { buildDashboard } from "./resolve";
@@ -78,6 +78,12 @@ export async function runSync(): Promise<SyncResult> {
   return result;
 }
 
+/** When the last successful Gmail sync finished, as an ISO time, or null. */
+export function lastSyncedAt(): string | null {
+  const v = getKv(LAST_SYNC);
+  return v ? new Date(Number(v) * 1000).toISOString() : null;
+}
+
 export async function getDashboard(): Promise<{ dashboard: Dashboard; source: DataSource; connected: boolean }> {
   const source = dataSource();
   if (source === "fixtures") {
@@ -85,6 +91,11 @@ export async function getDashboard(): Promise<{ dashboard: Dashboard; source: Da
     process.env.SUBWATCH_TODAY ??= "2026-11-09";
     if (loadRecords().length === 0) await runSync();
   }
-  const dashboard = buildDashboard(loadRecords(), { dismissed: dismissedKeys() });
+  const dashboard = buildDashboard(loadRecords(), {
+    dismissed: dismissedKeys(),
+    manualCancels: manualCancels(),
+    paid: paidKeys(),
+    reminders: reminderKeys(),
+  });
   return { dashboard, source, connected: source === "fixtures" ? true : isConnected() };
 }

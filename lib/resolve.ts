@@ -1,5 +1,6 @@
 import { addDays, addMonths, daysBetween, todayIso } from "./extract/dates";
-import type { Cadence, Dashboard, DueItem, ExtractedRecord, Subscription, UpcomingPayment } from "./types";
+import { billKey } from "./calendar";
+import type { BillItem, Cadence, Dashboard, DueItem, ExtractedRecord, PastCharge, Subscription, UpcomingPayment } from "./types";
 
 const PERIODS_PER_YEAR: Record<Cadence, number> = { weekly: 52, monthly: 12, quarterly: 4, yearly: 1 };
 const UPCOMING_WINDOW_DAYS = 60;
@@ -52,7 +53,7 @@ function modeCadence(records: ExtractedRecord[]): Cadence | null {
 
 const day = (iso: string) => iso.slice(0, 10);
 
-function buildSubscription(key: string, group: ExtractedRecord[], today: string): Subscription | null {
+function buildSubscription(key: string, group: ExtractedRecord[], today: string, manualAt?: string): Subscription | null {
   // A receipt only counts toward a subscription if it states a cadence or the same amount repeats.
   // This keeps one-off purchases (e.g. an Amazon order) from masquerading as the recurring charge.
   const allReceipts = group.filter((r) => r.kind === "receipt" && r.amount !== null);
@@ -84,7 +85,11 @@ function buildSubscription(key: string, group: ExtractedRecord[], today: string)
   const cancelled =
     !!lastCancel && (!lastChargeDate || day(lastCancel.emailDate) >= lastChargeDate) &&
     !renewals.some((r) => r.emailDate > lastCancel.emailDate);
-  const status: Subscription["status"] = cancelled ? "cancelled" : liveTrial ? "trial" : "active";
+  // "I've cancelled it" holds until a receipt newer than the moment the user said so.
+  const newestReceipt = mostRecent(allReceipts);
+  const manual = !!manualAt && (!newestReceipt || newestReceipt.emailDate <= manualAt);
+  const isCancelled = cancelled || manual;
+  const status: Subscription["status"] = isCancelled ? "cancelled" : liveTrial ? "trial" : "active";
 
   // Amount: latest concrete charge, else latest announced amount.
   const lastRenewal = mostRecent(renewals.filter((r) => r.amount !== null));
@@ -119,7 +124,7 @@ function buildSubscription(key: string, group: ExtractedRecord[], today: string)
 
   // Next charge date
   let nextChargeDate: string | null = null;
-  if (!cancelled) {
+  if (!isCancelled) {
     const dated = [...group]
       .filter((r) => r.kind !== "price_change" && r.kind !== "cancellation")
       .sort((a, b) => b.emailDate.localeCompare(a.emailDate));
@@ -151,19 +156,29 @@ function buildSubscription(key: string, group: ExtractedRecord[], today: string)
     lastChargeDate,
     nextChargeDate,
     priceChange,
-    cancelUrl: cancelled ? null : pick?.cancelUrl ?? null,
-    cancelUrlTrusted: cancelled ? false : pick?.cancelUrlTrusted ?? false,
+    cancelUrl: isCancelled ? null : pick?.cancelUrl ?? null,
+    cancelUrlTrusted: isCancelled ? false : pick?.cancelUrlTrusted ?? false,
     evidenceEmailIds: group.map((r) => r.emailId),
     annualCost: annual,
+    manualCancel: manual,
   };
 }
 
 export function buildDashboard(
   all: ExtractedRecord[],
-  opts: { today?: string; dismissed?: Set<string> } = {}
+  opts: {
+    today?: string;
+    dismissed?: Set<string>;
+    manualCancels?: Map<string, string>; // merchantKey -> ISO time the user marked it cancelled
+    paid?: Set<string>; // bill keys
+    reminders?: Set<string>; // bill keys
+  } = {}
 ): Dashboard {
   const today = opts.today ?? process.env.SUBWATCH_TODAY ?? todayIso();
   const dismissed = opts.dismissed ?? new Set<string>();
+  const manualCancels = opts.manualCancels ?? new Map<string, string>();
+  const paid = opts.paid ?? new Set<string>();
+  const reminders = opts.reminders ?? new Set<string>();
 
   const relevant = all.filter((r) => r.relevant && r.merchantKey && !dismissed.has(r.merchantKey));
   const groups = new Map<string, ExtractedRecord[]>();
@@ -176,7 +191,7 @@ export function buildDashboard(
   // ---- subscriptions ----
   const subscriptions: Subscription[] = [];
   for (const [key, group] of groups) {
-    const s = buildSubscription(key, group, today);
+    const s = buildSubscription(key, group, today, manualCancels.get(key));
     if (s) subscriptions.push(s);
   }
   const statusRank = { active: 0, trial: 1, cancelled: 2 } as const;
@@ -196,6 +211,7 @@ export function buildDashboard(
     for (let i = 0; i < 3 && d <= windowEnd; i++) {
       upcoming.push({
         merchant: s.merchant,
+        merchantKey: s.merchantKey,
         amount: s.amount,
         currency: s.currency,
         date: d,
@@ -215,10 +231,24 @@ export function buildDashboard(
     const prev = bills.get(k);
     if (!prev || r.emailDate > prev.emailDate) bills.set(k, r);
   }
+  const billItems: BillItem[] = [];
   for (const r of bills.values()) {
-    if (r.dueDate! < today || r.dueDate! > windowEnd) continue;
+    const key = billKey(r.merchantKey!, r.dueDate!);
+    billItems.push({
+      key,
+      merchantKey: r.merchantKey!,
+      merchant: r.merchant!,
+      amount: r.amount,
+      currency: r.currency ?? "USD",
+      dueDate: r.dueDate!,
+      paid: paid.has(key),
+      reminder: reminders.has(key),
+    });
+    // A paid bill is no longer money about to leave.
+    if (r.dueDate! < today || r.dueDate! > windowEnd || paid.has(key)) continue;
     upcoming.push({
       merchant: r.merchant!,
+      merchantKey: r.merchantKey!,
       amount: r.amount,
       currency: r.currency ?? "USD",
       date: r.dueDate!,
@@ -253,8 +283,12 @@ export function buildDashboard(
     const sub = subByKey.get(r.merchantKey!);
     if (sub?.status === "cancelled" && r.kind !== "payment_due") continue;
     seen.add(dedupe);
+    const isBill = r.kind === "payment_due";
+    const key = isBill ? billKey(r.merchantKey!, date) : dedupe;
     due.push({
+      key,
       merchant: r.merchant!,
+      merchantKey: r.merchantKey!,
       label,
       amount: r.amount,
       currency: r.currency ?? "USD",
@@ -263,9 +297,26 @@ export function buildDashboard(
       kind: r.kind as DueItem["kind"],
       cancelUrl: r.kind === "payment_due" ? null : sub?.cancelUrl ?? r.cancelUrl,
       cancelUrlTrusted: r.kind === "payment_due" ? false : sub?.cancelUrl ? sub.cancelUrlTrusted : r.cancelUrlTrusted,
+      paid: isBill && paid.has(key),
+      reminder: isBill && reminders.has(key),
     });
   }
   due.sort((a, b) => a.date.localeCompare(b.date) || a.merchant.localeCompare(b.merchant));
+
+  billItems.sort((a, b) => a.dueDate.localeCompare(b.dueDate) || a.merchant.localeCompare(b.merchant));
+
+  // Past charges for the calendar: receipts from merchants we track as subscriptions.
+  const subKeys = new Set(subscriptions.map((s) => s.merchantKey));
+  const receipts: PastCharge[] = relevant
+    .filter((r) => r.kind === "receipt" && r.amount !== null && subKeys.has(r.merchantKey!))
+    .map((r) => ({
+      merchantKey: r.merchantKey!,
+      merchant: subscriptions.find((s) => s.merchantKey === r.merchantKey)!.merchant,
+      amount: r.amount,
+      currency: r.currency ?? "USD",
+      date: day(r.emailDate),
+    }))
+    .sort((a, b) => a.date.localeCompare(b.date));
 
   const active = subscriptions.filter((s) => s.status === "active");
   const yearly = active.reduce((sum, s) => sum + (s.annualCost ?? 0), 0);
@@ -274,6 +325,8 @@ export function buildDashboard(
     subscriptions,
     upcoming,
     due,
+    bills: billItems,
+    receipts,
     totals: {
       monthly: Math.round((yearly / 12) * 100) / 100,
       yearly: Math.round(yearly * 100) / 100,

@@ -7,26 +7,40 @@ const DB_PATH = process.env.SUBWATCH_DB ?? path.join(process.cwd(), "data", "sub
 
 let _db: Database.Database | null = null;
 
+const SCHEMA = `
+  CREATE TABLE IF NOT EXISTS records (
+    email_id TEXT PRIMARY KEY,
+    email_date TEXT NOT NULL,
+    json TEXT NOT NULL
+  );
+  CREATE TABLE IF NOT EXISTS kv (
+    key TEXT PRIMARY KEY,
+    value TEXT NOT NULL
+  );
+  CREATE TABLE IF NOT EXISTS dismissed (
+    merchant_key TEXT PRIMARY KEY,
+    dismissed_at TEXT NOT NULL
+  );
+  CREATE TABLE IF NOT EXISTS manual_cancels (
+    merchant_key TEXT PRIMARY KEY,
+    cancelled_at TEXT NOT NULL
+  );
+  CREATE TABLE IF NOT EXISTS paid (
+    bill_key TEXT PRIMARY KEY,
+    paid_at TEXT NOT NULL
+  );
+  CREATE TABLE IF NOT EXISTS reminders (
+    bill_key TEXT PRIMARY KEY,
+    created_at TEXT NOT NULL
+  );
+`;
+
 export function db(): Database.Database {
   if (_db) return _db;
   if (DB_PATH !== ":memory:") fs.mkdirSync(path.dirname(DB_PATH), { recursive: true });
   _db = new Database(DB_PATH);
   _db.pragma("journal_mode = WAL");
-  _db.exec(`
-    CREATE TABLE IF NOT EXISTS records (
-      email_id TEXT PRIMARY KEY,
-      email_date TEXT NOT NULL,
-      json TEXT NOT NULL
-    );
-    CREATE TABLE IF NOT EXISTS kv (
-      key TEXT PRIMARY KEY,
-      value TEXT NOT NULL
-    );
-    CREATE TABLE IF NOT EXISTS dismissed (
-      merchant_key TEXT PRIMARY KEY,
-      dismissed_at TEXT NOT NULL
-    );
-  `);
+  _db.exec(SCHEMA);
   return _db;
 }
 
@@ -34,11 +48,7 @@ export function db(): Database.Database {
 export function resetDbForTests() {
   _db?.close();
   _db = new Database(":memory:");
-  _db.exec(`
-    CREATE TABLE records (email_id TEXT PRIMARY KEY, email_date TEXT NOT NULL, json TEXT NOT NULL);
-    CREATE TABLE kv (key TEXT PRIMARY KEY, value TEXT NOT NULL);
-    CREATE TABLE dismissed (merchant_key TEXT PRIMARY KEY, dismissed_at TEXT NOT NULL);
-  `);
+  _db.exec(SCHEMA);
 }
 
 export function saveRecord(r: ExtractedRecord) {
@@ -83,4 +93,52 @@ export function undismissMerchant(merchantKey: string) {
 export function dismissedKeys(): Set<string> {
   const rows = db().prepare("SELECT merchant_key FROM dismissed").all() as { merchant_key: string }[];
   return new Set(rows.map((r) => r.merchant_key));
+}
+
+// ---- "I've cancelled it" ----
+
+export function setManualCancel(merchantKey: string) {
+  db()
+    .prepare("INSERT OR REPLACE INTO manual_cancels (merchant_key, cancelled_at) VALUES (?, ?)")
+    .run(merchantKey, new Date().toISOString());
+}
+
+export function clearManualCancel(merchantKey: string) {
+  db().prepare("DELETE FROM manual_cancels WHERE merchant_key = ?").run(merchantKey);
+}
+
+export function manualCancels(): Map<string, string> {
+  const rows = db().prepare("SELECT merchant_key, cancelled_at FROM manual_cancels").all() as {
+    merchant_key: string;
+    cancelled_at: string;
+  }[];
+  return new Map(rows.map((r) => [r.merchant_key, r.cancelled_at]));
+}
+
+// ---- Bills: paid and reminders ----
+
+export function markPaid(billKey: string) {
+  db().prepare("INSERT OR REPLACE INTO paid (bill_key, paid_at) VALUES (?, ?)").run(billKey, new Date().toISOString());
+}
+
+export function unmarkPaid(billKey: string) {
+  db().prepare("DELETE FROM paid WHERE bill_key = ?").run(billKey);
+}
+
+export function paidKeys(): Set<string> {
+  const rows = db().prepare("SELECT bill_key FROM paid").all() as { bill_key: string }[];
+  return new Set(rows.map((r) => r.bill_key));
+}
+
+export function setReminder(billKey: string, on: boolean) {
+  if (on) {
+    db().prepare("INSERT OR REPLACE INTO reminders (bill_key, created_at) VALUES (?, ?)").run(billKey, new Date().toISOString());
+  } else {
+    db().prepare("DELETE FROM reminders WHERE bill_key = ?").run(billKey);
+  }
+}
+
+export function reminderKeys(): Set<string> {
+  const rows = db().prepare("SELECT bill_key FROM reminders").all() as { bill_key: string }[];
+  return new Set(rows.map((r) => r.bill_key));
 }
