@@ -1,19 +1,9 @@
 import { addMonths } from "../lib/extract/dates";
-import type { EmailKind, EmailLink, RawEmail } from "../lib/types";
+import type { EvalCase, Expected } from "../lib/eval/types";
+import type { EmailLink, RawEmail } from "../lib/types";
 
-export interface Expected {
-  relevant: boolean;
-  kind: EmailKind;
-  merchant?: string;
-  amount?: number;
-  date?: string; // dueDate or renewalDate
-  hasCancel?: boolean;
-}
-
-export interface Fixture {
-  email: RawEmail;
-  expected: Expected;
-}
+export type { Expected };
+export type Fixture = EvalCase;
 
 const MONTH_NAMES = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 function fmt(iso: string): string {

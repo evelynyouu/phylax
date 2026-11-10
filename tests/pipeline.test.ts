@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { FIXTURE_EMAILS } from "../fixtures/emails";
-import { runEval } from "../scripts/eval";
+import { FIXTURE_EMAILS, FIXTURES } from "../fixtures/emails";
+import { runEval } from "../lib/eval/score";
 import { findDates, addMonths } from "../lib/extract/dates";
 import { extractWithRules, pickAmount, pickCancelUrl } from "../lib/extract/rules";
 import { extractAll } from "../lib/extract";
@@ -153,10 +153,10 @@ describe("dashboard", () => {
 
 describe("eval harness", () => {
   it("meets a regression floor on the labeled fixtures (rules only)", async () => {
-    const r = await runEval(false);
-    expect(r.relevance.precision).toBeGreaterThanOrEqual(0.95);
-    expect(r.relevance.recall).toBeGreaterThanOrEqual(0.95);
-    expect(r.amountAccuracy).toBeGreaterThanOrEqual(0.95);
-    expect(r.dateAccuracy).toBeGreaterThanOrEqual(0.95);
+    const r = await runEval(FIXTURES, { useLlm: false });
+    expect(r.relevance.precision.value).toBeGreaterThanOrEqual(0.95);
+    expect(r.relevance.recall.value).toBeGreaterThanOrEqual(0.95);
+    expect(r.fields.amount.recall.value).toBeGreaterThanOrEqual(0.95);
+    expect(r.fields.date.recall.value).toBeGreaterThanOrEqual(0.95);
   });
 });
