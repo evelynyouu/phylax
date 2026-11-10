@@ -5,6 +5,7 @@ import DisconnectButton from "@/components/DisconnectButton";
 import StopTracking from "@/components/StopTracking";
 import SyncButton from "@/components/SyncButton";
 import Tape from "@/components/Tape";
+import "./legacy.css";
 import { todayIso } from "@/lib/extract/dates";
 import { cadenceLabel, money, relDays, shortDate } from "@/lib/format";
 import { getDashboard } from "@/lib/sync";

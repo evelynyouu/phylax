@@ -1,5 +1,9 @@
 import type { Metadata } from "next";
+import { Gloock, Hanken_Grotesk } from "next/font/google";
 import "./globals.css";
+
+const gloock = Gloock({ weight: "400", subsets: ["latin"], variable: "--font-gloock", display: "swap" });
+const hanken = Hanken_Grotesk({ subsets: ["latin"], variable: "--font-hanken", display: "swap" });
 
 export const metadata: Metadata = {
   title: "Subwatch",
@@ -8,17 +12,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="en">
-      <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
-        {/* App Router root layout: this applies to every page, so the single-page font warning does not apply. */}
-        {/* eslint-disable-next-line @next/next/no-page-custom-font */}
-        <link
-          rel="stylesheet"
-          href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=Instrument+Sans:wght@400;500;600&display=swap"
-        />
-      </head>
+    <html lang="en" className={`${gloock.variable} ${hanken.variable}`}>
       <body>{children}</body>
     </html>
   );
