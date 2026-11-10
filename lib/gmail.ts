@@ -1,0 +1,139 @@
+import { google, type gmail_v1 } from "googleapis";
+import { decrypt, encrypt } from "./crypto";
+import { getKv, setKv } from "./db";
+import { extractLinks, htmlToText } from "./html";
+import type { RawEmail } from "./types";
+
+// Read-only. The app can never send, modify, label, or delete mail.
+export const SCOPES = ["https://www.googleapis.com/auth/gmail.readonly"];
+
+const TOKEN_KEY = "google_tokens";
+
+function appUrl(): string {
+  return process.env.APP_URL ?? "http://localhost:3000";
+}
+
+export function oauthClient() {
+  const id = process.env.GOOGLE_CLIENT_ID;
+  const secret = process.env.GOOGLE_CLIENT_SECRET;
+  if (!id || !secret) throw new Error("GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET are not set");
+  return new google.auth.OAuth2(id, secret, `${appUrl()}/api/auth/callback`);
+}
+
+export function gmailConfigured(): boolean {
+  return !!process.env.GOOGLE_CLIENT_ID && !!process.env.GOOGLE_CLIENT_SECRET;
+}
+
+export function authUrl(state: string): string {
+  return oauthClient().generateAuthUrl({
+    access_type: "offline",
+    prompt: "consent",
+    scope: SCOPES,
+    state,
+    include_granted_scopes: false,
+  });
+}
+
+export async function saveTokensFromCode(code: string): Promise<void> {
+  const client = oauthClient();
+  const { tokens } = await client.getToken(code);
+  const existing = loadTokens();
+  // Google only returns a refresh token on first consent; keep the old one if this response lacks it.
+  const merged = { ...tokens, refresh_token: tokens.refresh_token ?? existing?.refresh_token };
+  setKv(TOKEN_KEY, encrypt(JSON.stringify(merged)));
+}
+
+function loadTokens(): { refresh_token?: string | null; [k: string]: unknown } | null {
+  const raw = getKv(TOKEN_KEY);
+  if (!raw) return null;
+  try {
+    return JSON.parse(decrypt(raw));
+  } catch {
+    return null;
+  }
+}
+
+export function isConnected(): boolean {
+  return !!loadTokens();
+}
+
+export async function disconnect(): Promise<void> {
+  const t = loadTokens();
+  if (t?.refresh_token) {
+    try {
+      await oauthClient().revokeToken(String(t.refresh_token));
+    } catch {
+      // Revocation is best effort; we still drop the local copy below.
+    }
+  }
+  setKv(TOKEN_KEY, "");
+}
+
+function gmailClient(): gmail_v1.Gmail {
+  const tokens = loadTokens();
+  if (!tokens) throw new Error("Gmail is not connected");
+  const client = oauthClient();
+  client.setCredentials(tokens);
+  client.on("tokens", (t) => {
+    const merged = { ...tokens, ...t, refresh_token: t.refresh_token ?? tokens.refresh_token };
+    setKv(TOKEN_KEY, encrypt(JSON.stringify(merged)));
+  });
+  return google.gmail({ version: "v1", auth: client });
+}
+
+const BILLING_QUERY = [
+  "-in:spam",
+  "-in:trash",
+  "(",
+  'subject:(receipt OR invoice OR subscription OR renew OR renewal OR billing OR payment OR trial OR statement OR "your order" OR cancelled OR canceled OR "price change" OR "amount due" OR "bill is ready")',
+  'OR "free trial" OR "will be charged" OR "will renew" OR "amount due" OR "payment due"',
+  ")",
+].join(" ");
+
+export async function listMessageIds(afterEpochSeconds: number | null, maxMessages = 1500): Promise<string[]> {
+  const gmail = gmailClient();
+  const q = afterEpochSeconds ? `${BILLING_QUERY} after:${afterEpochSeconds}` : `${BILLING_QUERY} newer_than:400d`;
+  const ids: string[] = [];
+  let pageToken: string | undefined;
+  do {
+    const res = await gmail.users.messages.list({ userId: "me", q, maxResults: 100, pageToken });
+    for (const m of res.data.messages ?? []) if (m.id) ids.push(m.id);
+    pageToken = res.data.nextPageToken ?? undefined;
+  } while (pageToken && ids.length < maxMessages);
+  return ids;
+}
+
+function walk(part: gmail_v1.Schema$MessagePart, out: { plain: string[]; html: string[] }) {
+  const mime = part.mimeType ?? "";
+  if (part.body?.data) {
+    const text = Buffer.from(part.body.data, "base64url").toString("utf8");
+    if (mime === "text/plain") out.plain.push(text);
+    else if (mime === "text/html") out.html.push(text);
+  }
+  for (const p of part.parts ?? []) walk(p, out);
+}
+
+export async function fetchEmail(id: string): Promise<RawEmail | null> {
+  const gmail = gmailClient();
+  const res = await gmail.users.messages.get({ userId: "me", id, format: "full" });
+  const payload = res.data.payload;
+  if (!payload) return null;
+
+  const header = (name: string) =>
+    payload.headers?.find((h) => h.name?.toLowerCase() === name.toLowerCase())?.value ?? "";
+  const bodies = { plain: [] as string[], html: [] as string[] };
+  walk(payload, bodies);
+
+  const html = bodies.html.join("\n");
+  const bodyText = (bodies.plain.join("\n").trim() || htmlToText(html)).slice(0, 20000);
+  const ms = Number(res.data.internalDate ?? Date.now());
+
+  return {
+    id,
+    from: header("From"),
+    subject: header("Subject"),
+    date: new Date(ms).toISOString(),
+    bodyText,
+    links: html ? extractLinks(html) : [],
+  };
+}
