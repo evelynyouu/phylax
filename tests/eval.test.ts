@@ -1,4 +1,15 @@
-import { describe, expect, it } from "vitest";
+import fs from "node:fs";
+import os from "node:os";
+import path from "node:path";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import {
+  CorpusKeyError,
+  loadLabeledCases,
+  readCorpus,
+  readLabels,
+  writeCorpus,
+  writeLabels,
+} from "../lib/eval/corpus";
 import { scoreCases, wilson } from "../lib/eval/score";
 import type { CorpusEntry, EvalCase, Expected, SampleSource } from "../lib/eval/types";
 import type { ExtractedRecord, RawEmail } from "../lib/types";
@@ -136,5 +147,55 @@ describe("scoreCases", () => {
       [mkPred({ renewalDate: "2026-12-01" }), mkPred({ dueDate: "2026-12-02", renewalDate: "2027-01-01" })]
     );
     expect(r.fields.date.tp).toBe(2);
+  });
+});
+
+// ---- Task 2: corpus store ----
+
+describe("corpus store", () => {
+  let dir: string;
+  let savedKey: string | undefined;
+  beforeEach(() => {
+    dir = fs.mkdtempSync(path.join(os.tmpdir(), "subwatch-eval-"));
+    savedKey = process.env.TOKEN_ENC_KEY;
+    process.env.TOKEN_ENC_KEY = "a".repeat(64);
+  });
+  afterEach(() => {
+    if (savedKey === undefined) delete process.env.TOKEN_ENC_KEY;
+    else process.env.TOKEN_ENC_KEY = savedKey;
+    fs.rmSync(dir, { recursive: true, force: true });
+  });
+
+  it("round-trips corpus and labels, and stores no plaintext", () => {
+    writeCorpus(dir, [entry("e1", "ZZSUBJECT"), entry("e2")]);
+    writeLabels(dir, { e1: { relevant: true, kind: "receipt", amount: 9.99 } });
+    expect(readCorpus(dir).map((e) => e.email.id)).toEqual(["e1", "e2"]);
+    const file = path.join(dir, "corpus.jsonl.enc");
+    expect(fs.readFileSync(file, "utf8")).not.toContain("ZZSUBJECT");
+    expect(fs.statSync(file).mode & 0o777).toBe(0o600);
+    expect(fs.readFileSync(path.join(dir, "labels.json.enc"), "utf8")).not.toContain("9.99");
+    const cases = loadLabeledCases(dir);
+    expect(cases).toHaveLength(1);
+    expect(cases[0]).toMatchObject({ samples: ["query"], inQuery: true, expected: { amount: 9.99 } });
+  });
+
+  it("writes labels atomically and leaves no tmp file", () => {
+    writeLabels(dir, { e1: { relevant: false, kind: "marketing" } });
+    expect(fs.existsSync(path.join(dir, "labels.json.enc.tmp"))).toBe(false);
+    expect(readLabels(dir).e1.kind).toBe("marketing");
+  });
+
+  it("returns empty results when nothing has been exported", () => {
+    expect(readCorpus(dir)).toEqual([]);
+    expect(readLabels(dir)).toEqual({});
+  });
+
+  it("throws CorpusKeyError when the key changed", () => {
+    writeCorpus(dir, [entry("e1")]);
+    writeLabels(dir, { e1: { relevant: false, kind: "other" } });
+    process.env.TOKEN_ENC_KEY = "b".repeat(64);
+    expect(() => readCorpus(dir)).toThrow(CorpusKeyError);
+    expect(() => readCorpus(dir)).toThrow(/TOKEN_ENC_KEY/);
+    expect(() => readLabels(dir)).toThrow(CorpusKeyError);
   });
 });
