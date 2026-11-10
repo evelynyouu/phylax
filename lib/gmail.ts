@@ -1,13 +1,17 @@
 import { google, type gmail_v1 } from "googleapis";
 import { decrypt, encrypt } from "./crypto";
 import { getKv, setKv } from "./db";
+import { checkOwner, type SessionUser } from "./session";
 import { extractLinks, htmlToText } from "./html";
 import type { RawEmail } from "./types";
 
 // Read-only. The app can never send, modify, label, or delete mail.
-export const SCOPES = ["https://www.googleapis.com/auth/gmail.readonly"];
+// openid, email and profile identify who signed in; they grant no mailbox access.
+export const GMAIL_SCOPE = "https://www.googleapis.com/auth/gmail.readonly";
+export const SCOPES = [GMAIL_SCOPE, "openid", "email", "profile"];
 
 const TOKEN_KEY = "google_tokens";
+const OWNER_KEY = "owner_email";
 
 function appUrl(): string {
   return process.env.APP_URL ?? "http://localhost:3000";
@@ -34,13 +38,29 @@ export function authUrl(state: string): string {
   });
 }
 
-export async function saveTokensFromCode(code: string): Promise<void> {
+export type SignInResult = { ok: true; user: SessionUser } | { ok: false; reason: "not_owner" | "no_identity" | "no_gmail" };
+
+/**
+ * Exchanges the OAuth code, identifies the account from its verified ID token, and only then
+ * stores Gmail tokens. A second Google account cannot replace the owner's Gmail connection.
+ */
+export async function signInWithCode(code: string): Promise<SignInResult> {
   const client = oauthClient();
   const { tokens } = await client.getToken(code);
+  if (!tokens.id_token) return { ok: false, reason: "no_identity" };
+  const ticket = await client.verifyIdToken({ idToken: tokens.id_token, audience: process.env.GOOGLE_CLIENT_ID });
+  const claims = ticket.getPayload();
+  if (!claims?.email || claims.email_verified === false) return { ok: false, reason: "no_identity" };
+  if (!checkOwner(getKv(OWNER_KEY) || null, claims.email)) return { ok: false, reason: "not_owner" };
+  // Google's consent screen lets people untick individual scopes.
+  if (!tokens.scope?.split(" ").includes(GMAIL_SCOPE)) return { ok: false, reason: "no_gmail" };
+
   const existing = loadTokens();
   // Google only returns a refresh token on first consent; keep the old one if this response lacks it.
   const merged = { ...tokens, refresh_token: tokens.refresh_token ?? existing?.refresh_token };
   setKv(TOKEN_KEY, encrypt(JSON.stringify(merged)));
+  setKv(OWNER_KEY, claims.email.toLowerCase());
+  return { ok: true, user: { email: claims.email, name: claims.name ?? claims.email.split("@")[0] } };
 }
 
 function loadTokens(): { refresh_token?: string | null; [k: string]: unknown } | null {
@@ -67,6 +87,8 @@ export async function disconnect(): Promise<void> {
     }
   }
   setKv(TOKEN_KEY, "");
+  // Disconnecting releases the install, so a different account can connect next.
+  setKv(OWNER_KEY, "");
 }
 
 function gmailClient(): gmail_v1.Gmail {

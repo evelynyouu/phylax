@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { sameOrigin } from "@/lib/csrf";
+import { guardMutation } from "@/lib/route-auth";
 import { runSync } from "@/lib/sync";
 
 export const maxDuration = 300;
@@ -7,7 +7,8 @@ export const maxDuration = 300;
 let running = false;
 
 export async function POST(req: Request) {
-  if (!sameOrigin(req)) return NextResponse.json({ error: "forbidden" }, { status: 403 });
+  const denied = guardMutation(req);
+  if (denied) return denied;
   if (running) return NextResponse.json({ error: "A sync is already running" }, { status: 409 });
   running = true;
   try {
