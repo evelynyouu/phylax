@@ -5,7 +5,7 @@ import { loadApp, loadSyncNote } from "@/lib/app-data";
 
 async function AccountSlot() {
   const { user, source } = await loadApp();
-  return <Account user={user} syncNote={await loadSyncNote(source)} />;
+  return <Account user={user} syncNote={await loadSyncNote(source)} demo={source === "fixtures"} />;
 }
 
 // The shell prerenders; the account block reads the session and streams in.

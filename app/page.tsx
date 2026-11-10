@@ -1,294 +1,190 @@
-import { connection } from "next/server";
-import { Suspense } from "react";
-import CancelAction from "@/components/CancelAction";
-import DisconnectButton from "@/components/DisconnectButton";
-import StopTracking from "@/components/StopTracking";
-import SyncButton from "@/components/SyncButton";
-import Tape from "@/components/Tape";
-import "./legacy.css";
-import { todayIso } from "@/lib/extract/dates";
-import { cadenceLabel, money, relDays, shortDate } from "@/lib/format";
-import { getDashboard } from "@/lib/sync";
-import type { DueItem, Subscription, UpcomingPayment } from "@/lib/types";
+import Link from "next/link";
+import LandingHero from "@/components/LandingHero";
+import { isDemo } from "@/lib/session";
 
+// Static marketing page. The hero's petals map to a sample inbox: the visitor is not signed in.
 
-const AUTH_MESSAGES: Record<string, string> = {
-  not_configured: "Google sign-in is not set up yet. Add GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET as described in the README, or run npm run demo for sample data.",
-  denied: "Google sign-in was cancelled. Connect Gmail to try again.",
-  invalid_state: "The sign-in could not be verified. Connect Gmail to try again.",
-  failed: "Google sign-in failed. Check the OAuth settings in the README and try again.",
-};
+const BARS = [30, 18, 62, 22, 14, 40, 26, 90, 20, 34, 16, 48, 28, 70, 18, 24, 52, 12, 36, 44, 20, 58, 16, 30];
+const MARKS: Record<number, string> = { 1: "var(--sage)", 4: "var(--mauve)", 8: "var(--sage)", 11: "var(--sky)", 13: "var(--sage)", 17: "var(--mauve)", 19: "var(--sage)", 20: "var(--sky)", 24: "var(--sage)", 27: "var(--mauve)", 30: "var(--sage)" };
 
-function priceNote(s: Subscription, today: string): string | null {
-  const pc = s.priceChange;
-  if (!pc) return null;
-  const refYear = Number(today.slice(0, 4));
-  const future = pc.effective !== null && pc.effective >= today;
-  if (future) {
-    const when = shortDate(pc.effective!, refYear);
-    return pc.from !== null
-      ? `Price changes from ${money(pc.from)} to ${money(pc.to)} on ${when}`
-      : `Price changing to ${money(pc.to)} on ${when}`;
-  }
-  if (pc.from === null) return null;
-  return pc.to > pc.from
-    ? `Price went up from ${money(pc.from)} to ${money(pc.to)}`
-    : `Price dropped from ${money(pc.from)} to ${money(pc.to)}`;
-}
-
-function SubscriptionRow({ s, today }: { s: Subscription; today: string }) {
-  const refYear = Number(today.slice(0, 4));
-  const cadence = cadenceLabel(s.cadence);
-  const note = priceNote(s, today);
-  const daysAway = s.nextChargeDate
-    ? Math.round((Date.parse(s.nextChargeDate) - Date.parse(today)) / 86400000)
-    : null;
-
+function Logo() {
   return (
-    <li className="row">
-      <div>
-        <p className="row-name">
-          {s.merchant}
-          {s.status === "trial" && <span className="tag tag-trial">Free trial</span>}
-          {s.status === "cancelled" && <span className="tag tag-cancelled">Cancelled</span>}
-        </p>
-        <p className="row-meta">{[money(s.amount, s.currency), cadence].filter(Boolean).join(" ")}</p>
-        {note && <p className="notice">{note}</p>}
-      </div>
-      <div className="row-next">
-        {s.status === "cancelled" ? (
-          <span className="muted">{s.lastChargeDate ? `Last charged ${shortDate(s.lastChargeDate, refYear)}` : "No more charges"}</span>
-        ) : s.nextChargeDate ? (
-          <>
-            {shortDate(s.nextChargeDate, refYear)}
-            <small>{daysAway !== null ? relDays(daysAway) : ""}</small>
-          </>
-        ) : (
-          <span className="muted">Next date unknown</span>
-        )}
-      </div>
-      <div className="row-actions">
-        {s.status !== "cancelled" &&
-          (s.cancelUrl ? (
-            <CancelAction
-              url={s.cancelUrl}
-              trusted={s.cancelUrlTrusted}
-              merchant={s.merchant}
-              label={s.status === "trial" ? "Cancel trial" : "Cancel subscription"}
-            />
-          ) : (
-            <span className="muted">No cancel link in your emails</span>
-          ))}
-        <StopTracking merchantKey={s.merchantKey} merchant={s.merchant} />
-      </div>
-    </li>
+    <svg width="30" height="30" viewBox="0 0 32 32" aria-hidden="true">
+      <g fill="none" stroke="#344C3D" strokeWidth="2">
+        <path d="M16 16c-4-6-4-11 0-13 4 2 4 7 0 13z" fill="#D8959B" />
+        <path d="M16 16c6-4 11-4 13 0-2 4-7 4-13 0z" fill="#D0DBE7" />
+        <path d="M16 16c4 6 4 11 0 13-4-2-4-7 0-13z" fill="#E3DADE" />
+        <path d="M16 16c-6 4-11 4-13 0 2-4 7-4 13 0z" fill="#829672" />
+      </g>
+    </svg>
   );
 }
 
-function DeadlineRow({ d, today }: { d: DueItem; today: string }) {
-  const refYear = Number(today.slice(0, 4));
-  const urgency = d.daysAway < 0 ? "late" : d.daysAway <= 3 ? "soon" : "";
-  const label = d.kind === "trial_ending" ? "Cancel trial" : "Cancel before renewal";
+export default function Home() {
+  // In demo mode the dashboard is sample data anyone can open; otherwise it is the owner's real data.
+  const demo = isDemo();
   return (
-    <li className="deadline">
-      <div>
-        <p className="deadline-what">
-          {d.merchant}: {d.label.toLowerCase()}
-        </p>
-        <p className={`deadline-when ${urgency}`}>
-          {shortDate(d.date, refYear)}, {d.daysAway < 0 ? `${-d.daysAway} days overdue` : relDays(d.daysAway)}
-        </p>
-      </div>
-      <div className="deadline-amt">{d.amount !== null ? money(d.amount, d.currency) : ""}</div>
-      {d.kind !== "payment_due" && d.cancelUrl && (
-        <div className="deadline-act">
-          <CancelAction url={d.cancelUrl} trusted={d.cancelUrlTrusted} merchant={d.merchant} label={label} />
-        </div>
-      )}
-    </li>
-  );
-}
-
-function groupByWeek(items: UpcomingPayment[]): { title: string; items: UpcomingPayment[] }[] {
-  const buckets = [
-    { title: "This week", test: (n: number) => n < 7 },
-    { title: "Next week", test: (n: number) => n >= 7 && n < 14 },
-    { title: "In two to four weeks", test: (n: number) => n >= 14 && n < 30 },
-    { title: "Later", test: (n: number) => n >= 30 },
-  ];
-  return buckets
-    .map((b) => ({ title: b.title, items: items.filter((i) => b.test(i.daysAway)) }))
-    .filter((b) => b.items.length > 0);
-}
-
-type SearchParams = Promise<{ [key: string]: string | string[] | undefined }>;
-
-// The page shell prerenders. Everything that reads the database, the clock, or the URL runs at request time.
-export default function Page({ searchParams }: { searchParams: SearchParams }) {
-  return (
-    <Suspense
-      fallback={
-        <main className="shell">
-          <header className="top">
-            <h1 className="brand">Subwatch</h1>
-            <span className="status-line" role="status">
-              Loading
-            </span>
-          </header>
-        </main>
-      }
-    >
-      <Dashboard searchParams={searchParams} />
-    </Suspense>
-  );
-}
-
-async function Dashboard({ searchParams }: { searchParams: SearchParams }) {
-  await connection();
-  const sp = await searchParams;
-  const { dashboard, source, connected } = await getDashboard();
-  const today = process.env.SUBWATCH_TODAY ?? todayIso();
-  const refYear = Number(today.slice(0, 4));
-  const authParam = typeof sp.auth === "string" ? sp.auth : undefined;
-  const banner = authParam ? AUTH_MESSAGES[authParam] : undefined;
-
-  const { subscriptions, upcoming, due, totals } = dashboard;
-  const live = subscriptions.filter((s) => s.status !== "cancelled");
-  const cancelled = subscriptions.filter((s) => s.status === "cancelled");
-  const next30 = upcoming.filter((u) => u.daysAway <= 30);
-  const total30 = next30.reduce((sum, u) => sum + (u.amount ?? 0), 0);
-  const isEmpty = subscriptions.length === 0 && due.length === 0 && upcoming.length === 0;
-
-  return (
-    <main className="shell">
-      <header className="top">
-        <h1 className="brand">Subwatch</h1>
-        <div className="top-actions">
-          {source === "fixtures" && <span className="status-line">Sample data</span>}
-          {connected && <SyncButton />}
-          {connected && source === "gmail" && <DisconnectButton />}
-        </div>
+    <div className="landing">
+      <header className="l-head">
+        <Link href="/" className="l-brand">
+          <Logo />
+          <span>Subwatch</span>
+        </Link>
+        <nav aria-label="Main" className="l-nav">
+          <a className="navlink" href="#how">
+            How it works
+          </a>
+          <a className="navlink" href="#privacy">
+            Privacy
+          </a>
+          <Link className="navlink keep" href="/signin">
+            Sign in
+          </Link>
+          <Link className="btn btn-primary" href="/signup">
+            Get started
+          </Link>
+        </nav>
       </header>
 
-      {banner && <p className="banner" role="alert">{banner}</p>}
+      <main>
+        <LandingHero sampleHref={demo ? "/app" : "#see"} sampleLabel={demo ? "See a sample dashboard" : "See what you'll get"} />
 
-      {!connected ? (
-        <section className="empty-state">
-          <h2>Find every subscription in your inbox</h2>
-          <p>
-            Connect Gmail with read-only access. Subwatch looks for receipts, renewal notices, and bills, then shows
-            what you pay for, when it renews, and where to cancel.
-          </p>
-          <a className="btn" href="/api/auth/google">
-            Connect Gmail
-          </a>
-        </section>
-      ) : isEmpty ? (
-        <section className="empty-state">
-          <h2>Nothing found yet</h2>
-          <p>Scan your inbox for receipts, renewal notices, and bills. The first scan reads the last 13 months.</p>
-        </section>
-      ) : (
-        <>
-          <section className="hero" aria-labelledby="hero-title">
-            <h2 id="hero-title" className="hero-figure">
-              {money(Math.round(total30 * 100) / 100)}
+        <section id="how" aria-labelledby="how-h" className="how">
+          <div className="l-section">
+            <h2 id="how-h" className="l-h2" style={{ maxWidth: "16em" }}>
+              Three steps from a messy inbox to a clear list
             </h2>
-            <p className="hero-sub">
-              leaves your account in the next 30 days across {next30.length} {next30.length === 1 ? "payment" : "payments"}.
-              Your subscriptions cost {money(totals.monthly)} a month, or {money(totals.yearly)} a year.
-            </p>
-            <Tape upcoming={upcoming} today={today} />
-          </section>
-
-          <div className="grid">
-            <section aria-labelledby="subs-title">
-              <h2 id="subs-title" className="section-title">
-                Subscriptions
-              </h2>
-              <p className="section-note">
-                {live.length} active or on trial. Cancel links come from the emails these companies sent you.
-              </p>
-              <div className="panel">
-                <ul className="rows">
-                  {live.map((s) => (
-                    <SubscriptionRow key={s.merchantKey} s={s} today={today} />
-                  ))}
-                </ul>
-              </div>
-              {cancelled.length > 0 && (
-                <details className="cancelled">
-                  <summary>{cancelled.length} cancelled</summary>
-                  <div className="panel">
-                    <ul className="rows">
-                      {cancelled.map((s) => (
-                        <SubscriptionRow key={s.merchantKey} s={s} today={today} />
-                      ))}
-                    </ul>
-                  </div>
-                </details>
-              )}
-            </section>
-
-            <div className="stack">
-              <section aria-labelledby="due-title">
-                <h2 id="due-title" className="section-title">
-                  Deadlines
-                </h2>
-                <p className="section-note">Bills to pay, trials about to convert, and renewals you can still stop.</p>
-                <div className="panel">
-                  {due.length === 0 ? (
-                    <p className="muted" style={{ padding: 18 }}>
-                      Nothing is due soon.
-                    </p>
-                  ) : (
-                    <ul className="rows">
-                      {due.map((d) => (
-                        <DeadlineRow key={`${d.merchant}-${d.kind}-${d.date}`} d={d} today={today} />
-                      ))}
-                    </ul>
-                  )}
-                </div>
-              </section>
-
-              <section aria-labelledby="up-title">
-                <h2 id="up-title" className="section-title">
-                  Coming up
-                </h2>
-                <p className="section-note">Every expected charge over the next 60 days.</p>
-                <div className="panel" style={{ paddingBottom: 10 }}>
-                  {upcoming.length === 0 ? (
-                    <p className="muted" style={{ padding: 18 }}>
-                      No charges expected in the next 60 days.
-                    </p>
-                  ) : (
-                    groupByWeek(upcoming).map((g) => (
-                      <div className="week" key={g.title}>
-                        <h3>{g.title}</h3>
-                        {g.items.map((p) => (
-                          <div
-                            key={`${p.merchant}-${p.date}-${p.source}`}
-                            className={`pay ${p.source === "bill" ? "pay-bill" : ""}`}
-                          >
-                            <span className="pay-date">{shortDate(p.date, refYear)}</span>
-                            <span className="pay-name">{p.merchant}</span>
-                            <span>{money(p.amount, p.currency)}</span>
-                          </div>
-                        ))}
-                      </div>
-                    ))
-                  )}
-                </div>
-              </section>
-            </div>
+            <ol>
+              <li>
+                <span className="num" aria-hidden="true">1</span>
+                <h3>Connect Gmail</h3>
+                <p>Sign in with Google and grant read-only access. Subwatch only looks at billing emails: receipts, invoices, renewal notices and trial reminders.</p>
+              </li>
+              <li>
+                <span className="num" aria-hidden="true">2</span>
+                <h3>We find what repeats</h3>
+                <p>Charges are matched to the company that sent them, grouped into subscriptions and bills, and checked for price changes and trials about to convert.</p>
+              </li>
+              <li>
+                <span className="num" aria-hidden="true">3</span>
+                <h3>Keep or cancel</h3>
+                <p>See what is due and when, then cancel straight from the link in the company&apos;s own email. Subwatch warns you if a link points anywhere else.</p>
+              </li>
+            </ol>
           </div>
-        </>
-      )}
+        </section>
 
-      <p className="foot">
-        Subwatch has read-only access to Gmail and cannot send, change, or delete mail. It saves the merchant, amount,
-        date, and cancel link from each billing email on this computer, not the email text.
-      </p>
-    </main>
+        <section id="see" aria-labelledby="see-h" className="l-section">
+          <h2 id="see-h" className="l-h2">
+            What you&apos;ll see
+          </h2>
+          <div className="tiles-grid">
+            <Link className="ltile" href="/app" style={{ background: "var(--surface)" }}>
+              <div className="art" aria-hidden="true">
+                {BARS.map((h, i) => (
+                  <span key={i} style={{ flex: 1, height: `${h}%`, borderRadius: "3px 3px 0 0", background: h > 60 ? "var(--mauve)" : i % 3 === 0 ? "var(--sage)" : "var(--sky)" }} />
+                ))}
+              </div>
+              <div>
+                <h3>Dashboard</h3>
+                <p>Everything leaving your account in the next 30 days, and what your subscriptions cost a month.</p>
+              </div>
+            </Link>
+            <Link className="ltile" href="/app/recurring" style={{ background: "var(--lavender)" }}>
+              <div className="art rows" aria-hidden="true">
+                {[["var(--mauve)", "Netflix", "$15.49"], ["var(--evergreen)", "ChatGPT Plus", "$20"], ["var(--sky)", "Dropbox Plus", "$119.88"], ["var(--evergreen)", "GitHub Copilot", "$10"]].map(([c, n, a]) => (
+                  <div key={n}>
+                    <span style={{ width: 14, height: 14, borderRadius: "5px 5px 5px 1px", background: c }} />
+                    <span>{n}</span>
+                    <span>{a}</span>
+                  </div>
+                ))}
+              </div>
+              <div>
+                <h3>Recurring</h3>
+                <p>Subscriptions grouped by category, with the cancel link from each company&apos;s own email.</p>
+              </div>
+            </Link>
+            <Link className="ltile" href="/app/calendar" style={{ background: "var(--sky)" }}>
+              <div className="art cal" aria-hidden="true">
+                {Array.from({ length: 35 }, (_, d) => (
+                  <span key={d} style={{ background: MARKS[d] ?? "#f1ecef" }} />
+                ))}
+              </div>
+              <div>
+                <h3>Calendar</h3>
+                <p>Every charge and due date on a month view, so the heavy weeks don&apos;t surprise you.</p>
+              </div>
+            </Link>
+            <Link className="ltile" href="/app/bills" style={{ background: "var(--surface)" }}>
+              <div className="art rows" aria-hidden="true">
+                {[["Hulu trial ends", "in 3 days"], ["PG&E bill due", "in 11 days"], ["Adobe auto-renews", "in 22 days"]].map(([n, w]) => (
+                  <div key={n} style={{ background: "var(--paper)" }}>
+                    <span>{n}</span>
+                    <span style={{ color: "var(--mauve-ink)" }}>{w}</span>
+                  </div>
+                ))}
+              </div>
+              <div>
+                <h3>Bills and deadlines</h3>
+                <p>Bills to pay, free trials about to convert, and renewals you can still stop.</p>
+              </div>
+            </Link>
+          </div>
+        </section>
+
+        <section id="privacy" aria-labelledby="privacy-h" className="privacy">
+          <div className="l-section">
+            <div className="lead">
+              <h2 id="privacy-h" className="l-h2">
+                Your email stays your email
+              </h2>
+              <p>Subwatch is built to read as little as it can and keep even less.</p>
+            </div>
+            <ul>
+              <li>
+                <h3>Read-only Gmail access</h3>
+                <p>It can&apos;t send, label, archive or delete anything. Disconnect at any time and access is revoked.</p>
+              </li>
+              <li>
+                <h3>No email text stored</h3>
+                <p>Only the merchant, amount, dates and cancel link from each billing email are saved.</p>
+              </li>
+              <li>
+                <h3>Look-alike senders ignored</h3>
+                <p>An email that claims to be Netflix but comes from another domain never reaches your list.</p>
+              </li>
+              <li>
+                <h3>Cancel links checked</h3>
+                <p>A link that leaves the sender&apos;s own website shows you the real address before it opens.</p>
+              </li>
+            </ul>
+          </div>
+        </section>
+
+        <section aria-labelledby="cta-h" className="l-section cta">
+          <h2 id="cta-h" className="l-h2">
+            Find out what you&apos;re paying for
+          </h2>
+          <p>The first scan reads the last 13 months of billing email. It takes about a minute.</p>
+          <Link className="btn btn-primary" href="/signup">
+            Get started
+          </Link>
+        </section>
+      </main>
+
+      <footer className="l-foot">
+        <div>
+          <span>
+            <span className="display" style={{ fontSize: 18, color: "var(--ink)" }}>Subwatch</span> is a student project and isn&apos;t affiliated with Google.
+          </span>
+          <nav aria-label="Footer">
+            <Link href="/signin">Sign in</Link>
+            <a href="#privacy">Privacy</a>
+            <Link href="/style">Style guide</Link>
+          </nav>
+        </div>
+      </footer>
+    </div>
   );
 }

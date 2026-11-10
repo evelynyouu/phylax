@@ -1,4 +1,5 @@
 import type { SessionUser } from "@/lib/session";
+import DisconnectGmail from "./DisconnectGmail";
 
 function initials(name: string): string {
   const parts = name.trim().split(/\s+/).filter(Boolean);
@@ -6,7 +7,7 @@ function initials(name: string): string {
 }
 
 /** Sidebar footer: sync status, who is signed in, and sign out. */
-export default function Account({ user, syncNote }: { user: SessionUser; syncNote: string }) {
+export default function Account({ user, syncNote, demo }: { user: SessionUser; syncNote: string; demo: boolean }) {
   return (
     <>
       <p className="sync-note">{syncNote}</p>
@@ -23,6 +24,7 @@ export default function Account({ user, syncNote }: { user: SessionUser; syncNot
           </button>
         </form>
       </div>
+      {!demo && <DisconnectGmail />}
     </>
   );
 }

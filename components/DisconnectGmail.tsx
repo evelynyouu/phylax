@@ -3,23 +3,22 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
-export default function DisconnectButton() {
+export default function DisconnectGmail() {
   const router = useRouter();
   const [busy, setBusy] = useState(false);
-
   async function disconnect() {
-    if (!window.confirm("Disconnect Gmail? Subwatch will stop reading your inbox. Saved results stay on this computer.")) return;
+    if (!window.confirm("Disconnect Gmail? Subwatch revokes its access and signs you out. Saved results stay on this computer.")) return;
     setBusy(true);
     try {
       await fetch("/api/auth/disconnect", { method: "POST" });
+      router.push("/");
       router.refresh();
     } finally {
       setBusy(false);
     }
   }
-
   return (
-    <button type="button" className="btn btn-quiet" onClick={disconnect} disabled={busy}>
+    <button type="button" className="linkish quiet" style={{ fontSize: 13, alignSelf: "flex-start" }} onClick={disconnect} disabled={busy}>
       Disconnect Gmail
     </button>
   );

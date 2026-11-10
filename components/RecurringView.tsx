@@ -99,6 +99,25 @@ export default function RecurringView({ rows }: { rows: SubRow[] }) {
     }
   }
 
+  async function stopTracking(merchantKey: string) {
+    setBusy(true);
+    setError("");
+    try {
+      const res = await fetch("/api/dismiss", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ merchantKey }),
+      });
+      if (!res.ok) throw new Error("Could not save");
+      dialog.current?.close();
+      router.refresh();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Could not save");
+    } finally {
+      setBusy(false);
+    }
+  }
+
   return (
     <>
       <div className="page-head head-end">
@@ -293,6 +312,9 @@ export default function RecurringView({ rows }: { rows: SubRow[] }) {
             <p className="fine">
               Subwatch never cancels for you. Marking it here hides future charges from your totals until a new receipt arrives.
             </p>
+            <button type="button" className="linkish quiet" style={{ alignSelf: "flex-start", fontSize: 14 }} disabled={busy} onClick={() => stopTracking(open.merchantKey)}>
+              Stop tracking {open.merchant}
+            </button>
           </div>
         )}
       </dialog>
