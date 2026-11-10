@@ -119,9 +119,9 @@ export default function Home() {
             <Link className="ltile" href="/app/bills" style={{ background: "var(--surface)" }}>
               <div className="art rows" aria-hidden="true">
                 {[["Hulu trial ends", "in 3 days"], ["PG&E bill due", "in 11 days"], ["Adobe auto-renews", "in 22 days"]].map(([n, w]) => (
-                  <div key={n} style={{ background: "var(--paper)" }}>
+                  <div key={n} style={{ background: "var(--paper)", justifyContent: "space-between" }}>
                     <span>{n}</span>
-                    <span style={{ color: "var(--mauve-ink)" }}>{w}</span>
+                    <span style={{ color: "var(--mauve-ink)", flex: "none" }}>{w}</span>
                   </div>
                 ))}
               </div>
