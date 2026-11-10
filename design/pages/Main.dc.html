@@ -1,0 +1,865 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Subwatch home</title>
+<script src="./support.js"></script>
+<script src="/_blob/89d9edb094d4e04c300d578243db21bf"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gloock&amp;family=Hanken+Grotesk:wght@400;500;600;700&amp;display=swap">
+<style>
+body{margin:0;background:#F7F3F5;color:#1E2B22;font-family:'Hanken Grotesk',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+a{color:#344C3D}a:hover{color:#1E2B22}
+.b-primary:hover{background:#26392D !important;color:#FFFFFF !important}
+.b-ghost:hover{background:#EDE6EA !important}
+.b-light:hover{background:#FFFFFF !important;color:#1E2B22 !important}
+.navlink{text-decoration:none}.navlink:hover{text-decoration:underline}
+.tile{text-decoration:none;transition:transform 200ms ease, box-shadow 200ms ease}
+.tile:hover{transform:translateY(-3px);box-shadow:0 14px 30px rgba(52,76,61,.12)}
+.pchip{cursor:pointer;transition:background 150ms ease,border-color 150ms ease}
+.pchip:hover{border-color:#344C3D !important}
+.pchip:disabled{cursor:default}
+:focus-visible{outline:3px solid #344C3D;outline-offset:3px}
+@media (prefers-reduced-motion: reduce){.tile{transition:none}.pchip{transition:none}}
+</style>
+</helmet>
+<div style="box-sizing: border-box; width: 100%; overflow-x: clip;">
+
+  <header style="max-width: 1240px; margin: 0 auto; padding: 22px 24px; display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap;">
+    <a href="Main.dc.html" style="display: flex; align-items: center; gap: 10px; text-decoration: none; color: #1E2B22;">
+      <svg width="30" height="30" viewBox="0 0 32 32" aria-hidden="true"><g fill="none" stroke="#344C3D" stroke-width="2"><path d="M16 16c-4-6-4-11 0-13 4 2 4 7 0 13z" fill="#D8959B"></path><path d="M16 16c6-4 11-4 13 0-2 4-7 4-13 0z" fill="#D0DBE7"></path><path d="M16 16c4 6 4 11 0 13-4-2-4-7 0-13z" fill="#E3DADE"></path><path d="M16 16c-6 4-11 4-13 0 2-4 7-4 13 0z" fill="#829672"></path></g></svg>
+      <span style="font-family: Gloock, Georgia, serif; font-size: 26px; letter-spacing: -0.01em;">Subwatch</span>
+    </a>
+    <nav aria-label="Main" style="display: flex; align-items: center; gap: 22px; flex-wrap: wrap;">
+      <a class="navlink" href="#how" style="font-size: 15px; font-weight: 500; color: #1E2B22;">How it works</a>
+      <a class="navlink" href="#privacy" style="font-size: 15px; font-weight: 500; color: #1E2B22;">Privacy</a>
+      <a class="navlink" href="SignIn.dc.html" style="font-size: 15px; font-weight: 500; color: #1E2B22;">Sign in</a>
+      <a class="b-primary" href="SignUp.dc.html" style="display: inline-flex; align-items: center; min-height: 44px; padding: 0 20px; border-radius: 999px; background: #344C3D; color: #FFFFFF; font-weight: 600; font-size: 15px; text-decoration: none;">Get started</a>
+    </nav>
+  </header>
+
+  <section id="scrolly" aria-labelledby="hero-h" style="position: relative; height: 1700px;">
+    <div style="position: sticky; top: 0; height: 780px; overflow: hidden; background: radial-gradient(120% 95% at 64% 14%, #FCFAFB 0%, #E9E1E5 52%, #D0DBE7 100%);">
+      <canvas id="bloom-canvas" ref="{{setCanvas}}" role="img" aria-label="A 3D bouquet with small bluebirds flying past. Each outer petal of the pink peony is one subscription from a sample inbox." style="position: absolute; inset: 0; width: 100%; height: 100%; display: block; touch-action: pan-y; pointer-events: {{playPE}};"></canvas>
+
+      <div style="position: absolute; inset: 0; pointer-events: none;">
+        <div style="max-width: 1240px; margin: 0 auto; padding: 88px 24px 0; box-sizing: border-box; opacity: {{introOpacity}}; transform: translateY({{introShift}}px);">
+          <h1 id="hero-h" style="margin: 0; max-width: 7.4em; font-family: Gloock, Georgia, serif; font-weight: 400; font-size: clamp(54px, 7.4vw, 108px); line-height: 0.94; letter-spacing: -0.02em; color: #1E2B22;">Prune what you forgot you planted.</h1>
+          <p style="margin: 28px 0 0; max-width: 31em; font-size: 19px; line-height: 1.55; color: #3F4D44;">Subwatch reads the receipts, renewal notices and bills in your Gmail, then shows every subscription, every upcoming charge and the link to cancel, in one place.</p>
+          <div style="display: flex; gap: 12px; flex-wrap: wrap; margin-top: 32px; pointer-events: {{introPE}};">
+            <a class="b-primary" href="SignUp.dc.html" style="display: inline-flex; align-items: center; gap: 10px; min-height: 52px; padding: 0 26px; border-radius: 999px; background: #344C3D; color: #FFFFFF; font-weight: 600; font-size: 16px; text-decoration: none;">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"></rect><path d="M3 7l9 6 9-6"></path></svg>
+              Connect Gmail
+            </a>
+            <a class="b-ghost" href="Dashboard.dc.html" style="display: inline-flex; align-items: center; min-height: 52px; padding: 0 26px; border-radius: 999px; border: 1.5px solid #344C3D; background: rgba(255,255,255,0.55); color: #344C3D; font-weight: 600; font-size: 16px; text-decoration: none;">See a sample dashboard</a>
+          </div>
+          <p style="margin: 22px 0 0; font-size: 14px; color: #3F4D44; display: flex; gap: 8px; align-items: center;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#344C3D" stroke-width="2" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"></rect><path d="M8 11V8a4 4 0 0 1 8 0v3"></path></svg>
+            Read-only access. Subwatch can't send, change or delete mail.
+          </p>
+        </div>
+      </div>
+
+      <button type="button" class="b-light" onClick="{{dive}}" style="position: absolute; left: 50%; bottom: 26px; transform: translateX(-50%); opacity: {{cueOpacity}}; pointer-events: {{introPE}}; display: inline-flex; align-items: center; gap: 8px; min-height: 46px; padding: 0 20px; border-radius: 999px; border: 1.5px solid #344C3D; background: rgba(255,255,255,0.6); color: #344C3D; font: inherit; font-size: 15px; font-weight: 600; cursor: pointer;">
+        Scroll to hold the bouquet
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 5v14M6 13l6 6 6-6"></path></svg>
+      </button>
+
+      <div style="position: absolute; inset: 0; pointer-events: none; opacity: {{playOpacity}};">
+        <div style="max-width: 1240px; height: 100%; margin: 0 auto; padding: 22px 24px 20px; box-sizing: border-box; display: flex; flex-direction: column; justify-content: space-between;">
+          <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; flex-wrap: wrap;">
+            <p style="margin: 0; padding: 10px 16px; border-radius: 16px; background: rgba(255,255,255,0.72); font-size: 14px; line-height: 1.45; color: #1E2B22; max-width: 30em;">A sample inbox with 15 subscriptions. Drag to turn the bouquet, then select a petal on the pink peony to cancel that subscription.</p>
+            <sc-if value="{{forced}}" hint-placeholder-val="{{false}}">
+              <button type="button" class="b-light" onClick="{{backToIntro}}" style="pointer-events: {{playPE}}; min-height: 44px; padding: 0 16px; border-radius: 999px; border: 1.5px solid #344C3D; background: rgba(255,255,255,0.72); color: #344C3D; font: inherit; font-size: 14px; font-weight: 600; cursor: pointer;">Back to the intro</button>
+            </sc-if>
+          </div>
+
+          <div style="display: flex; flex-direction: column; gap: 10px; pointer-events: {{playPE}};">
+            <div style="display: flex; flex-wrap: wrap; gap: 12px; justify-content: space-between;">
+              <div aria-live="polite" style="flex: 0 1 340px; min-width: 0; background: rgba(255,255,255,0.86); border-radius: 22px; padding: 16px 20px;">
+                <p style="margin: 0; font-size: 14px; color: #3F4D44;">{{readKicker}}</p>
+                <p style="margin: 4px 0 0; font-family: Gloock, Georgia, serif; font-size: 28px; line-height: 1.1;">{{readName}}</p>
+                <p style="margin: 4px 0 0; font-size: 15px; color: #3F4D44;">{{readPrice}}</p>
+              </div>
+              <div style="flex: 0 1 340px; min-width: 0; background: rgba(208,219,231,0.92); border-radius: 22px; padding: 16px 20px; display: flex; flex-direction: column;">
+                <p style="margin: 0; font-size: 14px; color: #2E3E48;">Cancelled so far</p>
+                <p style="margin: 4px 0 0; font-family: Gloock, Georgia, serif; font-size: 28px; line-height: 1.1; color: #1E2B22;">{{savedYear}} a year</p>
+                <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: auto; padding-top: 8px; flex-wrap: wrap;">
+                  <span style="font-size: 15px; color: #2E3E48;">{{keptCount}} left, {{keptYear}} a year</span>
+                  <sc-if value="{{hasSaved}}" hint-placeholder-val="{{false}}">
+                    <button type="button" class="b-light" onClick="{{regrow}}" style="min-height: 40px; padding: 0 14px; border-radius: 999px; border: 1.5px solid #344C3D; background: transparent; color: #344C3D; font: inherit; font-weight: 600; font-size: 14px; cursor: pointer;">Regrow</button>
+                  </sc-if>
+                </div>
+              </div>
+            </div>
+            <div role="group" aria-label="Subscriptions in the bouquet" style="display: flex; gap: 6px; overflow-x: auto; padding-bottom: 4px;">
+              <sc-for list="{{chips}}" as="c" hint-placeholder-count="15">
+                <button type="button" class="pchip" aria-pressed="{{c.on}}" disabled="{{c.on}}" onClick="{{c.pick}}" onMouseEnter="{{c.enter}}" onFocus="{{c.enter}}" style="flex: none; min-height: 36px; padding: 0 12px; border-radius: 999px; border: 1.5px solid {{c.border}}; background: {{c.bg}}; color: {{c.fg}}; text-decoration: {{c.strike}}; font: inherit; font-size: 13px; font-weight: 600; white-space: nowrap;">{{c.name}}</button>
+              </sc-for>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <sc-if value="{{noGL}}" hint-placeholder-val="{{false}}">
+        <p style="position: absolute; right: 24px; top: 45%; margin: 0; max-width: 22em; font-size: 15px; color: #3F4D44;">The 3D bouquet needs WebGL, which this browser has turned off.</p>
+      </sc-if>
+    </div>
+  </section>
+
+  <section id="how" aria-labelledby="how-h" style="background: #FFFFFF;">
+    <div style="max-width: 1240px; margin: 0 auto; padding: 88px 24px;">
+      <h2 id="how-h" style="margin: 0; font-family: Gloock, Georgia, serif; font-weight: 400; font-size: clamp(36px, 4.4vw, 56px); line-height: 1.02; max-width: 16em;">Three steps from a messy inbox to a clear list</h2>
+      <ol style="list-style: none; margin: 48px 0 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 20px;">
+        <li style="border-top: 2px solid #344C3D; padding-top: 20px;">
+          <span style="font-family: Gloock, Georgia, serif; font-size: 44px; color: #829672;">1</span>
+          <h3 style="margin: 8px 0 0; font-size: 21px; font-weight: 600;">Connect Gmail</h3>
+          <p style="margin: 10px 0 0; font-size: 16px; line-height: 1.6; color: #3F4D44;">Sign in with Google and grant read-only access. Subwatch only looks at billing emails: receipts, invoices, renewal notices and trial reminders.</p>
+        </li>
+        <li style="border-top: 2px solid #344C3D; padding-top: 20px;">
+          <span style="font-family: Gloock, Georgia, serif; font-size: 44px; color: #829672;">2</span>
+          <h3 style="margin: 8px 0 0; font-size: 21px; font-weight: 600;">We find what repeats</h3>
+          <p style="margin: 10px 0 0; font-size: 16px; line-height: 1.6; color: #3F4D44;">Charges are matched to the company that sent them, grouped into subscriptions and bills, and checked for price changes and trials about to convert.</p>
+        </li>
+        <li style="border-top: 2px solid #344C3D; padding-top: 20px;">
+          <span style="font-family: Gloock, Georgia, serif; font-size: 44px; color: #829672;">3</span>
+          <h3 style="margin: 8px 0 0; font-size: 21px; font-weight: 600;">Keep or cancel</h3>
+          <p style="margin: 10px 0 0; font-size: 16px; line-height: 1.6; color: #3F4D44;">See what is due and when, then cancel straight from the link in the company's own email. Subwatch warns you if a link points anywhere else.</p>
+        </li>
+      </ol>
+    </div>
+  </section>
+
+  <section aria-labelledby="see-h" style="max-width: 1240px; margin: 0 auto; padding: 88px 24px;">
+    <h2 id="see-h" style="margin: 0; font-family: Gloock, Georgia, serif; font-weight: 400; font-size: clamp(36px, 4.4vw, 56px); line-height: 1.02;">What you'll see</h2>
+    <div style="margin-top: 40px; display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">
+
+      <a class="tile" href="Dashboard.dc.html" style="display: flex; flex-direction: column; gap: 18px; background: #FFFFFF; border-radius: 26px; padding: 26px; color: #1E2B22;">
+        <div aria-hidden="true" style="height: 150px; background: #F7F3F5; border-radius: 16px; padding: 18px; box-sizing: border-box; display: flex; align-items: flex-end; gap: 5px;">
+          <sc-for list="{{bars}}" as="b" hint-placeholder-count="24">
+            <span style="flex: 1; border-radius: 4px 4px 0 0; height: {{b.h}}%; background: {{b.c}};"></span>
+          </sc-for>
+        </div>
+        <div>
+          <h3 style="margin: 0; font-size: 21px; font-weight: 600;">Dashboard</h3>
+          <p style="margin: 6px 0 0; font-size: 16px; line-height: 1.55; color: #3F4D44;">Everything leaving your account in the next 30 days, and what your subscriptions cost a month.</p>
+        </div>
+      </a>
+
+      <a class="tile" href="Subscriptions.dc.html" style="display: flex; flex-direction: column; gap: 18px; background: #E3DADE; border-radius: 26px; padding: 26px; color: #1E2B22;">
+        <div aria-hidden="true" style="height: 150px; background: #FFFFFF; border-radius: 16px; padding: 14px 18px; box-sizing: border-box; display: flex; flex-direction: column; justify-content: space-between;">
+          <div style="display: flex; align-items: center; gap: 10px;"><span style="width: 10px; height: 10px; border-radius: 50%; background: #D8959B;"></span><span style="flex: 1; font-size: 14px; font-weight: 600;">Netflix</span><span style="font-size: 14px;">$15.49</span></div>
+          <div style="display: flex; align-items: center; gap: 10px;"><span style="width: 10px; height: 10px; border-radius: 50%; background: #829672;"></span><span style="flex: 1; font-size: 14px; font-weight: 600;">ChatGPT Plus</span><span style="font-size: 14px;">$20</span></div>
+          <div style="display: flex; align-items: center; gap: 10px;"><span style="width: 10px; height: 10px; border-radius: 50%; background: #D0DBE7;"></span><span style="flex: 1; font-size: 14px; font-weight: 600;">Dropbox Plus</span><span style="font-size: 14px;">$119.88</span></div>
+          <div style="display: flex; align-items: center; gap: 10px;"><span style="width: 10px; height: 10px; border-radius: 50%; background: #829672;"></span><span style="flex: 1; font-size: 14px; font-weight: 600;">GitHub Copilot</span><span style="font-size: 14px;">$10</span></div>
+        </div>
+        <div>
+          <h3 style="margin: 0; font-size: 21px; font-weight: 600;">Recurring</h3>
+          <p style="margin: 6px 0 0; font-size: 16px; line-height: 1.55; color: #3F4D44;">Subscriptions grouped by category, with the cancel link from each company's own email.</p>
+        </div>
+      </a>
+
+      <a class="tile" href="Calendar.dc.html" style="display: flex; flex-direction: column; gap: 18px; background: #D0DBE7; border-radius: 26px; padding: 26px; color: #1E2B22;">
+        <div aria-hidden="true" style="height: 150px; background: #FFFFFF; border-radius: 16px; padding: 14px; box-sizing: border-box; display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 5px;">
+          <sc-for list="{{cal}}" as="d" hint-placeholder-count="35">
+            <span style="border-radius: 5px; background: {{d.c}};"></span>
+          </sc-for>
+        </div>
+        <div>
+          <h3 style="margin: 0; font-size: 21px; font-weight: 600;">Calendar</h3>
+          <p style="margin: 6px 0 0; font-size: 16px; line-height: 1.55; color: #3F4D44;">Every charge and due date on a month view, so the heavy weeks don't surprise you.</p>
+        </div>
+      </a>
+
+      <a class="tile" href="Bills.dc.html" style="display: flex; flex-direction: column; gap: 18px; background: #FFFFFF; border-radius: 26px; padding: 26px; color: #1E2B22;">
+        <div aria-hidden="true" style="height: 150px; background: #F7F3F5; border-radius: 16px; padding: 16px 18px; box-sizing: border-box; display: flex; flex-direction: column; justify-content: center; gap: 10px;">
+          <div style="display: flex; justify-content: space-between; font-size: 14px;"><span style="font-weight: 600;">Hulu trial ends</span><span style="color: #93434C; font-weight: 600;">in 3 days</span></div>
+          <div style="display: flex; justify-content: space-between; font-size: 14px;"><span style="font-weight: 600;">PG&amp;E bill due</span><span style="color: #3F4D44;">in 11 days</span></div>
+          <div style="display: flex; justify-content: space-between; font-size: 14px;"><span style="font-weight: 600;">Adobe auto-renews</span><span style="color: #3F4D44;">in 22 days</span></div>
+        </div>
+        <div>
+          <h3 style="margin: 0; font-size: 21px; font-weight: 600;">Bills and deadlines</h3>
+          <p style="margin: 6px 0 0; font-size: 16px; line-height: 1.55; color: #3F4D44;">Bills to pay, free trials about to convert, and renewals you can still stop.</p>
+        </div>
+      </a>
+    </div>
+  </section>
+
+  <section id="privacy" aria-labelledby="privacy-h" style="background: #344C3D; color: #F7F3F5;">
+    <div style="max-width: 1240px; margin: 0 auto; padding: 88px 24px; display: flex; flex-wrap: wrap; gap: 48px;">
+      <div style="flex: 1 1 360px; min-width: 0;">
+        <h2 id="privacy-h" style="margin: 0; font-family: Gloock, Georgia, serif; font-weight: 400; font-size: clamp(36px, 4.4vw, 56px); line-height: 1.02;">Your email stays your email</h2>
+        <p style="margin: 20px 0 0; font-size: 18px; line-height: 1.6; color: #E3DADE; max-width: 30em;">Subwatch is built to read as little as it can and keep even less.</p>
+      </div>
+      <ul style="flex: 1 1 520px; min-width: 0; list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 28px 32px;">
+        <li>
+          <h3 style="margin: 0; font-size: 18px; font-weight: 600; color: #FFFFFF;">Read-only Gmail access</h3>
+          <p style="margin: 8px 0 0; font-size: 15px; line-height: 1.6; color: #E3DADE;">It can't send, label, archive or delete anything. Disconnect at any time and access is revoked.</p>
+        </li>
+        <li>
+          <h3 style="margin: 0; font-size: 18px; font-weight: 600; color: #FFFFFF;">No email text stored</h3>
+          <p style="margin: 8px 0 0; font-size: 15px; line-height: 1.6; color: #E3DADE;">Only the merchant, amount, dates and cancel link from each billing email are saved.</p>
+        </li>
+        <li>
+          <h3 style="margin: 0; font-size: 18px; font-weight: 600; color: #FFFFFF;">Look-alike senders ignored</h3>
+          <p style="margin: 8px 0 0; font-size: 15px; line-height: 1.6; color: #E3DADE;">An email that claims to be Netflix but comes from another domain never reaches your list.</p>
+        </li>
+        <li>
+          <h3 style="margin: 0; font-size: 18px; font-weight: 600; color: #FFFFFF;">Cancel links checked</h3>
+          <p style="margin: 8px 0 0; font-size: 15px; line-height: 1.6; color: #E3DADE;">A link that leaves the sender's own website shows you the real address before it opens.</p>
+        </li>
+      </ul>
+    </div>
+  </section>
+
+  <section aria-labelledby="cta-h" style="max-width: 1240px; margin: 0 auto; padding: 96px 24px; text-align: center;">
+    <h2 id="cta-h" style="margin: 0 auto; font-family: Gloock, Georgia, serif; font-weight: 400; font-size: clamp(40px, 5.4vw, 72px); line-height: 1; max-width: 12em;">Find out what you're paying for</h2>
+    <p style="margin: 20px auto 0; font-size: 18px; color: #3F4D44; max-width: 30em;">The first scan reads the last 13 months of billing email. It takes about a minute.</p>
+    <a class="b-primary" href="SignUp.dc.html" style="display: inline-flex; align-items: center; min-height: 52px; margin-top: 30px; padding: 0 28px; border-radius: 999px; background: #344C3D; color: #FFFFFF; font-weight: 600; font-size: 16px; text-decoration: none;">Get started</a>
+  </section>
+
+  <footer style="border-top: 1px solid #E0D6DB;">
+    <div style="max-width: 1240px; margin: 0 auto; padding: 28px 24px 40px; display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; font-size: 14px; color: #5E6B62;">
+      <span><span style="font-family: Gloock, Georgia, serif; font-size: 18px; color: #1E2B22;">Subwatch</span>  is a student project and isn't affiliated with Google.</span>
+      <nav aria-label="Footer" style="display: flex; gap: 20px; flex-wrap: wrap;">
+        <a href="SignIn.dc.html" style="color: #3F4D44;">Sign in</a>
+        <a href="#privacy" style="color: #3F4D44;">Privacy</a>
+        <a href="StyleGuide.dc.html" style="color: #3F4D44;">Style guide</a>
+      </nav>
+    </div>
+  </footer>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":4300}}'>
+var BLOOM = [
+  { id: 'netflix', name: 'Netflix', amt: 15.49, per: 'month' },
+  { id: 'spotify', name: 'Spotify Premium', amt: 12.99, per: 'month' },
+  { id: 'adobe', name: 'Adobe Creative Cloud', amt: 263.88, per: 'year' },
+  { id: 'hulu', name: 'Hulu', amt: 9.99, per: 'month', trial: true },
+  { id: 'youtube', name: 'YouTube Premium', amt: 13.99, per: 'month' },
+  { id: 'amazon', name: 'Amazon Prime', amt: 139, per: 'year' },
+  { id: 'peacock', name: 'Peacock', amt: 7.99, per: 'month' },
+  { id: 'dropbox', name: 'Dropbox Plus', amt: 119.88, per: 'year' },
+  { id: 'chegg', name: 'Chegg Study', amt: 19.95, per: 'month', trial: true },
+  { id: 'duolingo', name: 'Duolingo Plus', amt: 14.99, per: 'month' },
+  { id: 'chatgpt', name: 'ChatGPT Plus', amt: 20, per: 'month' },
+  { id: 'github', name: 'GitHub Copilot', amt: 10, per: 'month' },
+  { id: 'notion', name: 'Notion Plus', amt: 10, per: 'month' },
+  { id: 'figma', name: 'Figma Professional', amt: 15, per: 'month' },
+  { id: 'icloud', name: 'iCloud+', amt: 2.99, per: 'month' }
+];
+
+function usd(n) {
+  return '$' + n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+function yearly(p) { return p.per === 'month' ? p.amt * 12 : p.amt; }
+
+// ---- 3D bouquet and birds (three.js r160). Everything is generated in code; no model files. ----
+function createBloom(canvas, items, cb) {
+  var THREE = window.THREE;
+  if (!THREE || !canvas) return null;
+  var renderer;
+  try {
+    renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true, alpha: true });
+  } catch (e) { return null; }
+  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  renderer.setPixelRatio(Math.min(2, window.devicePixelRatio || 1));
+  renderer.outputColorSpace = THREE.SRGBColorSpace;
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 1.0;
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+  var scene = new THREE.Scene();
+  scene.fog = new THREE.Fog(0xe9e1e5, 7, 20);
+  var camera = new THREE.PerspectiveCamera(30, 1, 0.1, 100);
+  // Scroll progress 0 = small and hazy behind the headline, 1 = close up and interactive.
+  var prog = { target: 0, cur: 0 };
+  var interactive = false;
+  var wide = true;
+  var V = THREE.Vector3;
+  var CAM0 = new V(0, 4.2, 13.5), CAM1 = new V(0, 3.0, 7.6);
+  var LOOK0 = new V(0, 1.6, 0), LOOK1 = new V(0, 0.85, 0);
+  var tmpA = new V(), tmpB = new V();
+
+  scene.add(new THREE.HemisphereLight(0xfbf6f8, 0x6f8466, 1.25));
+  var key = new THREE.DirectionalLight(0xfff1e6, 2.6);
+  key.position.set(3.5, 7, 4.5);
+  key.castShadow = true;
+  key.shadow.mapSize.set(1024, 1024);
+  key.shadow.camera.near = 1; key.shadow.camera.far = 20;
+  key.shadow.camera.left = -4; key.shadow.camera.right = 4; key.shadow.camera.top = 4; key.shadow.camera.bottom = -4;
+  key.shadow.bias = -0.0004; key.shadow.normalBias = 0.03;
+  scene.add(key);
+  var rim = new THREE.DirectionalLight(0xc9d8ea, 2.0);
+  rim.position.set(-4, 3.5, -5);
+  scene.add(rim);
+  var warm = new THREE.PointLight(0xffd6dc, 9, 14, 2);
+  warm.position.set(-2.5, 1.6, 3.2);
+  scene.add(warm);
+
+  var ground = new THREE.Mesh(new THREE.PlaneGeometry(30, 30), new THREE.ShadowMaterial({ color: 0x344c3d, opacity: 0.14 }));
+  ground.rotation.x = -Math.PI / 2;
+  ground.receiveShadow = true;
+  scene.add(ground);
+
+  var seed = 7;
+  function rnd() { seed = (seed * 16807) % 2147483647; return (seed - 1) / 2147483646; }
+  function jit(a) { return (rnd() - 0.5) * 2 * a; }
+
+  // One petal: a subdivided plane bent into a cupped, curled, ruffled shape with a base-to-tip color ramp.
+  // bend: total angle the petal curls through along its length (positive = tip falls outward, negative = curls inward).
+  function petalGeo(len, wid, cup, bend, ruffle, base, tip, ph) {
+    var g = new THREE.PlaneGeometry(1, 1, 22, 34);
+    var p = g.attributes.position;
+    var cols = new Float32Array(p.count * 3);
+    var cb_ = new THREE.Color(base), ct = new THREE.Color(tip), c = new THREE.Color();
+    var B = Math.abs(bend) < 0.001 ? 0.001 : bend;
+    var R = len / B;
+    var C = 0.5;
+    for (var i = 0; i < p.count; i++) {
+      var u = p.getX(i), v = p.getY(i) + 0.5;
+      // spoon outline: narrow claw at the base, widest past the middle, round cap at the tip
+      var w = v < C
+        ? wid * (0.22 + 0.78 * Math.sin((v / C) * Math.PI / 2))
+        : wid * Math.sqrt(Math.max(0, 1 - Math.pow((v - C) / (1 - C), 2)));
+      var edge = Math.abs(u) * 2;
+      var x = u * w;
+      // centerline bent on a circular arc
+      var phi = (v * len) / R;
+      var y = R * Math.sin(phi);
+      var z = R * (1 - Math.cos(phi));
+      // cup across the width, plus a soft ruffle at the rim near the tip
+      var d = cup * edge * edge * w * 0.6;
+      d += ruffle * 0.05 * len * Math.sin(u * 9 + ph) * Math.pow(v, 3.5) * edge;
+      y += d * Math.sin(phi);
+      z -= d * Math.cos(phi);
+      p.setXYZ(i, x, y, z);
+      c.copy(cb_).lerp(ct, Math.pow(v, 0.7));
+      c.multiplyScalar(1 - 0.06 * edge);
+      cols[i * 3] = c.r; cols[i * 3 + 1] = c.g; cols[i * 3 + 2] = c.b;
+    }
+    g.setAttribute('color', new THREE.BufferAttribute(cols, 3));
+    g.computeVertexNormals();
+    return g;
+  }
+
+  function petalMat(sheen) {
+    return new THREE.MeshPhysicalMaterial({
+      vertexColors: true, roughness: 0.5, metalness: 0,
+      sheen: 1, sheenRoughness: 0.4, sheenColor: new THREE.Color(sheen),
+      side: THREE.DoubleSide
+    });
+  }
+
+  var LAYERS = [
+    { n: 10, len: 1.5, wid: 1.12, tilt: 0.92, cup: 0.34, curl: 0.75, ruffle: 1.0, r: 0.24, map: true },
+    { n: 5, len: 1.42, wid: 1.14, tilt: 0.68, cup: 0.44, curl: 0.42, ruffle: 0.9, r: 0.2, map: true },
+    { n: 9, len: 1.24, wid: 1.0, tilt: 0.46, cup: 0.54, curl: 0.12, ruffle: 0.8, r: 0.15 },
+    { n: 8, len: 1.16, wid: 0.88, tilt: 0.2, cup: 0.66, curl: -0.3, ruffle: 0.6, r: 0.11 },
+    { n: 7, len: 1.0, wid: 0.76, tilt: 0.02, cup: 0.76, curl: -0.65, ruffle: 0.4, r: 0.07 },
+    { n: 6, len: 0.8, wid: 0.6, tilt: -0.1, cup: 0.86, curl: -1.0, ruffle: 0.2, r: 0.035 }
+  ];
+
+  function makeFlower(palette, scale, mapItems) {
+    var root = new THREE.Group();
+    var mapped = [];
+    var shared = petalMat(palette.sheen);
+    var idx = 0;
+    LAYERS.forEach(function (L, li) {
+      var lighten = li / (LAYERS.length - 1);
+      var base = new THREE.Color(palette.base).lerp(new THREE.Color(palette.inner), lighten * 0.6);
+      var tip = new THREE.Color(palette.tip).lerp(new THREE.Color(palette.inner), lighten * 0.35);
+      var offset = li * 0.37;
+      for (var k = 0; k < L.n; k++) {
+        var pivot = new THREE.Object3D();
+        pivot.rotation.y = offset + (k / L.n) * Math.PI * 2 + jit(0.12);
+        var geo = petalGeo(L.len * (1 + jit(0.08)), L.wid * (1 + jit(0.08)), L.cup, L.curl + jit(0.05), L.ruffle, base, tip, rnd() * 6);
+        var item = mapItems && L.map ? mapItems[idx] : null;
+        var mat = item ? petalMat(palette.sheen) : shared;
+        var mesh = new THREE.Mesh(geo, mat);
+        mesh.position.z = L.r;
+        mesh.rotation.x = L.tilt + jit(0.07);
+        mesh.rotation.z = jit(0.08);
+        mesh.castShadow = true;
+        mesh.receiveShadow = true;
+        pivot.add(mesh);
+        root.add(pivot);
+        if (item) {
+          mesh.userData = { id: item.id, parent: pivot, pos: mesh.position.clone(), quat: mesh.quaternion.clone(), fall: null, grow: 0 };
+          mapped.push(mesh);
+          idx++;
+        }
+      }
+    });
+    // stamens peeking from the center
+    var stamen = new THREE.MeshStandardMaterial({ color: palette.center, roughness: 0.7 });
+    for (var s = 0; s < 14; s++) {
+      var b = new THREE.Mesh(new THREE.SphereGeometry(0.035, 10, 8), stamen);
+      var a = rnd() * Math.PI * 2, rr = rnd() * 0.12;
+      b.position.set(Math.cos(a) * rr, 0.5 + rnd() * 0.12, Math.sin(a) * rr);
+      root.add(b);
+    }
+    // sepals and leaves
+    var leafBase = 0x4e6142, leafTip = 0x9db08d;
+    var leafMat = new THREE.MeshPhysicalMaterial({ vertexColors: true, roughness: 0.45, side: THREE.DoubleSide, clearcoat: 0.3, clearcoatRoughness: 0.6 });
+    for (var q = 0; q < 3; q++) {
+      var lp = new THREE.Object3D();
+      lp.rotation.y = q * 2.1 + 0.6;
+      var leaf = new THREE.Mesh(petalGeo(1.7, 0.6, 0.4, 0.8, 0.2, leafBase, leafTip, q), leafMat);
+      leaf.position.set(0, -0.12, 0.15);
+      leaf.rotation.x = 1.2;
+      leaf.castShadow = true;
+      lp.add(leaf);
+      root.add(lp);
+    }
+    root.scale.setScalar(scale);
+    return { root: root, mapped: mapped };
+  }
+
+  var bouquet = new THREE.Group();
+  scene.add(bouquet);
+
+  var main = makeFlower({ base: 0x9e4e5e, tip: 0xf0c3c8, inner: 0xe39aa3, sheen: 0xffe6ea, center: 0xd9c38a }, 1, items);
+  main.root.position.set(0, 1.0, 0);
+  bouquet.add(main.root);
+
+  var lav = makeFlower({ base: 0x8f7584, tip: 0xf3ecef, inner: 0xd8cbd1, sheen: 0xffffff, center: 0xcfc08e }, 0.56, null);
+  lav.root.position.set(-2.05, 0.66, -1.3);
+  lav.root.rotation.set(0.25, 0.4, 0.18);
+  bouquet.add(lav.root);
+
+  var sky = makeFlower({ base: 0x6f89a8, tip: 0xe9f0f7, inner: 0xc2d1e2, sheen: 0xffffff, center: 0xcfc08e }, 0.5, null);
+  sky.root.position.set(2.0, 0.56, -1.1);
+  sky.root.rotation.set(0.2, -0.6, -0.2);
+  bouquet.add(sky.root);
+
+  var mappedMeshes = main.mapped;
+  var byId = {};
+  mappedMeshes.forEach(function (m) { byId[m.userData.id] = m; });
+
+  // --- interaction ---
+  var ray = new THREE.Raycaster();
+  var ndc = new THREE.Vector2();
+  var hovered = null;
+  var drag = null;
+  var spinVel = 0;
+  var tiltTarget = 0;
+
+  function setHover(m) {
+    if (hovered === m) return;
+    if (hovered) hovered.material.emissive.setHex(0x000000);
+    hovered = m;
+    if (hovered) hovered.material.emissive.setHex(0x3a1420);
+    canvas.style.cursor = hovered ? 'pointer' : (drag ? 'grabbing' : 'grab');
+    if (cb.onHover) cb.onHover(hovered ? hovered.userData.id : null);
+  }
+
+  function pick(ev) {
+    var r = canvas.getBoundingClientRect();
+    ndc.set(((ev.clientX - r.left) / r.width) * 2 - 1, -((ev.clientY - r.top) / r.height) * 2 + 1);
+    ray.setFromCamera(ndc, camera);
+    var live = mappedMeshes.filter(function (m) { return !m.userData.fall && m.visible; });
+    var hits = ray.intersectObjects(live, false);
+    return hits.length ? hits[0].object : null;
+  }
+
+  function onDown(ev) {
+    if (!interactive) return;
+    drag = { x: ev.clientX, y: ev.clientY, moved: 0, last: ev.clientX };
+    canvas.style.cursor = 'grabbing';
+  }
+  function onMove(ev) {
+    if (!interactive) return;
+    if (drag) {
+      var dx = ev.clientX - drag.last;
+      drag.last = ev.clientX;
+      drag.moved += Math.abs(dx) + Math.abs(ev.movementY || 0);
+      bouquet.rotation.y += dx * 0.009;
+      spinVel = dx * 0.009 * 60;
+      tiltTarget = Math.max(-0.25, Math.min(0.3, tiltTarget + (ev.movementY || 0) * 0.003));
+      return;
+    }
+    setHover(pick(ev));
+  }
+  function onUp(ev) {
+    if (!interactive) { drag = null; return; }
+    var wasClick = drag && drag.moved < 6;
+    drag = null;
+    if (wasClick) {
+      var m = pick(ev);
+      if (m) prune(m.userData.id);
+    }
+    canvas.style.cursor = hovered ? 'pointer' : 'grab';
+  }
+  function onLeave() { drag = null; setHover(null); }
+
+  canvas.addEventListener('pointerdown', onDown);
+  canvas.addEventListener('pointermove', onMove);
+  canvas.addEventListener('pointerup', onUp);
+  canvas.addEventListener('pointerleave', onLeave);
+  canvas.style.cursor = 'default';
+
+  function prune(id) {
+    var m = byId[id];
+    if (!m || m.userData.fall) return;
+    if (hovered === m) setHover(null);
+    scene.attach(m);
+    m.material.transparent = true;
+    var out = new THREE.Vector3(m.position.x, 0, m.position.z).normalize();
+    m.userData.fall = { t: 0, v: new THREE.Vector3(out.x * 0.9, 0.6, out.z * 0.9), spin: new THREE.Vector3(jit(2.5), jit(2.5), jit(2.5)) };
+    if (cb.onPrune) cb.onPrune(id);
+  }
+
+  function regrow() {
+    mappedMeshes.forEach(function (m) {
+      if (!m.userData.fall) return;
+      var d = m.userData;
+      d.parent.add(m);
+      m.position.copy(d.pos);
+      m.quaternion.copy(d.quat);
+      m.scale.setScalar(0.001);
+      m.material.opacity = 1;
+      m.material.transparent = false;
+      m.visible = true;
+      d.fall = null;
+      d.grow = 0.001;
+    });
+  }
+
+  // --- birds: tiny 3D bluebirds that cross the scene now and then ---
+  function wingGeo() {
+    var sh = new THREE.Shape();
+    sh.moveTo(0, -0.18); sh.lineTo(0.45, -0.2); sh.lineTo(1.05, -0.02); sh.lineTo(0.95, 0.12);
+    sh.lineTo(0.55, 0.24); sh.lineTo(0.15, 0.26); sh.lineTo(0, 0.2);
+    var g = new THREE.ShapeGeometry(sh, 6);
+    g.rotateX(-Math.PI / 2);
+    return g;
+  }
+  var birdBody = new THREE.MeshStandardMaterial({ color: 0x3f6fb0, roughness: 0.5, fog: false });
+  var birdWing = new THREE.MeshStandardMaterial({ color: 0x6f9bd6, roughness: 0.55, side: THREE.DoubleSide, fog: false });
+  var birdBelly = new THREE.MeshStandardMaterial({ color: 0xf1e6dc, roughness: 0.7, fog: false });
+  var birdBeak = new THREE.MeshStandardMaterial({ color: 0x344c3d, roughness: 0.5, fog: false });
+  var WG = wingGeo();
+  function makeBird() {
+    var b = new THREE.Group();
+    var body = new THREE.Mesh(new THREE.SphereGeometry(0.5, 18, 14), birdBody);
+    body.scale.set(0.52, 0.5, 1.0);
+    var belly = new THREE.Mesh(new THREE.SphereGeometry(0.42, 16, 12), birdBelly);
+    belly.scale.set(0.46, 0.4, 0.82); belly.position.set(0, -0.08, 0.08);
+    var head = new THREE.Mesh(new THREE.SphereGeometry(0.3, 16, 12), birdBody);
+    head.position.set(0, 0.2, 0.5);
+    var beak = new THREE.Mesh(new THREE.ConeGeometry(0.07, 0.22, 8), birdBeak);
+    beak.rotation.x = Math.PI / 2; beak.position.set(0, 0.17, 0.85);
+    var tail = new THREE.Mesh(WG, birdWing);
+    tail.scale.set(0.5, 1, 0.9); tail.rotation.y = Math.PI / 2 + Math.PI; tail.position.set(0, 0.02, -0.45);
+    var lw = new THREE.Object3D(); lw.position.set(0.18, 0.12, 0.05);
+    var lm = new THREE.Mesh(WG, birdWing); lw.add(lm);
+    var rw = new THREE.Object3D(); rw.position.set(-0.18, 0.12, 0.05); rw.scale.x = -1;
+    var rm = new THREE.Mesh(WG, birdWing); rw.add(rm);
+    [body, head, lm, rm].forEach(function (m) { m.castShadow = true; });
+    b.add(body, belly, head, beak, tail, lw, rw);
+    b.scale.setScalar(0.24);
+    b.visible = false;
+    b.userData = { lw: lw, rw: rw, fly: null };
+    scene.add(b);
+    return b;
+  }
+  var birds = [];
+  for (var bi = 0; bi < 6; bi++) birds.push(makeBird());
+  var nextFlock = 1.2;
+  var lookAhead = new V();
+  function spawnFlock() {
+    var idle = birds.filter(function (b) { return !b.userData.fly; });
+    if (!idle.length) return;
+    var dir = rnd() < 0.5 ? 1 : -1;
+    var n = Math.min(idle.length, 1 + Math.floor(rnd() * 3));
+    var y = 1.9 + rnd() * 1.9, z = -2.6 + rnd() * 4.2, dur = 6.5 + rnd() * 3;
+    for (var i = 0; i < n; i++) {
+      idle[i].userData.fly = { t: -i * (0.35 + rnd() * 0.3), dur: dur, dir: dir, y: y + jit(0.35), z: z + jit(0.7), amp: 0.2 + rnd() * 0.35, ph: rnd() * 6, flap: 15 + rnd() * 6 };
+    }
+  }
+  function birdPos(f, u, out) {
+    return out.set(f.dir * (-9.5 + 19 * u), f.y + Math.sin(u * Math.PI * 2 + f.ph) * f.amp, f.z + Math.sin(u * Math.PI * 3 + f.ph) * 0.5);
+  }
+  function stepBirds(dt, time) {
+    if (reduce) return;
+    nextFlock -= dt;
+    if (nextFlock <= 0) { spawnFlock(); nextFlock = 5 + rnd() * 7; }
+    birds.forEach(function (b) {
+      var f = b.userData.fly;
+      if (!f) return;
+      f.t += dt;
+      if (f.t < 0) { b.visible = false; return; }
+      var u = f.t / f.dur;
+      if (u >= 1) { b.userData.fly = null; b.visible = false; return; }
+      b.visible = true;
+      birdPos(f, u, b.position);
+      b.lookAt(birdPos(f, Math.min(1, u + 0.01), lookAhead));
+      var gliding = Math.sin(time * 1.4 + f.ph) < -0.45;
+      var a = gliding ? 0.25 : Math.sin(time * f.flap + f.ph) * 0.95;
+      b.userData.lw.rotation.z = a;
+      b.userData.rw.rotation.z = a;
+    });
+  }
+
+  function setProgress(p) {
+    prog.target = Math.max(0, Math.min(1, p));
+    var on = prog.target > 0.88;
+    if (on !== interactive) {
+      interactive = on;
+      if (!on) { drag = null; setHover(null); }
+      canvas.style.cursor = on ? 'grab' : 'default';
+    }
+  }
+  function ease(x) { return x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2; }
+
+  // --- size ---
+  function resize() {
+    var w = canvas.clientWidth, h = canvas.clientHeight;
+    if (!w || !h) return;
+    renderer.setSize(w, h, false);
+    camera.aspect = w / h;
+    wide = w / h > 1.15;
+    camera.fov = w / h < 0.9 ? 40 : 30;
+    camera.updateProjectionMatrix();
+  }
+  var ro = window.ResizeObserver ? new ResizeObserver(resize) : null;
+  if (ro) ro.observe(canvas); else window.addEventListener('resize', resize);
+  resize();
+
+  // --- loop ---
+  var clock = new THREE.Clock();
+  var raf = 0;
+  var t = 0;
+  function frame() {
+    raf = requestAnimationFrame(frame);
+    var dt = Math.min(0.05, clock.getDelta());
+    t += dt;
+    if (!drag) {
+      spinVel *= Math.pow(0.04, dt);
+      var auto = reduce || hovered ? 0 : 0.16;
+      bouquet.rotation.y += (auto + spinVel) * dt;
+    }
+    bouquet.rotation.x += (tiltTarget - bouquet.rotation.x) * Math.min(1, dt * 4);
+    prog.cur += (prog.target - prog.cur) * Math.min(1, dt * 5);
+    var e = ease(prog.cur);
+    camera.position.lerpVectors(CAM0, CAM1, e);
+    camera.lookAt(tmpA.lerpVectors(LOOK0, LOOK1, e));
+    bouquet.position.x = (wide ? 2.9 : 0) * (1 - e);
+    bouquet.position.y = (wide ? 0 : -0.6) * (1 - e);
+    scene.fog.near = 7 + 9 * e;
+    scene.fog.far = 20 + 30 * e;
+    stepBirds(dt, t);
+    if (!reduce) {
+      main.root.position.y = 1.0 + Math.sin(t * 1.1) * 0.045;
+      lav.root.position.y = 0.66 + Math.sin(t * 1.3 + 1) * 0.035;
+      sky.root.position.y = 0.56 + Math.sin(t * 0.9 + 2) * 0.035;
+    }
+    mappedMeshes.forEach(function (m) {
+      var d = m.userData;
+      if (d.fall) {
+        var f = d.fall;
+        f.t += dt;
+        f.v.y -= 2.4 * dt;
+        f.v.multiplyScalar(Math.pow(0.55, dt));
+        m.position.addScaledVector(f.v, dt);
+        if (m.position.y < 0.02) { m.position.y = 0.02; f.v.y = 0; f.spin.multiplyScalar(0.9); }
+        m.rotation.x += f.spin.x * dt; m.rotation.y += f.spin.y * dt; m.rotation.z += f.spin.z * dt;
+        m.material.opacity = Math.max(0, 1 - Math.max(0, f.t - 0.9) / 1.1);
+        if (f.t > 2.1) m.visible = false;
+      } else if (d.grow) {
+        d.grow = Math.min(1, d.grow + dt * 1.8);
+        var e = 1 - Math.pow(1 - d.grow, 3);
+        m.scale.setScalar(Math.max(0.001, e));
+        if (d.grow >= 1) d.grow = 0;
+      }
+    });
+    renderer.render(scene, camera);
+  }
+  frame();
+
+  return {
+    prune: prune,
+    regrow: regrow,
+    setProgress: setProgress,
+    spawnFlock: spawnFlock,
+    dispose: function () {
+      cancelAnimationFrame(raf);
+      if (ro) ro.disconnect(); else window.removeEventListener('resize', resize);
+      canvas.removeEventListener('pointerdown', onDown);
+      canvas.removeEventListener('pointermove', onMove);
+      canvas.removeEventListener('pointerup', onUp);
+      canvas.removeEventListener('pointerleave', onLeave);
+      scene.traverse(function (o) { if (o.geometry) o.geometry.dispose(); if (o.material) o.material.dispose(); });
+      renderer.dispose();
+    }
+  };
+}
+
+
+var STAGE_H = 780;
+function clamp01(x) { return Math.max(0, Math.min(1, x)); }
+
+class Component extends DCLogic {
+  state = { hover: null, pruned: {}, noGL: false, p: 0, forced: false };
+
+  setCanvas = (el) => {
+    if (!el || el === this.canvasEl) return;
+    if (this.bloom) { this.bloom.dispose(); this.bloom = null; }
+    this.canvasEl = el;
+    this.boot();
+  };
+
+  onScroll = () => {
+    var el = document.getElementById('scrolly');
+    if (!el) return;
+    var r = el.getBoundingClientRect();
+    var total = Math.max(1, r.height - STAGE_H);
+    var raw = clamp01(-r.top / total);
+    if (this.state.forced && raw > 0.02) this.setState({ forced: false });
+    this.apply(clamp01(raw / 0.55));
+  };
+
+  apply(p) {
+    var eff = this.state.forced ? 1 : p;
+    if (this.bloom) this.bloom.setProgress(eff);
+    if (Math.abs(eff - this.state.p) > 0.004 || (eff !== this.state.p && (eff === 0 || eff === 1))) this.setState({ p: eff });
+  }
+
+  componentDidMount() {
+    var self = this;
+    window.addEventListener('scroll', this.onScroll, { passive: true });
+    document.addEventListener('scroll', this.onScroll, { passive: true, capture: true });
+    window.addEventListener('resize', this.onScroll);
+    var tries = 0;
+    (function look() {
+      if (self.bloom || self.dead) return;
+      var el = self.canvasEl || document.getElementById('bloom-canvas');
+      if (el) { self.canvasEl = el; self.boot(); }
+      else if (tries++ < 180) requestAnimationFrame(look);
+    })();
+  }
+
+  componentWillUnmount() {
+    this.dead = true;
+    window.removeEventListener('scroll', this.onScroll);
+    document.removeEventListener('scroll', this.onScroll, { capture: true });
+    window.removeEventListener('resize', this.onScroll);
+    if (this.bloom) this.bloom.dispose();
+    this.bloom = null;
+  }
+
+  boot() {
+    var self = this;
+    if (this.bloom || !this.canvasEl || this.dead) return;
+    if (!window.THREE) {
+      this.waits = (this.waits || 0) + 1;
+      if (this.waits < 200) setTimeout(function () { self.boot(); }, 50);
+      else this.setState({ noGL: true });
+      return;
+    }
+    this.bloom = createBloom(this.canvasEl, BLOOM, {
+      onHover: function (id) { if (id && self.state.hover !== id) self.setState({ hover: id }); },
+      onPrune: function (id) {
+        var next = Object.assign({}, self.state.pruned);
+        next[id] = true;
+        self.setState({ pruned: next, hover: id });
+      }
+    });
+    if (!this.bloom) { this.setState({ noGL: true }); return; }
+    this.onScroll();
+  }
+
+  prune(id) {
+    if (this.bloom) { this.bloom.prune(id); return; }
+    var next = Object.assign({}, this.state.pruned);
+    next[id] = true;
+    this.setState({ pruned: next, hover: id });
+  }
+
+  dive() {
+    var self = this;
+    var el = document.getElementById('scrolly');
+    var before = window.scrollY;
+    if (el) {
+      var r = el.getBoundingClientRect();
+      var target = window.scrollY + r.top + (r.height - STAGE_H) * 0.6;
+      try { window.scrollTo({ top: target, behavior: 'smooth' }); } catch (e) { window.scrollTo(0, target); }
+    }
+    setTimeout(function () {
+      if (Math.abs(window.scrollY - before) < 4) { self.setState({ forced: true }); if (self.bloom) self.bloom.setProgress(1); self.setState({ p: 1 }); }
+    }, 450);
+  }
+
+  renderVals() {
+    var s = this.state;
+    var self = this;
+    var p = s.forced ? 1 : s.p;
+
+    var kept = BLOOM.filter(function (b) { return !s.pruned[b.id]; });
+    var gone = BLOOM.filter(function (b) { return s.pruned[b.id]; });
+    var keptYear = kept.reduce(function (a, b) { return a + yearly(b); }, 0);
+    var savedYear = gone.reduce(function (a, b) { return a + yearly(b); }, 0);
+
+    var hov = BLOOM.find(function (b) { return b.id === s.hover; });
+    var readKicker = 'Point at a petal';
+    var readName = 'Every petal is a subscription';
+    var readPrice = 'Netflix, Spotify, ChatGPT and twelve more.';
+    if (hov) {
+      var isGone = !!s.pruned[hov.id];
+      readKicker = isGone ? 'Cancelled' : (hov.trial ? 'Free trial, converts soon' : 'Subscription');
+      readName = hov.name;
+      readPrice = usd(hov.amt) + ' a ' + hov.per + (hov.per === 'month' ? ', ' + usd(hov.amt * 12) + ' a year' : '') + (isGone ? '. Saved.' : '');
+    }
+
+    var chips = BLOOM.map(function (b) {
+      var on = !!s.pruned[b.id];
+      return {
+        name: b.name, on: on,
+        bg: on ? 'rgba(236,228,232,0.9)' : 'rgba(255,255,255,0.86)', fg: on ? '#5E6B62' : '#1E2B22',
+        border: on ? 'transparent' : '#D6CBD0', strike: on ? 'line-through' : 'none',
+        pick: function () { self.prune(b.id); },
+        enter: function () { self.setState({ hover: b.id }); }
+      };
+    });
+
+    var barH = [30, 18, 62, 22, 14, 40, 26, 90, 20, 34, 16, 48, 28, 70, 18, 24, 52, 12, 36, 44, 20, 58, 16, 30];
+    var bars = barH.map(function (v, i) { return { h: v, c: v > 60 ? '#D8959B' : (i % 3 === 0 ? '#829672' : '#D0DBE7') }; });
+    var marks = { 1: '#829672', 4: '#D8959B', 8: '#829672', 11: '#D0DBE7', 13: '#829672', 17: '#D8959B', 19: '#829672', 20: '#D0DBE7', 24: '#829672', 27: '#D8959B', 30: '#829672' };
+    var cal = [];
+    for (var d = 0; d < 35; d++) cal.push({ c: marks[d] || '#F1ECEF' });
+
+    var interactive = p > 0.88;
+    return {
+      setCanvas: this.setCanvas,
+      noGL: s.noGL,
+      introOpacity: clamp01(1 - p * 1.8).toFixed(3),
+      introShift: Math.round(-p * 120),
+      introPE: p < 0.35 ? 'auto' : 'none',
+      cueOpacity: clamp01(1 - p * 4).toFixed(3),
+      playOpacity: clamp01((p - 0.72) / 0.25).toFixed(3),
+      playPE: interactive ? 'auto' : 'none',
+      forced: s.forced,
+      dive: function () { self.dive(); },
+      backToIntro: function () { self.setState({ forced: false, p: 0 }); if (self.bloom) self.bloom.setProgress(0); },
+      readKicker: readKicker,
+      readName: readName,
+      readPrice: readPrice,
+      keptCount: kept.length,
+      keptYear: usd(keptYear),
+      savedYear: usd(savedYear),
+      hasSaved: gone.length > 0,
+      regrow: function () { if (self.bloom) self.bloom.regrow(); self.setState({ pruned: {}, hover: null }); },
+      chips: chips,
+      bars: bars,
+      cal: cal
+    };
+  }
+}
+</script>
+</body>
+</html>

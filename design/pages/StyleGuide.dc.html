@@ -1,0 +1,233 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Subwatch style guide</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gloock&amp;family=Hanken+Grotesk:wght@400;500;600;700&amp;display=swap">
+<style>
+body{margin:0;background:#F7F3F5;color:#1E2B22;font-family:'Hanken Grotesk',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+a{color:#344C3D}a:hover{color:#1E2B22}
+.sw{cursor:pointer;transition:transform 150ms ease}
+.sw:hover{transform:translateY(-2px)}
+.b-primary:hover{background:#26392D !important}
+.b-ghost:hover{background:#EDE6EA !important}
+.b-danger:hover{background:#F6E3E5 !important}
+.chip:hover{border-color:#344C3D !important}
+input:focus{outline:none;border-color:#344C3D !important;box-shadow:0 0 0 3px #D0DBE7}
+:focus-visible{outline:3px solid #344C3D;outline-offset:3px}
+@media (prefers-reduced-motion: reduce){.sw{transition:none}}
+</style>
+</helmet>
+<div style="box-sizing: border-box; width: 100%; max-width: 1240px; margin: 0 auto; padding: 40px 24px 96px;">
+
+  <div style="display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap;">
+    <a href="Main.dc.html" style="font-family: Gloock, Georgia, serif; font-size: 24px; text-decoration: none; color: #1E2B22;">Subwatch</a>
+    <a href="Main.dc.html" style="font-size: 15px; font-weight: 600;">Back to the site</a>
+  </div>
+
+  <h1 style="margin: 48px 0 0; font-family: Gloock, Georgia, serif; font-weight: 400; font-size: clamp(56px, 8vw, 112px); line-height: 0.92; letter-spacing: -0.02em;">Style guide</h1>
+  <p style="margin: 20px 0 0; max-width: 40em; font-size: 19px; line-height: 1.55; color: #3F4D44;">A garden palette for a money tool. Evergreen carries actions and structure, mauve marks anything that needs attention soon, sage means recurring, and sky means a one-off bill.</p>
+
+  <section aria-labelledby="c-h" style="margin-top: 72px;">
+    <h2 id="c-h" style="margin: 0; font-family: Gloock, Georgia, serif; font-weight: 400; font-size: 40px;">Color</h2>
+    <p style="margin: 8px 0 0; font-size: 16px; color: #3F4D44;">Select a swatch for its job and the text colors that pass contrast on it.</p>
+
+    <div style="margin-top: 28px; display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 14px;">
+      <sc-for list="{{core}}" as="c" hint-placeholder-count="5">
+        <button type="button" class="sw" onClick="{{c.pick}}" aria-pressed="{{c.on}}" style="text-align: left; padding: 0; border: {{c.ring}}; border-radius: 26px; background: #FFFFFF; font: inherit; color: #1E2B22; overflow: hidden;">
+          <span style="display: block; height: 220px; background: {{c.hex}}; border-radius: 22px 22px 120px 120px;"></span>
+          <span style="display: block; padding: 14px 16px 16px;">
+            <span style="display: block; font-weight: 600; font-size: 16px;">{{c.name}}</span>
+            <span style="display: block; font-size: 14px; color: #5E6B62; margin-top: 2px;">{{c.hex}}</span>
+          </span>
+        </button>
+      </sc-for>
+    </div>
+
+    <div aria-live="polite" style="margin-top: 16px; background: #FFFFFF; border-radius: 22px; padding: 22px 24px; display: flex; flex-wrap: wrap; gap: 24px; align-items: center;">
+      <div style="flex: 1 1 320px; min-width: 0;">
+        <p style="margin: 0; font-family: Gloock, Georgia, serif; font-size: 28px;">{{sel.name}}</p>
+        <p style="margin: 6px 0 0; font-size: 16px; line-height: 1.55; color: #3F4D44;">{{sel.job}}</p>
+      </div>
+      <div style="flex: 1 1 360px; min-width: 0; display: flex; gap: 10px; flex-wrap: wrap;">
+        <sc-for list="{{sel.pairs}}" as="p" hint-placeholder-count="2">
+          <span style="flex: 1 1 150px; min-height: 64px; border-radius: 14px; background: {{sel.hex}}; color: {{p.fg}}; display: flex; flex-direction: column; justify-content: center; padding: 10px 14px; box-sizing: border-box;">
+            <span style="font-weight: 600; font-size: 15px;">{{p.label}}</span>
+            <span style="font-size: 13px;">{{p.ratio}}</span>
+          </span>
+        </sc-for>
+      </div>
+    </div>
+
+    <h3 style="margin: 36px 0 0; font-size: 18px; font-weight: 600;">Working colors</h3>
+    <p style="margin: 6px 0 0; font-size: 15px; color: #3F4D44;">Derived from the palette for text and surfaces, so mauve and sage never carry small text on light grounds.</p>
+    <div style="margin-top: 16px; display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px;">
+      <sc-for list="{{derived}}" as="d" hint-placeholder-count="7">
+        <div style="background: #FFFFFF; border-radius: 16px; padding: 10px; display: flex; gap: 12px; align-items: center;">
+          <span style="width: 44px; height: 44px; border-radius: 12px; background: {{d.hex}}; box-shadow: inset 0 0 0 1px rgba(30,43,34,0.12); flex: none;"></span>
+          <span style="min-width: 0;"><span style="display: block; font-weight: 600; font-size: 14px;">{{d.name}}</span><span style="display: block; font-size: 13px; color: #5E6B62;">{{d.hex}}</span></span>
+        </div>
+      </sc-for>
+    </div>
+  </section>
+
+  <section aria-labelledby="t-h" style="margin-top: 80px;">
+    <h2 id="t-h" style="margin: 0; font-family: Gloock, Georgia, serif; font-weight: 400; font-size: 40px;">Type</h2>
+    <div style="margin-top: 28px; display: flex; flex-wrap: wrap; gap: 20px;">
+      <div style="flex: 1 1 420px; min-width: 0; background: #344C3D; color: #F7F3F5; border-radius: 26px; padding: 28px;">
+        <p style="margin: 0; font-size: 14px; color: #E3DADE;">Display: Gloock</p>
+        <p style="margin: 12px 0 0; font-family: Gloock, Georgia, serif; font-size: 96px; line-height: 0.9;">Aa Gg 42</p>
+        <p style="margin: 16px 0 0; font-size: 15px; line-height: 1.55; color: #E3DADE;">High-contrast serif for headlines, big totals and merchant names in detail views. One weight. Never below 24px.</p>
+      </div>
+      <div style="flex: 1 1 420px; min-width: 0; background: #FFFFFF; border-radius: 26px; padding: 28px;">
+        <p style="margin: 0; font-size: 14px; color: #5E6B62;">Text: Hanken Grotesk</p>
+        <p style="margin: 12px 0 0; font-size: 96px; line-height: 0.9; font-weight: 600;">Aa Gg 42</p>
+        <p style="margin: 16px 0 0; font-size: 15px; line-height: 1.55; color: #3F4D44;">Everything else: interface, tables and amounts. Tabular figures so columns of prices line up. 400, 500 and 600.</p>
+      </div>
+    </div>
+
+    <div style="margin-top: 20px; background: #FFFFFF; border-radius: 26px; padding: 8px 28px;">
+      <div style="display: flex; align-items: baseline; gap: 24px; padding: 18px 0; border-bottom: 1px solid #ECE4E8; flex-wrap: wrap;"><span style="width: 120px; font-size: 13px; color: #5E6B62;">Display 96</span><span style="font-family: Gloock, Georgia, serif; font-size: clamp(48px, 7vw, 96px); line-height: 1;">Prune it</span></div>
+      <div style="display: flex; align-items: baseline; gap: 24px; padding: 18px 0; border-bottom: 1px solid #ECE4E8; flex-wrap: wrap;"><span style="width: 120px; font-size: 13px; color: #5E6B62;">Heading 56</span><span style="font-family: Gloock, Georgia, serif; font-size: clamp(36px, 5vw, 56px); line-height: 1;">$2,758.33 this month</span></div>
+      <div style="display: flex; align-items: baseline; gap: 24px; padding: 18px 0; border-bottom: 1px solid #ECE4E8; flex-wrap: wrap;"><span style="width: 120px; font-size: 13px; color: #5E6B62;">Heading 32</span><span style="font-family: Gloock, Georgia, serif; font-size: 32px; line-height: 1.1;">Recurring</span></div>
+      <div style="display: flex; align-items: baseline; gap: 24px; padding: 18px 0; border-bottom: 1px solid #ECE4E8; flex-wrap: wrap;"><span style="width: 120px; font-size: 13px; color: #5E6B62;">Title 21 / 600</span><span style="font-size: 21px; font-weight: 600;">Netflix Standard</span></div>
+      <div style="display: flex; align-items: baseline; gap: 24px; padding: 18px 0; border-bottom: 1px solid #ECE4E8; flex-wrap: wrap;"><span style="width: 120px; font-size: 13px; color: #5E6B62;">Body 16</span><span style="font-size: 16px; line-height: 1.6; max-width: 40em;">Renews on Dec 1. Cancel from the link in Adobe's email before then to avoid the yearly charge.</span></div>
+      <div style="display: flex; align-items: baseline; gap: 24px; padding: 18px 0; flex-wrap: wrap;"><span style="width: 120px; font-size: 13px; color: #5E6B62;">Small 14</span><span style="font-size: 14px; color: #3F4D44;">Last charged Oct 14, billed monthly</span></div>
+    </div>
+  </section>
+
+  <section aria-labelledby="k-h" style="margin-top: 80px;">
+    <h2 id="k-h" style="margin: 0; font-family: Gloock, Georgia, serif; font-weight: 400; font-size: 40px;">Components</h2>
+
+    <div style="margin-top: 28px; display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 20px;">
+
+      <div style="background: #FFFFFF; border-radius: 26px; padding: 26px;">
+        <h3 style="margin: 0; font-size: 18px; font-weight: 600;">Buttons</h3>
+        <p style="margin: 6px 0 0; font-size: 14px; color: #5E6B62;">Pill shaped, 44px minimum. One primary per view.</p>
+        <div style="margin-top: 20px; display: flex; flex-wrap: wrap; gap: 10px; align-items: center;">
+          <button type="button" class="b-primary" style="min-height: 48px; padding: 0 22px; border-radius: 999px; border: 0; background: #344C3D; color: #FFFFFF; font: inherit; font-weight: 600; cursor: pointer;">Connect Gmail</button>
+          <button type="button" class="b-ghost" style="min-height: 48px; padding: 0 22px; border-radius: 999px; border: 1.5px solid #344C3D; background: transparent; color: #344C3D; font: inherit; font-weight: 600; cursor: pointer;">Sync now</button>
+          <button type="button" class="b-danger" style="min-height: 48px; padding: 0 22px; border-radius: 999px; border: 1.5px solid #C98A91; background: #FFFFFF; color: #93434C; font: inherit; font-weight: 600; cursor: pointer;">Cancel subscription</button>
+          <button type="button" disabled="{{yes}}" style="min-height: 48px; padding: 0 22px; border-radius: 999px; border: 0; background: #E3DADE; color: #5E6B62; font: inherit; font-weight: 600;">Syncing</button>
+        </div>
+      </div>
+
+      <div style="background: #FFFFFF; border-radius: 26px; padding: 26px;">
+        <h3 style="margin: 0; font-size: 18px; font-weight: 600;">Fields</h3>
+        <p style="margin: 6px 0 0; font-size: 14px; color: #5E6B62;">Label always visible. Focus adds a sky halo.</p>
+        <div style="margin-top: 20px; display: flex; flex-direction: column; gap: 8px;">
+          <label for="sg-email" style="font-size: 14px; font-weight: 600;">Email</label>
+          <input id="sg-email" type="email" placeholder="you@berkeley.edu" style="min-height: 48px; padding: 0 16px; border-radius: 14px; border: 1.5px solid #D6CBD0; background: #FFFFFF; font: inherit; color: #1E2B22;">
+          <p style="margin: 2px 0 0; font-size: 13px; color: #93434C;">Enter an email address with an @.</p>
+        </div>
+      </div>
+
+      <div style="background: #FFFFFF; border-radius: 26px; padding: 26px;">
+        <h3 style="margin: 0; font-size: 18px; font-weight: 600;">Status tags</h3>
+        <p style="margin: 6px 0 0; font-size: 14px; color: #5E6B62;">Fill from the palette, text from the working colors.</p>
+        <div style="margin-top: 20px; display: flex; flex-wrap: wrap; gap: 8px;">
+          <span style="padding: 5px 12px; border-radius: 999px; background: #DDE6D5; color: #3D4F33; font-size: 13px; font-weight: 600;">Active</span>
+          <span style="padding: 5px 12px; border-radius: 999px; background: #D0DBE7; color: #2E3E48; font-size: 13px; font-weight: 600;">Free trial</span>
+          <span style="padding: 5px 12px; border-radius: 999px; background: #F3DCDF; color: #93434C; font-size: 13px; font-weight: 600;">Due in 3 days</span>
+          <span style="padding: 5px 12px; border-radius: 999px; background: #F3DCDF; color: #93434C; font-size: 13px; font-weight: 600;">Price went up</span>
+          <span style="padding: 5px 12px; border-radius: 999px; background: #ECE4E8; color: #3F4D44; font-size: 13px; font-weight: 600;">Cancelled</span>
+        </div>
+      </div>
+
+      <div style="background: #FFFFFF; border-radius: 26px; padding: 26px;">
+        <h3 style="margin: 0; font-size: 18px; font-weight: 600;">Filter chips</h3>
+        <p style="margin: 6px 0 0; font-size: 14px; color: #5E6B62;">Try them. Selected fills with evergreen.</p>
+        <div role="group" aria-label="Example filter" style="margin-top: 20px; display: flex; flex-wrap: wrap; gap: 8px;">
+          <sc-for list="{{chips}}" as="ch" hint-placeholder-count="4">
+            <button type="button" class="chip" aria-pressed="{{ch.on}}" onClick="{{ch.pick}}" style="min-height: 40px; padding: 0 16px; border-radius: 999px; border: 1.5px solid {{ch.border}}; background: {{ch.bg}}; color: {{ch.fg}}; font: inherit; font-size: 14px; font-weight: 600; cursor: pointer;">{{ch.label}}</button>
+          </sc-for>
+        </div>
+      </div>
+
+      <div style="background: #FFFFFF; border-radius: 26px; padding: 26px;">
+        <h3 style="margin: 0; font-size: 18px; font-weight: 600;">Subscription row</h3>
+        <p style="margin: 6px 0 0; font-size: 14px; color: #5E6B62;">The leaf dot shows category. Amount right-aligned.</p>
+        <div style="margin-top: 18px; display: flex; align-items: center; gap: 14px; padding: 14px 0; border-top: 1px solid #ECE4E8; border-bottom: 1px solid #ECE4E8;">
+          <span aria-hidden="true" style="width: 40px; height: 40px; border-radius: 12px 12px 12px 2px; background: #D8959B; flex: none;"></span>
+          <span style="flex: 1; min-width: 0;"><span style="display: block; font-weight: 600;">Netflix</span><span style="display: block; font-size: 14px; color: #3F4D44;">Next charge Nov 14</span></span>
+          <span style="font-weight: 600;">$15.49</span>
+        </div>
+      </div>
+
+      <div style="background: #FFFFFF; border-radius: 26px; padding: 26px;">
+        <h3 style="margin: 0; font-size: 18px; font-weight: 600;">Calendar day</h3>
+        <p style="margin: 6px 0 0; font-size: 14px; color: #5E6B62;">Dots by type, total underneath. Today gets the evergreen ring.</p>
+        <div style="margin-top: 18px; display: flex; gap: 10px;">
+          <span style="width: 92px; height: 92px; border-radius: 16px; background: #F7F3F5; padding: 10px; box-sizing: border-box; display: flex; flex-direction: column; justify-content: space-between; box-shadow: inset 0 0 0 2px #344C3D;"><span style="font-weight: 600;">9</span><span style="display: flex; gap: 4px;"><span style="width: 8px; height: 8px; border-radius: 50%; background: #829672;"></span></span><span style="font-size: 13px;">$10</span></span>
+          <span style="width: 92px; height: 92px; border-radius: 16px; background: #F7F3F5; padding: 10px; box-sizing: border-box; display: flex; flex-direction: column; justify-content: space-between;"><span style="font-weight: 600;">12</span><span style="display: flex; gap: 4px;"><span style="width: 8px; height: 8px; border-radius: 50%; background: #829672;"></span><span style="width: 8px; height: 8px; border-radius: 50%; background: #D8959B;"></span></span><span style="font-size: 13px;">$24.99</span></span>
+          <span style="width: 92px; height: 92px; border-radius: 16px; background: #F7F3F5; padding: 10px; box-sizing: border-box; display: flex; flex-direction: column; justify-content: space-between;"><span style="font-weight: 600;">20</span><span style="display: flex; gap: 4px;"><span style="width: 8px; height: 8px; border-radius: 50%; background: #7F9BB8;"></span></span><span style="font-size: 13px;">$142.18</span></span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section aria-labelledby="s-h" style="margin-top: 80px; display: flex; flex-wrap: wrap; gap: 20px;">
+    <div style="flex: 1 1 360px; min-width: 0;">
+      <h2 id="s-h" style="margin: 0; font-family: Gloock, Georgia, serif; font-weight: 400; font-size: 40px;">Shape and space</h2>
+      <p style="margin: 10px 0 0; font-size: 16px; line-height: 1.6; color: #3F4D44; max-width: 30em;">Spacing steps by 4. Corners grow with the size of the thing: tags and buttons are pills, fields 14, cards 22 to 26, stages 32. Leaf corners (one sharp corner) mark merchants.</p>
+    </div>
+    <div style="flex: 1 1 520px; min-width: 0; background: #FFFFFF; border-radius: 26px; padding: 26px; display: flex; flex-wrap: wrap; gap: 16px; align-items: flex-end;">
+      <span style="display: flex; flex-direction: column; align-items: center; gap: 8px; font-size: 13px; color: #5E6B62;"><span style="width: 64px; height: 64px; border-radius: 14px; background: #D0DBE7;"></span>14</span>
+      <span style="display: flex; flex-direction: column; align-items: center; gap: 8px; font-size: 13px; color: #5E6B62;"><span style="width: 64px; height: 64px; border-radius: 22px; background: #E3DADE;"></span>22</span>
+      <span style="display: flex; flex-direction: column; align-items: center; gap: 8px; font-size: 13px; color: #5E6B62;"><span style="width: 64px; height: 64px; border-radius: 32px; background: #829672;"></span>32</span>
+      <span style="display: flex; flex-direction: column; align-items: center; gap: 8px; font-size: 13px; color: #5E6B62;"><span style="width: 64px; height: 64px; border-radius: 22px 22px 22px 4px; background: #D8959B;"></span>Leaf</span>
+      <span style="display: flex; flex-direction: column; align-items: center; gap: 8px; font-size: 13px; color: #5E6B62;"><span style="width: 64px; height: 64px; border-radius: 50% 50% 50% 50% / 62% 62% 38% 38%; background: #344C3D;"></span>Petal</span>
+      <span style="flex: 1 1 140px; display: flex; gap: 6px; align-items: flex-end; justify-content: flex-end;">
+        <span style="width: 4px; height: 4px; background: #344C3D;"></span><span style="width: 8px; height: 8px; background: #344C3D;"></span><span style="width: 12px; height: 12px; background: #344C3D;"></span><span style="width: 16px; height: 16px; background: #344C3D;"></span><span style="width: 24px; height: 24px; background: #344C3D;"></span><span style="width: 32px; height: 32px; background: #344C3D;"></span><span style="width: 48px; height: 48px; background: #344C3D;"></span>
+      </span>
+    </div>
+  </section>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":2400}}'>
+var CORE = [
+  { id: 'lavender', name: 'Lavender', hex: '#E3DADE', job: 'Soft surfaces: secondary panels, the recurring list background, empty calendar cells. Never for text.', pairs: [{ label: 'Evergreen ink', fg: '#1E2B22', ratio: '10.8 : 1' }, { label: 'Moss text', fg: '#3F4D44', ratio: '6.5 : 1' }] },
+  { id: 'sky', name: 'Sky', hex: '#D0DBE7', job: 'One-off bills, focus halos and informational panels. Pairs with slate text.', pairs: [{ label: 'Evergreen ink', fg: '#1E2B22', ratio: '10.5 : 1' }, { label: 'Slate text', fg: '#2E3E48', ratio: '7.9 : 1' }] },
+  { id: 'mauve', name: 'Mauve', hex: '#D8959B', job: 'Attention: due soon, trials ending, price increases. As a fill or dot only. Text on light grounds uses Mauve ink.', pairs: [{ label: 'Evergreen ink', fg: '#1E2B22', ratio: '6.1 : 1' }, { label: 'White fails', fg: '#FFFFFF', ratio: '2.4 : 1, avoid' }] },
+  { id: 'sage', name: 'Sage', hex: '#829672', job: 'Recurring subscriptions: calendar dots, category marks, chart bars. Large shapes only. Small text uses Sage ink.', pairs: [{ label: 'Evergreen ink', fg: '#1E2B22', ratio: '4.6 : 1' }, { label: 'White', fg: '#FFFFFF', ratio: '3.2 : 1, 24px+ only' }] },
+  { id: 'evergreen', name: 'Evergreen', hex: '#344C3D', job: 'The action color: primary buttons, selected states, focus rings, the privacy band and the 3D stage.', pairs: [{ label: 'White', fg: '#FFFFFF', ratio: '9.4 : 1' }, { label: 'Lavender', fg: '#E3DADE', ratio: '6.8 : 1' }] }
+];
+var DERIVED = [
+  { name: 'Paper', hex: '#F7F3F5' },
+  { name: 'Surface', hex: '#FFFFFF' },
+  { name: 'Evergreen ink', hex: '#1E2B22' },
+  { name: 'Moss text', hex: '#3F4D44' },
+  { name: 'Muted text', hex: '#5E6B62' },
+  { name: 'Mauve ink', hex: '#93434C' },
+  { name: 'Sage ink', hex: '#3D4F33' },
+  { name: 'Slate text', hex: '#2E3E48' },
+  { name: 'Hairline', hex: '#ECE4E8' }
+];
+var CHIPS = ['All', 'Streaming', 'Software and AI', 'Storage'];
+
+class Component extends DCLogic {
+  state = { pick: 'mauve', chip: 'All' };
+
+  renderVals() {
+    var self = this;
+    var s = this.state;
+    var core = CORE.map(function (c) {
+      var on = c.id === s.pick;
+      return { name: c.name, hex: c.hex, on: on, ring: on ? '3px solid #344C3D' : '3px solid transparent', pick: function () { self.setState({ pick: c.id }); } };
+    });
+    var sel = CORE.find(function (c) { return c.id === s.pick; }) || CORE[0];
+    var chips = CHIPS.map(function (label) {
+      var on = label === s.chip;
+      return { label: label, on: on, bg: on ? '#344C3D' : '#FFFFFF', fg: on ? '#FFFFFF' : '#1E2B22', border: on ? '#344C3D' : '#D6CBD0', pick: function () { self.setState({ chip: label }); } };
+    });
+    return { core: core, sel: sel, derived: DERIVED, chips: chips, yes: true };
+  }
+}
+</script>
+</body>
+</html>

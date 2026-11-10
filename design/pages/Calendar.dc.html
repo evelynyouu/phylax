@@ -1,0 +1,251 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Payment calendar</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gloock&amp;family=Hanken+Grotesk:wght@400;500;600;700&amp;display=swap">
+<style>
+body{margin:0;background:#F7F3F5;color:#1E2B22;font-family:'Hanken Grotesk',system-ui,sans-serif;-webkit-font-smoothing:antialiased;font-variant-numeric:tabular-nums}
+a{color:#344C3D}a:hover{color:#1E2B22}
+.side a.nav{text-decoration:none}
+.side a.nav:hover{background:#EDE6EA}
+.side a.nav.on:hover{background:#344C3D}
+.b-ghost:hover{background:#EDE6EA !important}
+.cell{cursor:pointer;transition:background 120ms ease}
+.cell:hover{background:#EDE6EA !important}
+.tog:hover{border-color:#344C3D !important}
+:focus-visible{outline:3px solid #344C3D;outline-offset:3px}
+</style>
+</helmet>
+<div style="box-sizing: border-box; width: 100%; min-height: 1200px; display: flex; flex-wrap: wrap; align-items: stretch;">
+
+  <aside class="side" style="flex: 1 1 240px; min-width: 0; background: #FFFFFF; padding: 26px 18px; box-sizing: border-box; display: flex; flex-direction: column; gap: 28px; border-right: 1px solid #ECE4E8;">
+    <a href="Main.dc.html" style="font-family: Gloock, Georgia, serif; font-size: 26px; color: #1E2B22; text-decoration: none; padding: 0 10px;">Subwatch</a>
+    <nav aria-label="App" style="display: flex; flex-direction: column; gap: 4px;">
+      <a class="nav" href="Dashboard.dc.html" style="display: flex; align-items: center; gap: 12px; min-height: 46px; padding: 0 14px; border-radius: 14px; color: #1E2B22; font-weight: 500;">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="3" y="3" width="7" height="9" rx="2"></rect><rect x="14" y="3" width="7" height="5" rx="2"></rect><rect x="14" y="12" width="7" height="9" rx="2"></rect><rect x="3" y="16" width="7" height="5" rx="2"></rect></svg>
+        Dashboard
+      </a>
+      <a class="nav" href="Subscriptions.dc.html" style="display: flex; align-items: center; gap: 12px; min-height: 46px; padding: 0 14px; border-radius: 14px; color: #1E2B22; font-weight: 500;">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.3-5.7"></path><path d="M20 4v5h-5"></path></svg>
+        Recurring
+      </a>
+      <a class="nav on" href="Calendar.dc.html" aria-current="page" style="display: flex; align-items: center; gap: 12px; min-height: 46px; padding: 0 14px; border-radius: 14px; background: #344C3D; color: #FFFFFF; font-weight: 600;">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="3"></rect><path d="M3 10h18M8 3v4M16 3v4"></path></svg>
+        Calendar
+      </a>
+      <a class="nav" href="Bills.dc.html" style="display: flex; align-items: center; gap: 12px; min-height: 46px; padding: 0 14px; border-radius: 14px; color: #1E2B22; font-weight: 500;">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"></path><path d="M9 8h6M9 12h6"></path></svg>
+        Bills and deadlines
+      </a>
+    </nav>
+    <div style="margin-top: auto; display: flex; flex-direction: column; gap: 12px; padding: 0 10px;">
+      <p style="margin: 0; font-size: 14px; color: #5E6B62;">Gmail synced 4 minutes ago</p>
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <span aria-hidden="true" style="width: 36px; height: 36px; border-radius: 50%; background: #D8959B; display: grid; place-items: center; font-weight: 700; font-size: 14px;">EY</span>
+        <span style="flex: 1; min-width: 0; font-size: 14px; font-weight: 600;">Evelyn You</span>
+        <a href="Main.dc.html" style="font-size: 14px;">Sign out</a>
+      </div>
+    </div>
+  </aside>
+
+  <main style="flex: 999 1 640px; min-width: 0; padding: 32px clamp(20px, 3vw, 44px) 64px; box-sizing: border-box;">
+    <div style="display: flex; justify-content: space-between; align-items: flex-end; gap: 16px; flex-wrap: wrap;">
+      <div>
+        <h1 style="margin: 0; font-family: Gloock, Georgia, serif; font-weight: 400; font-size: 44px; line-height: 1;">Calendar</h1>
+        <p style="margin: 10px 0 0; font-size: 16px; color: #3F4D44;">{{monthSummary}}</p>
+      </div>
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <button type="button" class="b-ghost" onClick="{{prev}}" disabled="{{atStart}}" aria-label="Previous month" style="width: 44px; height: 44px; border-radius: 50%; border: 1.5px solid #D6CBD0; background: #FFFFFF; cursor: pointer; display: grid; place-items: center; opacity: {{prevOpacity}};">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1E2B22" stroke-width="2" aria-hidden="true"><path d="M15 6l-6 6 6 6"></path></svg>
+        </button>
+        <p aria-live="polite" style="margin: 0; min-width: 170px; text-align: center; font-family: Gloock, Georgia, serif; font-size: 26px;">{{monthName}}</p>
+        <button type="button" class="b-ghost" onClick="{{next}}" disabled="{{atEnd}}" aria-label="Next month" style="width: 44px; height: 44px; border-radius: 50%; border: 1.5px solid #D6CBD0; background: #FFFFFF; cursor: pointer; display: grid; place-items: center; opacity: {{nextOpacity}};">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1E2B22" stroke-width="2" aria-hidden="true"><path d="M9 6l6 6-6 6"></path></svg>
+        </button>
+      </div>
+    </div>
+
+    <div role="group" aria-label="Show" style="margin-top: 20px; display: flex; flex-wrap: wrap; gap: 8px;">
+      <sc-for list="{{toggles}}" as="t" hint-placeholder-count="3">
+        <button type="button" class="tog" aria-pressed="{{t.on}}" onClick="{{t.flip}}" style="display: inline-flex; align-items: center; gap: 8px; min-height: 40px; padding: 0 14px; border-radius: 999px; border: 1.5px solid {{t.border}}; background: {{t.bg}}; color: #1E2B22; font: inherit; font-size: 14px; font-weight: 600; cursor: pointer;">
+          <span aria-hidden="true" style="width: 10px; height: 10px; border-radius: 50%; background: {{t.dot}}; opacity: {{t.dotOpacity}};"></span>{{t.label}}
+        </button>
+      </sc-for>
+    </div>
+
+    <div style="margin-top: 18px; display: flex; flex-wrap: wrap; gap: 16px; align-items: flex-start;">
+      <section aria-label="{{monthName}}" style="flex: 999 1 560px; min-width: 0; background: #FFFFFF; border-radius: 28px; padding: 18px; box-sizing: border-box; overflow-x: auto;">
+        <div style="min-width: 520px;">
+          <div aria-hidden="true" style="display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 6px; padding: 0 2px 8px; font-size: 13px; font-weight: 600; color: #3F4D44;">
+            <span>Sun</span><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span>
+          </div>
+          <div style="display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 6px;">
+            <sc-for list="{{cells}}" as="c" hint-placeholder-count="35">
+              <sc-if value="{{c.blank}}" hint-placeholder-val="{{false}}"><span aria-hidden="true" style="min-height: 104px;"></span></sc-if>
+              <sc-if value="{{c.real}}" hint-placeholder-val="{{true}}">
+                <button type="button" class="cell" onClick="{{c.pick}}" aria-label="{{c.aria}}" aria-pressed="{{c.selected}}" style="min-height: 104px; padding: 10px; border-radius: 16px; border: 0; background: {{c.bg}}; box-shadow: {{c.ring}}; font: inherit; color: #1E2B22; text-align: left; display: flex; flex-direction: column; justify-content: space-between; gap: 6px;">
+                  <span style="font-weight: 600; font-size: 15px; color: {{c.numColor}};">{{c.n}}</span>
+                  <span style="display: flex; gap: 4px; flex-wrap: wrap;">
+                    <sc-for list="{{c.dots}}" as="d" hint-placeholder-count="1"><span style="width: 9px; height: 9px; border-radius: 50%; background: {{d}};"></span></sc-for>
+                  </span>
+                  <span style="font-size: 13px; font-weight: 600;">{{c.total}}</span>
+                </button>
+              </sc-if>
+            </sc-for>
+          </div>
+        </div>
+      </section>
+
+      <aside aria-labelledby="day-h" style="flex: 1 1 280px; min-width: 0; display: flex; flex-direction: column; gap: 16px;">
+        <section style="background: #FFFFFF; border-radius: 28px; padding: 22px 24px;">
+          <h2 id="day-h" style="margin: 0; font-family: Gloock, Georgia, serif; font-weight: 400; font-size: 28px;">{{dayTitle}}</h2>
+          <p style="margin: 4px 0 0; font-size: 14px; color: #3F4D44;">{{daySub}}</p>
+          <ul style="list-style: none; margin: 14px 0 0; padding: 0;">
+            <sc-for list="{{dayItems}}" as="i" hint-placeholder-count="2">
+              <li style="display: flex; gap: 12px; align-items: flex-start; padding: 12px 0; border-top: 1px solid #ECE4E8;">
+                <span aria-hidden="true" style="width: 10px; height: 10px; margin-top: 6px; border-radius: 50%; flex: none; background: {{i.dot}};"></span>
+                <span style="flex: 1; min-width: 0;"><span style="display: block; font-weight: 600;">{{i.name}}</span><span style="display: block; font-size: 13px; color: #3F4D44;">{{i.kindLabel}}</span></span>
+                <span style="font-weight: 600;">{{i.amt}}</span>
+              </li>
+            </sc-for>
+          </ul>
+          <sc-if value="{{dayEmpty}}" hint-placeholder-val="{{false}}">
+            <p style="margin: 14px 0 0; font-size: 15px; color: #3F4D44;">Nothing is charged or due this day.</p>
+          </sc-if>
+        </section>
+        <section aria-label="Month totals" style="background: #344C3D; color: #F7F3F5; border-radius: 28px; padding: 22px 24px;">
+          <p style="margin: 0; font-size: 14px; color: #E3DADE;">{{monthName}} total</p>
+          <p style="margin: 4px 0 0; font-family: Gloock, Georgia, serif; font-size: 40px; line-height: 1;">{{monthTotal}}</p>
+          <div style="margin-top: 16px; display: flex; flex-direction: column; gap: 8px; font-size: 14px;">
+            <sc-for list="{{breakdown}}" as="b" hint-placeholder-count="3">
+              <div style="display: flex; justify-content: space-between; gap: 10px;"><span style="color: #E3DADE;">{{b.label}}</span><span style="font-weight: 600;">{{b.amt}}</span></div>
+            </sc-for>
+          </div>
+        </section>
+      </aside>
+    </div>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1200}}'>
+var TODAY = '2026-11-09';
+var ITEMS = [
+  ['2026-11-09', 'Notion Plus', 10, 's'], ['2026-11-10', 'Peacock', 7.99, 's'], ['2026-11-12', 'Figma Professional', 15, 's'],
+  ['2026-11-12', 'Hulu', 9.99, 't'], ['2026-11-14', 'Netflix', 15.49, 's'], ['2026-11-15', 'Chegg Study', 19.95, 't'],
+  ['2026-11-18', 'ChatGPT Plus', 20, 's'], ['2026-11-20', 'PG&E', 142.18, 'b'], ['2026-11-21', 'iCloud+', 2.99, 's'],
+  ['2026-11-22', 'GitHub Copilot', 10, 's'], ['2026-11-25', 'T-Mobile', 85, 'b'], ['2026-11-28', 'Dropbox Plus', 119.88, 'r'],
+  ['2026-12-01', 'Adobe Creative Cloud', 263.88, 'r'], ['2026-12-01', 'Rent', 1950, 'b'], ['2026-12-01', 'Duolingo Plus', 14.99, 's'],
+  ['2026-12-03', 'Spotify Premium', 12.99, 's'], ['2026-12-05', 'YouTube Premium', 13.99, 's'], ['2026-12-09', 'Notion Plus', 10, 's'],
+  ['2026-12-10', 'Peacock', 7.99, 's'], ['2026-12-12', 'Figma Professional', 15, 's'], ['2026-12-12', 'Hulu', 9.99, 's'],
+  ['2026-12-14', 'Netflix', 15.49, 's'], ['2026-12-15', 'Chegg Study', 19.95, 's'], ['2026-12-15', 'UC Berkeley tuition', 4832.5, 'b'],
+  ['2026-12-18', 'ChatGPT Plus', 20, 's'], ['2026-12-21', 'iCloud+', 2.99, 's'], ['2026-12-22', 'GitHub Copilot', 10, 's'],
+  ['2027-01-01', 'Duolingo Plus', 14.99, 's'], ['2027-01-03', 'Spotify Premium', 12.99, 's'], ['2027-01-05', 'YouTube Premium', 13.99, 's'],
+  ['2027-01-09', 'Notion Plus', 10, 's'], ['2027-01-10', 'Peacock', 7.99, 's'], ['2027-01-12', 'Figma Professional', 15, 's'],
+  ['2027-01-12', 'Hulu', 9.99, 's'], ['2027-01-14', 'Netflix', 15.49, 's'], ['2027-01-15', 'Amazon Prime', 139, 'r'],
+  ['2027-01-15', 'Chegg Study', 19.95, 's'], ['2027-01-18', 'ChatGPT Plus', 20, 's'], ['2027-01-21', 'iCloud+', 2.99, 's'],
+  ['2027-01-22', 'GitHub Copilot', 10, 's']
+];
+var KIND = {
+  s: { dot: '#829672', label: 'Subscription charge', group: 'subs' },
+  r: { dot: '#344C3D', label: 'Yearly renewal', group: 'subs' },
+  t: { dot: '#D8959B', label: 'Free trial ends, then charges', group: 'trials' },
+  b: { dot: '#7F9BB8', label: 'Bill due', group: 'bills' }
+};
+var MONTHS = [[2026, 10], [2026, 11], [2027, 0]];
+var MN = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+var DOW = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+
+function usd(n) { return '$' + n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
+function pad(n) { return n < 10 ? '0' + n : '' + n; }
+
+class Component extends DCLogic {
+  state = { m: 0, sel: TODAY, show: { subs: true, trials: true, bills: true } };
+
+  renderVals() {
+    var self = this;
+    var s = this.state;
+    var y = MONTHS[s.m][0], mo = MONTHS[s.m][1];
+    var prefix = y + '-' + pad(mo + 1);
+    var first = new Date(Date.UTC(y, mo, 1)).getUTCDay();
+    var len = new Date(Date.UTC(y, mo + 1, 0)).getUTCDate();
+    var visible = ITEMS.filter(function (it) { return s.show[KIND[it[3]].group]; });
+    var monthItems = visible.filter(function (it) { return it[0].indexOf(prefix) === 0; });
+
+    var cells = [];
+    for (var b = 0; b < first; b++) cells.push({ blank: true, real: false });
+    for (var d = 1; d <= len; d++) {
+      (function (day) {
+        var isoD = prefix + '-' + pad(day);
+        var its = monthItems.filter(function (it) { return it[0] === isoD; });
+        var tot = its.reduce(function (a, it) { return a + it[2]; }, 0);
+        var isToday = isoD === TODAY;
+        var isSel = isoD === s.sel;
+        var past = isoD < TODAY;
+        cells.push({
+          blank: false, real: true, n: day,
+          dots: its.map(function (it) { return KIND[it[3]].dot; }),
+          total: tot ? usd(tot) : '',
+          bg: isSel ? '#E3DADE' : (tot > 1000 ? '#F3DCDF' : '#F7F3F5'),
+          ring: isToday ? 'inset 0 0 0 2px #344C3D' : 'none',
+          numColor: past ? '#5E6B62' : '#1E2B22',
+          selected: isSel,
+          aria: MN[mo] + ' ' + day + (its.length ? ', ' + its.length + ' items, ' + usd(tot) : ', nothing due') + (isToday ? ', today' : ''),
+          pick: function () { self.setState({ sel: isoD }); }
+        });
+      })(d);
+    }
+    while (cells.length % 7) cells.push({ blank: true, real: false });
+
+    var selItems = visible.filter(function (it) { return it[0] === s.sel; });
+    var selDate = new Date(s.sel + 'T00:00:00Z');
+    var selTot = selItems.reduce(function (a, it) { return a + it[2]; }, 0);
+
+    var sums = { subs: 0, trials: 0, bills: 0 };
+    monthItems.forEach(function (it) { sums[KIND[it[3]].group] += it[2]; });
+    var monthTotal = sums.subs + sums.trials + sums.bills;
+    var biggest = null;
+    cells.forEach(function (c) { if (c.real) { var iso2 = prefix + '-' + pad(c.n); var t = monthItems.filter(function (it) { return it[0] === iso2; }).reduce(function (a, it) { return a + it[2]; }, 0); if (!biggest || t > biggest.t) biggest = { n: c.n, t: t }; } });
+
+    var toggles = [['subs', 'Subscriptions', '#829672'], ['trials', 'Trials ending', '#D8959B'], ['bills', 'Bills', '#7F9BB8']].map(function (t) {
+      var on = s.show[t[0]];
+      return { label: t[1], on: on, dot: t[2], dotOpacity: on ? 1 : 0.35, bg: on ? '#FFFFFF' : 'transparent', border: on ? '#344C3D' : '#D6CBD0', flip: function () { var n = Object.assign({}, self.state.show); n[t[0]] = !n[t[0]]; self.setState({ show: n }); } };
+    });
+
+    function goto(i) {
+      var yy = MONTHS[i][0], mm = MONTHS[i][1];
+      var p2 = yy + '-' + pad(mm + 1);
+      var sel = TODAY.indexOf(p2) === 0 ? TODAY : (ITEMS.find(function (it) { return it[0].indexOf(p2) === 0; }) || [p2 + '-01'])[0];
+      self.setState({ m: i, sel: sel });
+    }
+
+    return {
+      monthName: MN[mo] + ' ' + y,
+      monthSummary: monthItems.length + ' charges and due dates in ' + MN[mo] + (biggest && biggest.t ? '. The heaviest day is ' + MN[mo].slice(0, 3) + ' ' + biggest.n + '.' : '.'),
+      prev: function () { if (self.state.m > 0) goto(self.state.m - 1); },
+      next: function () { if (self.state.m < MONTHS.length - 1) goto(self.state.m + 1); },
+      atStart: s.m === 0, atEnd: s.m === MONTHS.length - 1,
+      prevOpacity: s.m === 0 ? 0.4 : 1, nextOpacity: s.m === MONTHS.length - 1 ? 0.4 : 1,
+      toggles: toggles,
+      cells: cells,
+      dayTitle: DOW[selDate.getUTCDay()] + ', ' + MN[selDate.getUTCMonth()].slice(0, 3) + ' ' + selDate.getUTCDate(),
+      daySub: s.sel === TODAY ? 'Today' + (selItems.length ? ', ' + usd(selTot) : '') : (selItems.length ? usd(selTot) + ' in total' : ''),
+      dayItems: selItems.map(function (it) { return { name: it[1], amt: usd(it[2]), dot: KIND[it[3]].dot, kindLabel: KIND[it[3]].label }; }),
+      dayEmpty: selItems.length === 0,
+      monthTotal: usd(monthTotal),
+      breakdown: [
+        { label: 'Subscriptions', amt: usd(sums.subs) },
+        { label: 'Trials converting', amt: usd(sums.trials) },
+        { label: 'Bills', amt: usd(sums.bills) }
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>
