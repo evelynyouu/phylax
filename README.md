@@ -48,7 +48,7 @@ Gmail (read-only) -> sync -> rules extractor -> [low confidence] -> LLM fallback
 
 - **Rules first.** Classification, amounts, dates, cadence, and cancel links come from patterns and a merchant table. The model only sees emails the rules score below 0.7, or that look billing-related but matched nothing.
 - **Resolution.** Records are grouped by merchant. A merchant is a subscription when emails state a cadence, a renewal or trial notice exists, or charges repeat. One-off purchases are ignored. Cancelled subscriptions are detected from cancellation emails.
-- **Storage.** Only the merchant, amount, dates, and cancel link from each email are saved, in `data/subwatch.db`. Email text is not stored.
+- **Storage.** Only the merchant, amount, dates, and cancel link from each email are saved, in `data/subwatch.db`. Email text is not stored. The optional eval corpus in `data/eval/` is the one exception: it stores sampled email bodies, encrypted with the token key, only when you run `npm run eval:export`.
 
 ## Security model
 
@@ -69,7 +69,25 @@ npm run eval        # extraction quality on the labeled fixtures
 npm run eval:llm    # same, with the LLM fallback (needs ANTHROPIC_API_KEY)
 ```
 
-The fixtures in `fixtures/emails.ts` are synthetic and were labeled and tuned by the author, so the score on them is a regression check, not a measure of real-world accuracy. To get a number worth quoting, label 150 to 200 of your own billing emails the same way (`Expected` in that file) and run the eval on those.
+The fixtures in `fixtures/emails.ts` are synthetic and were labeled and tuned by the author, so the score on them is a regression check, not a measure of real-world accuracy.
+
+### Eval on your own inbox
+
+Connect Gmail first (see above). Then:
+
+```bash
+npm run eval:export   # samples about 220 emails into data/eval, encrypted
+npm run eval:label    # label them in the terminal; resumable, type q to stop
+npm run eval:real     # precision and recall per field, rules only
+npm run eval:real:llm # same, plus a column with the LLM fallback
+npm run eval:real -- --report docs/eval-results.md   # aggregate-only report, safe to commit
+rm -rf data/eval      # delete the corpus when you are done
+```
+
+- **Two samples.** 160 emails drawn at random (seeded) from what the app's Gmail query returns, which is what the extractor actually sees, and 60 drawn from all mail. The second sample estimates how much billing mail the query misses. Change the sizes with `--query` and `--random`.
+- **Blind labeling.** The labeler shows the email, numbered amounts, dates, and https links found in its text, but never the app's prediction. Expect 30 to 60 seconds per email.
+- **Numbers.** Each metric shows a Wilson 95% interval and its denominator. A metric with nothing to count shows `n/a`, not 100%.
+- **Tuning.** If you change the rules after reading the mismatches, the same emails become training data. Quote the first run, or hold some emails back.
 
 ## Known limits
 

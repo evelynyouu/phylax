@@ -12,7 +12,9 @@
     "eval:llm": "tsx scripts/eval.ts --llm",
     "demo": "DATA_SOURCE=fixtures next dev -H 127.0.0.1",
     "eval:export": "tsx scripts/eval-export.ts",
-    "eval:label": "tsx scripts/eval-label.ts"
+    "eval:label": "tsx scripts/eval-label.ts",
+    "eval:real": "tsx scripts/eval.ts --real",
+    "eval:real:llm": "tsx scripts/eval.ts --real --llm"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^1.7.0",

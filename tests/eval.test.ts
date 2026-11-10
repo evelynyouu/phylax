@@ -12,8 +12,9 @@ import {
 } from "../lib/eval/corpus";
 import { ALL_MAIL_QUERY, exportCorpus, type ExportDeps } from "../lib/eval/export";
 import { candidates, nextUnlabeled, parseAmount, parseDate, parseKind, parseLink } from "../lib/eval/label";
+import { formatRate, formatReport } from "../lib/eval/report";
 import { planExport, seededShuffle } from "../lib/eval/sample";
-import { scoreCases, wilson } from "../lib/eval/score";
+import { rate, scoreCases, wilson } from "../lib/eval/score";
 import { syncQuery } from "../lib/gmail";
 import type { CorpusEntry, EvalCase, Expected, SampleSource } from "../lib/eval/types";
 import type { ExtractedRecord, RawEmail } from "../lib/types";
@@ -305,5 +306,38 @@ describe("labeling helpers", () => {
     expect(nextUnlabeled(entries, { e1: { relevant: false, kind: "other" } })).toBe(1);
     const all = Object.fromEntries(entries.map((e) => [e.email.id, { relevant: false, kind: "other" as const }]));
     expect(nextUnlabeled(entries, all)).toBe(-1);
+  });
+});
+
+// ---- Task 5: report ----
+
+describe("report", () => {
+  it("formats rates and n/a", () => {
+    expect(formatRate(rate(12, 13))).toBe("92.3% (66.7 to 98.6, n=13)");
+    expect(formatRate(rate(0, 0))).toBe("n/a (n=0)");
+  });
+
+  it("report contains aggregate numbers only, no email content", () => {
+    const cases = [
+      mkCase(
+        { relevant: true, kind: "receipt", merchant: "ZZMERCHANT", cancelUrl: "https://zz.example/cancel?t=SECRET" },
+        { email: { id: "zz-id-1", from: "ZZ <a@zz.example>", subject: "ZZSUBJECT" } }
+      ),
+    ];
+    const r = scoreCases(cases, [mkPred({ merchant: "Other", cancelUrl: "https://zz.example/wrong" })]);
+    expect(r.mismatches.length).toBeGreaterThan(0);
+    const md = formatReport(r, null, { date: "2026-11-09", labeled: 1, corpus: 1, querySample: 1, randomSample: 0, model: null });
+    for (const s of ["ZZSUBJECT", "ZZMERCHANT", "zz-id-1", "zz.example", "SECRET"]) expect(md).not.toContain(s);
+    expect(md).toContain("| Relevance precision |");
+    expect(md).toContain("not run");
+    expect(md).not.toMatch(/\u2014/);
+  });
+
+  it("shows both columns when the LLM run is present", () => {
+    const r = scoreCases([mkCase(R({ amount: 5 }))], [mkPred({ amount: 5 })]);
+    const md = formatReport(r, r, { date: "2026-11-09", labeled: 1, corpus: 1, querySample: 1, randomSample: 0, model: "claude-haiku-5-5" });
+    expect(md).toContain("| Amount precision | 100.0%");
+    expect(md).not.toContain("not run");
+    expect(md).toContain("claude-haiku-5-5");
   });
 });
