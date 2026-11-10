@@ -23,7 +23,7 @@
 - The export uses exactly the production list query, `syncQuery(null)` from `lib/gmail.ts`, so "in query" means what sync sees.
 - `npm test`, `npm run eval`, `npm run eval:llm`, `npx tsc --noEmit`, and `npm run lint` must pass after every task.
 - No Next.js code is touched. If a task ends up touching `app/`, read `node_modules/next/dist/docs/` first (AGENTS.md).
-- Prerequisite: the project is not yet a git repo. Before Task 1 run `git init && git add -A && git commit -m "chore: baseline"` (`.gitignore` already excludes `/data` and `.env*`).
+- Repo: https://github.com/evelynyouu/subwatch (public), baseline on `main`. Work on a feature branch. `.gitignore` excludes `/data` and `.env*`; never force-add them.
 
 ## Review Focus
 
