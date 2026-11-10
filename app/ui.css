@@ -1,0 +1,367 @@
+/* Shared components. Values from design/pages/StyleGuide.dc.html and Dashboard.dc.html. */
+
+/* ---- Button ---- */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 48px;
+  padding: 0 22px;
+  border-radius: var(--r-pill);
+  border: 1.5px solid transparent;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background-color 150ms ease, border-color 150ms ease, color 150ms ease;
+}
+.btn-sm {
+  min-height: 44px;
+  padding: 0 18px;
+}
+.btn-primary {
+  background: var(--evergreen);
+  color: #fff;
+}
+.btn-primary:hover {
+  background: var(--evergreen-hover);
+  color: #fff;
+}
+.btn-ghost {
+  background: transparent;
+  border-color: var(--evergreen);
+  color: var(--evergreen);
+}
+.btn-ghost:hover {
+  background: var(--ghost-hover);
+  color: var(--evergreen);
+}
+.btn-danger {
+  background: var(--surface);
+  border-color: var(--danger-border);
+  color: var(--mauve-ink);
+}
+.btn-danger:hover {
+  background: var(--danger-hover);
+  color: var(--mauve-ink);
+}
+.btn:disabled,
+.btn[aria-disabled="true"] {
+  background: var(--lavender);
+  border-color: transparent;
+  color: var(--muted);
+  cursor: default;
+}
+.linkish {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--evergreen);
+  font-weight: 600;
+  text-decoration: underline;
+  cursor: pointer;
+  min-height: 24px;
+}
+.linkish.quiet {
+  color: var(--muted);
+  font-weight: 400;
+}
+
+/* ---- Chip (filter) ---- */
+.chip {
+  min-height: 40px;
+  padding: 0 16px;
+  border-radius: var(--r-pill);
+  border: 1.5px solid var(--field-border);
+  background: var(--surface);
+  color: var(--ink);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.chip:hover {
+  border-color: var(--evergreen);
+}
+.chip[aria-pressed="true"] {
+  background: var(--evergreen);
+  border-color: var(--evergreen);
+  color: #fff;
+}
+.chip-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* Segmented control (range pickers) */
+.seg-group {
+  display: inline-flex;
+  gap: 6px;
+  background: var(--paper);
+  padding: 5px;
+  border-radius: var(--r-pill);
+}
+.seg {
+  min-height: 40px;
+  padding: 0 16px;
+  border-radius: var(--r-pill);
+  border: 1.5px solid transparent;
+  background: transparent;
+  color: var(--ink);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.seg:hover {
+  border-color: var(--evergreen);
+}
+.seg[aria-pressed="true"] {
+  background: var(--evergreen);
+  color: #fff;
+}
+
+/* ---- Tag (status) ---- */
+.tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 5px 12px;
+  border-radius: var(--r-pill);
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+.tag-active {
+  background: var(--sage-fill);
+  color: var(--sage-ink);
+}
+.tag-trial {
+  background: var(--sky);
+  color: var(--slate);
+}
+.tag-attention {
+  background: var(--mauve-fill);
+  color: var(--mauve-ink);
+}
+.tag-neutral {
+  background: var(--hairline);
+  color: var(--moss);
+}
+
+/* ---- Field ---- */
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.field label {
+  font-size: 14px;
+  font-weight: 600;
+}
+.field input {
+  min-height: 48px;
+  padding: 0 16px;
+  border-radius: var(--r-field);
+  border: 1.5px solid var(--field-border);
+  background: var(--surface);
+  color: var(--ink);
+}
+.field input:focus {
+  outline: none;
+  border-color: var(--evergreen);
+  box-shadow: 0 0 0 3px var(--sky);
+}
+.field input:disabled {
+  background: var(--paper);
+  color: var(--muted);
+}
+.field-hint {
+  font-size: 13px;
+  color: var(--muted);
+}
+.field-error {
+  font-size: 13px;
+  color: var(--mauve-ink);
+}
+
+/* ---- Merchant mark ---- */
+.mark {
+  flex: none;
+  display: grid;
+  place-items: center;
+  border-radius: var(--r-leaf);
+  font-weight: 700;
+  color: var(--ink);
+}
+.mark[data-cat="software"] {
+  color: #fff;
+}
+
+/* ---- Cards ---- */
+.card {
+  background: var(--surface);
+  border-radius: 28px;
+  padding: 24px clamp(18px, 2.4vw, 28px);
+}
+.card-soft {
+  background: var(--lavender);
+}
+.card h2 {
+  font-family: var(--display);
+  font-weight: 400;
+  font-size: 28px;
+  line-height: 1.1;
+}
+
+/* ---- App shell ---- */
+.shell {
+  min-height: 100vh;
+  display: flex;
+  align-items: stretch;
+}
+.side {
+  flex: 0 0 260px;
+  background: var(--surface);
+  padding: 26px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+  border-right: 1px solid var(--hairline);
+  position: sticky;
+  top: 0;
+  height: 100vh;
+}
+.side-brand {
+  font-family: var(--display);
+  font-size: 26px;
+  color: var(--ink);
+  text-decoration: none;
+  padding: 0 10px;
+}
+.side-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.side-nav a {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 46px;
+  padding: 0 14px;
+  border-radius: var(--r-field);
+  color: var(--ink);
+  font-weight: 500;
+  text-decoration: none;
+}
+.side-nav a:hover {
+  background: var(--ghost-hover);
+}
+.side-nav a[aria-current="page"] {
+  background: var(--evergreen);
+  color: #fff;
+  font-weight: 600;
+}
+.side-foot {
+  margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 0 10px;
+}
+.side-foot .sync-note {
+  font-size: 14px;
+  color: var(--muted);
+}
+.account {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--mauve);
+  display: grid;
+  place-items: center;
+  font-weight: 700;
+  font-size: 14px;
+  flex: none;
+}
+.account-name {
+  flex: 1;
+  min-width: 0;
+  font-size: 14px;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.account form {
+  display: contents;
+}
+.account .linkish {
+  font-size: 14px;
+  font-weight: 400;
+}
+.main {
+  flex: 1 1 0;
+  min-width: 0;
+  padding: 32px clamp(20px, 3vw, 44px) 64px;
+}
+.page-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.page-head .eyebrow {
+  font-size: 15px;
+  color: var(--moss);
+}
+.page-head h1 {
+  margin-top: 4px;
+  font-family: var(--display);
+  font-weight: 400;
+  font-size: 44px;
+  line-height: 1;
+}
+
+@media (max-width: 860px) {
+  .shell {
+    flex-direction: column;
+  }
+  .side {
+    position: static;
+    height: auto;
+    flex: none;
+    padding: 16px;
+    gap: 14px;
+    border-right: 0;
+    border-bottom: 1px solid var(--hairline);
+  }
+  .side-nav {
+    flex-direction: row;
+    overflow-x: auto;
+    gap: 6px;
+    margin: 0 -16px;
+    padding: 0 16px 2px;
+  }
+  .side-nav a {
+    flex: none;
+    min-height: 44px;
+  }
+  .side-foot {
+    margin-top: 0;
+    padding: 0;
+  }
+  .main {
+    padding: 24px 16px 56px;
+  }
+  .page-head h1 {
+    font-size: 36px;
+  }
+}
