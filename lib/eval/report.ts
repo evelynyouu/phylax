@@ -1,3 +1,4 @@
+import type { ListingInfo } from "./export";
 import { FIELD_NAMES, type EvalResult, type FieldName, type Rate } from "./score";
 
 // Aggregate-only markdown report, safe to commit. It never reads EvalResult.mismatches,
@@ -10,9 +11,10 @@ export interface ReportMeta {
   querySample: number;
   randomSample: number;
   model: string | null;
+  listing?: ListingInfo | null;
 }
 
-const FIELD_LABELS: Record<FieldName, string> = {
+export const FIELD_LABELS: Record<FieldName, string> = {
   merchant: "Merchant",
   amount: "Amount",
   date: "Date",
@@ -27,6 +29,16 @@ export function formatRate(r: Rate): string {
 
 function paths(r: EvalResult): string {
   return `rules ${r.methods.rules ?? 0}, llm ${r.methods.llm ?? 0}`;
+}
+
+function sampleText(meta: ReportMeta): string {
+  const l = meta.listing;
+  const query = `a seeded random sample of ${meta.querySample} emails matched by the app's production Gmail query` +
+    (l?.queryCapped ? ` (drawn from the newest ${l.queryListed} matches, the same cap sync uses on its first run)` : "");
+  const all = l?.allCapped
+    ? `from the newest ${l.allListed} messages (the listing cap was reached, so older mail is not represented)`
+    : "from all mail (spam and trash excluded, last 400 days)";
+  return `${query}, plus a seeded random sample of ${meta.randomSample} emails ${all}.`;
 }
 
 export function formatReport(rules: EvalResult, llm: EvalResult | null, meta: ReportMeta): string {
@@ -54,7 +66,7 @@ Run ${meta.date}. ${meta.labeled} of ${meta.corpus} exported emails labeled.
 
 ## Method
 
-- Emails come from the author's own Gmail: a seeded random sample of ${meta.querySample} emails matched by the app's production Gmail query, plus a seeded random sample of ${meta.randomSample} emails from all mail (spam and trash excluded, last 400 days).
+- Emails come from the author's own Gmail: ${sampleText(meta)}
 - One labeler (the author) labeled each email blind, without seeing the app's prediction.
 - Extraction metrics use only the query sample, because that is what the app processes. Field metrics count only billing-relevant emails with a label for that field.
 - Precision is correct predictions over all predictions made; recall is correct predictions over all labeled values. Brackets are Wilson 95% intervals; n is the denominator.

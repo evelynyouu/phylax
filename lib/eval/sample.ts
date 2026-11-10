@@ -41,5 +41,6 @@ export function planExport(
     if (existing) existing.samples.push("random");
     else plan.set(id, { samples: ["random"], inQuery: inQuery.has(id) });
   }
-  return plan;
+  // Seeded interleave, so stopping partway through labeling still leaves a fair mix of both samples.
+  return new Map(seededShuffle([...plan], opts.seed + 2));
 }

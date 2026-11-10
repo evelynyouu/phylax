@@ -84,8 +84,8 @@ npm run eval:real -- --report docs/eval-results.md   # aggregate-only report, sa
 rm -rf data/eval      # delete the corpus when you are done
 ```
 
-- **Two samples.** 160 emails drawn at random (seeded) from what the app's Gmail query returns, which is what the extractor actually sees, and 60 drawn from all mail. The second sample estimates how much billing mail the query misses. Change the sizes with `--query` and `--random`.
-- **Blind labeling.** The labeler shows the email, numbered amounts, dates, and https links found in its text, but never the app's prediction. Expect 30 to 60 seconds per email.
+- **Two samples.** 160 emails drawn at random (seeded) from what the app's Gmail query returns, which is what the extractor actually sees, and 60 drawn from all mail. The second sample estimates how much billing mail the query misses. Change the sizes with `--query` and `--random`. Only a few percent of all mail is billing, so with 60 random emails the query-recall number has a wide interval; use `--random 200` or more if you want it to mean something. The two samples are interleaved, so stopping partway through labeling still gives a fair mix.
+- **Blind labeling.** The labeler shows the email, numbered amounts, dates, and https links found in its HTML and text, but never the app's prediction. Expect 30 to 60 seconds per email.
 - **Numbers.** Each metric shows a Wilson 95% interval and its denominator. A metric with nothing to count shows `n/a`, not 100%.
 - **Tuning.** If you change the rules after reading the mismatches, the same emails become training data. Quote the first run, or hold some emails back.
 

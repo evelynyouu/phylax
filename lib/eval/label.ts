@@ -24,8 +24,11 @@ export const KIND_ORDER: EmailKind[] = [
   "other",
 ];
 
-// The alternation keeps "$1234.00" from matching as "$123".
-const AMOUNT_RE = /[$€£]\s?(?:\d{1,3}(?:,\d{3})+|\d+)(?:\.\d{2})?/g;
+// The alternation keeps "$1234.00" from matching as "$123". The lookahead drops comma-decimal
+// amounts like "€9,99" or "€1.234,56" entirely rather than offering a wrong number; type those.
+const AMOUNT_RE = /[$€£]\s?(?:\d{1,3}(?:,\d{3})+|\d+)(?:\.\d{2})?(?![,.]?\d)/g;
+// Same URL pattern the rules extractor uses for plain-text links.
+const URL_RE = /https?:\/\/[^\s<>)\]"']+/g;
 
 function toNumber(s: string): number {
   return Number(s.replace(/[$€£,\s]/g, ""));
@@ -35,7 +38,17 @@ export function candidates(email: RawEmail): Candidates {
   const text = `${email.subject}\n${email.bodyText}`;
   const amounts = [...new Set((text.match(AMOUNT_RE) ?? []).map(toNumber))];
   const dates = [...new Set(findDates(text, email.date).map((d) => d.iso))];
-  const links = email.links.filter((l) => l.href.startsWith("https:"));
+  // Body-text URLs too, since the extractor can pick them. All of them, not only those near
+  // "cancel", so the list does not hint at the extractor's choice.
+  const links: EmailLink[] = [];
+  const seen = new Set<string>();
+  const add = (l: EmailLink) => {
+    if (!l.href.startsWith("https:") || seen.has(l.href)) return;
+    seen.add(l.href);
+    links.push(l);
+  };
+  email.links.forEach(add);
+  for (const m of email.bodyText.matchAll(URL_RE)) add({ href: m[0].replace(/[.,;:!?]+$/, ""), text: "(in text)" });
   return { amounts, dates, links };
 }
 
@@ -45,6 +58,7 @@ function pick<T>(input: string, prefix: string, list: T[]): Parsed<T> | null {
   const m = new RegExp(`^${prefix}(\\d+)$`).exec(input);
   if (!m) return null;
   const i = Number(m[1]) - 1;
+  if (list.length === 0) return { ok: false, error: "There are none in this email; enter - or another value." };
   if (i < 0 || i >= list.length) return { ok: false, error: `No ${prefix}${m[1]}; choose ${prefix}1 to ${prefix}${list.length}.` };
   return { ok: true, value: list[i] };
 }

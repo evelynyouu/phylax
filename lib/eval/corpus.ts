@@ -1,6 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { decrypt, encrypt } from "../crypto";
+import type { ListingInfo } from "./export";
 import type { CorpusEntry, EvalCase, Labels } from "./types";
 
 // Local eval corpus. It holds sampled email bodies, so every line is encrypted with the same
@@ -10,6 +11,11 @@ export const EVAL_DIR = path.join(process.cwd(), "data", "eval");
 
 const CORPUS_FILE = "corpus.jsonl.enc";
 const LABELS_FILE = "labels.json.enc";
+const META_FILE = "meta.json"; // counts and flags only, no email content, so plaintext
+
+export interface ExportMeta extends ListingInfo {
+  exportedAt: string;
+}
 
 export class CorpusKeyError extends Error {
   constructor() {
@@ -40,8 +46,21 @@ export function corpusExists(dir: string): boolean {
   return fs.existsSync(path.join(dir, CORPUS_FILE));
 }
 
+/** Atomic, and refuses an empty corpus so a failed --force export cannot wipe a good one. */
 export function writeCorpus(dir: string, entries: CorpusEntry[]): void {
-  writePrivate(path.join(dir, CORPUS_FILE), entries.map((e) => encrypt(JSON.stringify(e))).join("\n") + "\n");
+  if (entries.length === 0) throw new Error("Refusing to write an empty corpus; nothing was exported.");
+  const file = path.join(dir, CORPUS_FILE);
+  writePrivate(`${file}.tmp`, entries.map((e) => encrypt(JSON.stringify(e))).join("\n") + "\n");
+  fs.renameSync(`${file}.tmp`, file);
+}
+
+export function writeMeta(dir: string, meta: ExportMeta): void {
+  writePrivate(path.join(dir, META_FILE), JSON.stringify(meta, null, 2));
+}
+
+export function readMeta(dir: string): ExportMeta | null {
+  const file = path.join(dir, META_FILE);
+  return fs.existsSync(file) ? (JSON.parse(fs.readFileSync(file, "utf8")) as ExportMeta) : null;
 }
 
 export function readCorpus(dir: string): CorpusEntry[] {

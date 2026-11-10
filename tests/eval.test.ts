@@ -7,15 +7,17 @@ import {
   loadLabeledCases,
   readCorpus,
   readLabels,
+  readMeta,
   writeCorpus,
   writeLabels,
+  writeMeta,
 } from "../lib/eval/corpus";
 import { ALL_MAIL_QUERY, exportCorpus, type ExportDeps } from "../lib/eval/export";
 import { candidates, nextUnlabeled, parseAmount, parseDate, parseKind, parseLink } from "../lib/eval/label";
 import { formatRate, formatReport } from "../lib/eval/report";
 import { planExport, seededShuffle } from "../lib/eval/sample";
-import { rate, scoreCases, wilson } from "../lib/eval/score";
-import { syncQuery } from "../lib/gmail";
+import { rate, runEval, scoreCases, wilson } from "../lib/eval/score";
+import { SYNC_MAX_MESSAGES, syncQuery } from "../lib/gmail";
 import type { CorpusEntry, EvalCase, Expected, SampleSource } from "../lib/eval/types";
 import type { ExtractedRecord, RawEmail } from "../lib/types";
 
@@ -339,5 +341,95 @@ describe("report", () => {
     expect(md).toContain("| Amount precision | 100.0%");
     expect(md).not.toContain("not run");
     expect(md).toContain("claude-haiku-5-5");
+  });
+});
+
+// ---- Final review fixes ----
+
+describe("final review fixes", () => {
+  let dir: string;
+  let savedKey: string | undefined;
+  let savedApi: string | undefined;
+  beforeEach(() => {
+    dir = fs.mkdtempSync(path.join(os.tmpdir(), "subwatch-eval-"));
+    savedKey = process.env.TOKEN_ENC_KEY;
+    savedApi = process.env.ANTHROPIC_API_KEY;
+    process.env.TOKEN_ENC_KEY = "a".repeat(64);
+  });
+  afterEach(() => {
+    if (savedKey === undefined) delete process.env.TOKEN_ENC_KEY;
+    else process.env.TOKEN_ENC_KEY = savedKey;
+    if (savedApi === undefined) delete process.env.ANTHROPIC_API_KEY;
+    else process.env.ANTHROPIC_API_KEY = savedApi;
+    fs.rmSync(dir, { recursive: true, force: true });
+  });
+
+  it("offers https URLs written in the body text as link candidates", () => {
+    const c = candidates(
+      rawEmail("e", {
+        bodyText: "To cancel visit https://x.com/cancel. Old: http://x.com/old. Also https://x.com/help",
+        links: [{ href: "https://x.com/help", text: "Help" }],
+      })
+    );
+    expect(c.links.map((l) => l.href)).toEqual(["https://x.com/help", "https://x.com/cancel"]);
+  });
+
+  it("explains when an email has no links instead of 'l1 to l0'", () => {
+    const r = parseLink("l1", candidates(rawEmail("e")));
+    expect(r.ok).toBe(false);
+    if (!r.ok) expect(r.error).not.toContain("l0");
+  });
+
+  it("refuses an LLM run when no API key is set", async () => {
+    delete process.env.ANTHROPIC_API_KEY;
+    await expect(runEval([mkCase(R())], { useLlm: true })).rejects.toThrow(/ANTHROPIC_API_KEY/);
+  });
+
+  it("does not offer a wrong candidate for comma-decimal amounts", () => {
+    const c = candidates(rawEmail("e", { bodyText: "Total €9,99 or €1.234,56 or 9,99 € or $5.00" }));
+    expect(c.amounts).toEqual([5]);
+  });
+
+  it("interleaves the two samples so any labeled prefix is a mix", () => {
+    const q = Array.from({ length: 10 }, (_, i) => `q${i}`);
+    const r = Array.from({ length: 10 }, (_, i) => `r${i}`);
+    const order = [...planExport(q, r, { nQuery: 10, nRandom: 10, seed: 1 }).keys()];
+    expect(order).toHaveLength(20);
+    expect(order.slice(0, 10).some((id) => id.startsWith("r"))).toBe(true);
+    expect(order.slice(0, 10).some((id) => id.startsWith("q"))).toBe(true);
+  });
+
+  it("reports listing counts and caps from the export", async () => {
+    const r = await exportCorpus(
+      { listIds: async (q, max) => (q === ALL_MAIL_QUERY ? ["a", "b", "c"].slice(0, max) : ["a"]), fetchEmail: async (id) => rawEmail(id) },
+      { nQuery: 1, nRandom: 2, seed: 1, queryMax: 10, allMax: 3 }
+    );
+    expect(r.listing).toEqual({ queryListed: 1, allListed: 3, queryCapped: false, allCapped: true });
+  });
+
+  it("caps the query listing at what sync reads on its first run", () => {
+    expect(SYNC_MAX_MESSAGES).toBe(1500);
+  });
+
+  it("says in the report when the all-mail listing hit its cap", () => {
+    const res = scoreCases([], []);
+    const meta = { date: "2026-11-09", labeled: 0, corpus: 0, querySample: 0, randomSample: 0, model: null };
+    const capped = formatReport(res, null, { ...meta, listing: { queryListed: 1500, allListed: 5000, queryCapped: true, allCapped: true } });
+    expect(capped).toContain("newest 5000 messages");
+    expect(capped).toContain("newest 1500");
+    expect(formatReport(res, null, meta)).toContain("last 400 days");
+  });
+
+  it("round-trips export metadata", () => {
+    writeMeta(dir, { exportedAt: "2026-11-09", queryListed: 1, allListed: 2, queryCapped: false, allCapped: false });
+    expect(readMeta(dir)?.allListed).toBe(2);
+    expect(readMeta(path.join(dir, "missing"))).toBeNull();
+  });
+
+  it("refuses to write an empty corpus and writes atomically", () => {
+    writeCorpus(dir, [entry("e1")]);
+    expect(() => writeCorpus(dir, [])).toThrow(/empty/);
+    expect(readCorpus(dir)).toHaveLength(1);
+    expect(fs.existsSync(path.join(dir, "corpus.jsonl.enc.tmp"))).toBe(false);
   });
 });

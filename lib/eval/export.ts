@@ -17,6 +17,13 @@ export interface ExportOptions {
   allMax: number;
 }
 
+export interface ListingInfo {
+  queryListed: number;
+  allListed: number;
+  queryCapped: boolean; // the listing stopped at queryMax, so older matches were not seen
+  allCapped: boolean;
+}
+
 export const ALL_MAIL_QUERY = "-in:spam -in:trash newer_than:400d";
 
 const CONCURRENCY = 5;
@@ -25,7 +32,7 @@ const CONCURRENCY = 5;
 export async function exportCorpus(
   deps: ExportDeps,
   opts: ExportOptions
-): Promise<{ entries: CorpusEntry[]; failed: number }> {
+): Promise<{ entries: CorpusEntry[]; failed: number; listing: ListingInfo }> {
   const queryIds = await deps.listIds(syncQuery(null), opts.queryMax);
   const allIds = await deps.listIds(ALL_MAIL_QUERY, opts.allMax);
   const plan = [...planExport(queryIds, allIds, opts)];
@@ -43,5 +50,11 @@ export async function exportCorpus(
       return null;
     }
   });
-  return { entries: fetched.filter((e): e is CorpusEntry => e !== null), failed };
+  const listing: ListingInfo = {
+    queryListed: queryIds.length,
+    allListed: allIds.length,
+    queryCapped: queryIds.length >= opts.queryMax,
+    allCapped: allIds.length >= opts.allMax,
+  };
+  return { entries: fetched.filter((e): e is CorpusEntry => e !== null), failed, listing };
 }

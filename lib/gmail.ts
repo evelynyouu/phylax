@@ -107,7 +107,10 @@ export async function listIdsForQuery(q: string, max: number): Promise<string[]>
   return ids.slice(0, max);
 }
 
-export async function listMessageIds(afterEpochSeconds: number | null, maxMessages = 1500): Promise<string[]> {
+/** Sync reads at most this many query matches per run, newest first. */
+export const SYNC_MAX_MESSAGES = 1500;
+
+export async function listMessageIds(afterEpochSeconds: number | null, maxMessages = SYNC_MAX_MESSAGES): Promise<string[]> {
   return listIdsForQuery(syncQuery(afterEpochSeconds), maxMessages);
 }
 

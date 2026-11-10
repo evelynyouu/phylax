@@ -5,16 +5,9 @@
 import fs from "node:fs";
 import path from "node:path";
 import { FIXTURES } from "../fixtures/emails";
-import { CorpusKeyError, EVAL_DIR, loadLabeledCases, readCorpus } from "../lib/eval/corpus";
-import { formatRate, formatReport } from "../lib/eval/report";
+import { CorpusKeyError, EVAL_DIR, loadLabeledCases, readCorpus, readMeta } from "../lib/eval/corpus";
+import { FIELD_LABELS, formatRate, formatReport } from "../lib/eval/report";
 import { FIELD_NAMES, runEval, type EvalResult } from "../lib/eval/score";
-
-const FIELD_LABELS: Record<string, string> = {
-  merchant: "Merchant",
-  amount: "Amount",
-  date: "Date",
-  cancel: "Cancel link",
-};
 
 export function printResult(r: EvalResult): void {
   console.log(`Emails: ${r.total} (headline set ${r.headline})   extraction paths: ${JSON.stringify(r.methods)}`);
@@ -81,12 +74,13 @@ async function main() {
 
   if (reportPath) {
     const md = formatReport(rules, llm, {
-      date: new Date().toISOString().slice(0, 10),
+      date: new Date().toLocaleDateString("en-CA"), // local YYYY-MM-DD
       labeled: cases.length,
       corpus: corpusSize,
       querySample: cases.filter((c) => c.samples?.includes("query")).length,
       randomSample: cases.filter((c) => c.samples?.includes("random")).length,
       model: useLlm ? (process.env.SUBWATCH_LLM_MODEL ?? "claude-haiku-5-5") : null,
+      listing: readMeta(EVAL_DIR),
     });
     fs.mkdirSync(path.dirname(path.resolve(reportPath)), { recursive: true });
     fs.writeFileSync(reportPath, md);
@@ -94,4 +88,4 @@ async function main() {
   }
 }
 
-if (process.argv[1]?.endsWith("eval.ts")) main();
+if (process.argv[1]?.endsWith("eval.ts")) main().catch((e) => fail(e instanceof Error ? e.message : String(e)));

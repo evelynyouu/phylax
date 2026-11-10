@@ -1,8 +1,8 @@
 // Export a seeded sample of your Gmail into an encrypted local corpus for labeling.
-// Usage: npm run eval:export -- [--query 160] [--random 60] [--seed 1] [--query-max 5000] [--all-max 5000] [--force]
-import { corpusExists, EVAL_DIR, writeCorpus } from "../lib/eval/corpus";
+// Usage: npm run eval:export -- [--query 160] [--random 60] [--seed 1] [--query-max 1500] [--all-max 5000] [--force]
+import { corpusExists, EVAL_DIR, writeCorpus, writeMeta } from "../lib/eval/corpus";
 import { exportCorpus } from "../lib/eval/export";
-import { fetchEmail, gmailConfigured, isConnected, listIdsForQuery } from "../lib/gmail";
+import { fetchEmail, gmailConfigured, isConnected, listIdsForQuery, SYNC_MAX_MESSAGES } from "../lib/gmail";
 
 try {
   process.loadEnvFile(".env.local");
@@ -31,7 +31,7 @@ async function main() {
     nQuery: flag("query", 160),
     nRandom: flag("random", 60),
     seed: flag("seed", 1),
-    queryMax: flag("query-max", 5000),
+    queryMax: flag("query-max", SYNC_MAX_MESSAGES), // what sync reads on its first run
     allMax: flag("all-max", 5000),
   };
   if (!gmailConfigured()) fail("Set GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET in .env.local.");
@@ -41,8 +41,19 @@ async function main() {
   }
 
   console.log("Listing and fetching messages...");
-  const { entries, failed } = await exportCorpus({ listIds: listIdsForQuery, fetchEmail }, opts);
+  const { entries, failed, listing } = await exportCorpus({ listIds: listIdsForQuery, fetchEmail }, opts);
+  if (entries.length === 0) fail(`Nothing was exported (${failed} failed). The existing corpus, if any, is unchanged.`);
   writeCorpus(EVAL_DIR, entries);
+  writeMeta(EVAL_DIR, { exportedAt: new Date().toISOString(), ...listing });
+  if (listing.queryCapped) {
+    console.log(`Note: the query listing stopped at the newest ${listing.queryListed} matches, the same cap sync uses.`);
+  }
+  if (listing.allCapped) {
+    console.log(
+      `Note: the all-mail listing stopped at the newest ${listing.allListed} messages, so older mail is not sampled. ` +
+        "Raise --all-max to cover more of the 400 days."
+    );
+  }
 
   const q = entries.filter((e) => e.samples.includes("query")).length;
   const r = entries.filter((e) => e.samples.includes("random")).length;

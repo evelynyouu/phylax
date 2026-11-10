@@ -1,4 +1,5 @@
 import { extractEmail } from "../extract";
+import { llmAvailable } from "../extract/llm";
 import type { ExtractedRecord } from "../types";
 import type { EvalCase, Expected } from "./types";
 
@@ -165,6 +166,8 @@ export function scoreCases(cases: EvalCase[], predictions: ExtractedRecord[]): E
 }
 
 export async function runEval(cases: EvalCase[], opts: { useLlm: boolean }): Promise<EvalResult> {
+  // Without a key extractEmail silently falls back to rules, which would label rules-only numbers "With LLM".
+  if (opts.useLlm && !llmAvailable()) throw new Error("--llm needs ANTHROPIC_API_KEY (in .env.local or the environment).");
   const preds: ExtractedRecord[] = [];
   for (const c of cases) preds.push(await extractEmail(c.email, { useLlm: opts.useLlm }));
   return scoreCases(cases, preds);
