@@ -90,17 +90,25 @@ const BILLING_QUERY = [
   ")",
 ].join(" ");
 
-export async function listMessageIds(afterEpochSeconds: number | null, maxMessages = 1500): Promise<string[]> {
+/** The exact Gmail search sync uses. The eval export uses it too, so "in query" means what sync sees. */
+export function syncQuery(afterEpochSeconds: number | null): string {
+  return afterEpochSeconds ? `${BILLING_QUERY} after:${afterEpochSeconds}` : `${BILLING_QUERY} newer_than:400d`;
+}
+
+export async function listIdsForQuery(q: string, max: number): Promise<string[]> {
   const gmail = gmailClient();
-  const q = afterEpochSeconds ? `${BILLING_QUERY} after:${afterEpochSeconds}` : `${BILLING_QUERY} newer_than:400d`;
   const ids: string[] = [];
   let pageToken: string | undefined;
   do {
     const res = await gmail.users.messages.list({ userId: "me", q, maxResults: 100, pageToken });
     for (const m of res.data.messages ?? []) if (m.id) ids.push(m.id);
     pageToken = res.data.nextPageToken ?? undefined;
-  } while (pageToken && ids.length < maxMessages);
-  return ids;
+  } while (pageToken && ids.length < max);
+  return ids.slice(0, max);
+}
+
+export async function listMessageIds(afterEpochSeconds: number | null, maxMessages = 1500): Promise<string[]> {
+  return listIdsForQuery(syncQuery(afterEpochSeconds), maxMessages);
 }
 
 function walk(part: gmail_v1.Schema$MessagePart, out: { plain: string[]; html: string[] }) {

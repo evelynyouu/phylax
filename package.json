@@ -10,7 +10,8 @@
     "test": "vitest run",
     "eval": "tsx scripts/eval.ts",
     "eval:llm": "tsx scripts/eval.ts --llm",
-    "demo": "DATA_SOURCE=fixtures next dev -H 127.0.0.1"
+    "demo": "DATA_SOURCE=fixtures next dev -H 127.0.0.1",
+    "eval:export": "tsx scripts/eval-export.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^1.7.0",

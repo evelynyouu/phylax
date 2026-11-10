@@ -10,7 +10,10 @@ import {
   writeCorpus,
   writeLabels,
 } from "../lib/eval/corpus";
+import { ALL_MAIL_QUERY, exportCorpus, type ExportDeps } from "../lib/eval/export";
+import { planExport, seededShuffle } from "../lib/eval/sample";
 import { scoreCases, wilson } from "../lib/eval/score";
+import { syncQuery } from "../lib/gmail";
 import type { CorpusEntry, EvalCase, Expected, SampleSource } from "../lib/eval/types";
 import type { ExtractedRecord, RawEmail } from "../lib/types";
 
@@ -197,5 +200,60 @@ describe("corpus store", () => {
     expect(() => readCorpus(dir)).toThrow(CorpusKeyError);
     expect(() => readCorpus(dir)).toThrow(/TOKEN_ENC_KEY/);
     expect(() => readLabels(dir)).toThrow(CorpusKeyError);
+  });
+});
+
+// ---- Task 3: export ----
+
+describe("export sampling", () => {
+  it("seededShuffle is deterministic and a permutation", () => {
+    const xs = Array.from({ length: 50 }, (_, i) => `m${i}`);
+    const copy = [...xs];
+    expect(seededShuffle(xs, 1)).toEqual(seededShuffle(xs, 1));
+    expect(seededShuffle(xs, 1)).not.toEqual(seededShuffle(xs, 2));
+    expect([...seededShuffle(xs, 1)].sort()).toEqual([...xs].sort());
+    expect(xs).toEqual(copy);
+  });
+
+  it("planExport marks overlap and query membership", () => {
+    const q = ["a", "b", "c"];
+    const all = ["a", "b", "c", "x", "y", "z"];
+    const plan = planExport(q, all, { nQuery: 3, nRandom: 6, seed: 1 });
+    expect(plan.size).toBe(6);
+    expect(plan.get("a")).toEqual({ samples: ["query", "random"], inQuery: true });
+    expect(plan.get("x")).toEqual({ samples: ["random"], inQuery: false });
+  });
+
+  it("planExport sets inQuery from the full query list, not just the query sample", () => {
+    const plan = planExport(["a", "b", "c"], ["a", "b", "c"], { nQuery: 0, nRandom: 3, seed: 1 });
+    expect([...plan.values()].every((v) => v.inQuery && v.samples.join() === "random")).toBe(true);
+  });
+
+  it("exportCorpus skips messages that fail to fetch", async () => {
+    const deps: ExportDeps = {
+      listIds: async (q) => (q === ALL_MAIL_QUERY ? ["a", "b", "x"] : ["a", "b"]),
+      fetchEmail: async (id) => {
+        if (id === "b") throw new Error("404");
+        return id === "x" ? null : rawEmail(id);
+      },
+    };
+    const r = await exportCorpus(deps, { nQuery: 2, nRandom: 3, seed: 1, queryMax: 10, allMax: 10 });
+    expect(r.entries.map((e) => e.email.id)).toEqual(["a"]);
+    expect(r.entries[0]).toMatchObject({ samples: ["query", "random"], inQuery: true });
+    expect(r.failed).toBe(2);
+  });
+
+  it("exportCorpus lists the production sync query", async () => {
+    const seen: string[] = [];
+    await exportCorpus(
+      { listIds: async (q) => (seen.push(q), []), fetchEmail: async () => null },
+      { nQuery: 1, nRandom: 1, seed: 1, queryMax: 10, allMax: 10 }
+    );
+    expect(seen).toEqual([syncQuery(null), ALL_MAIL_QUERY]);
+  });
+
+  it("syncQuery matches the production query", () => {
+    expect(syncQuery(null)).toMatch(/^-in:spam -in:trash \(.*newer_than:400d$/);
+    expect(syncQuery(1700000000)).toMatch(/after:1700000000$/);
   });
 });

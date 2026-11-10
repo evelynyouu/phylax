@@ -23,7 +23,7 @@ export interface SyncResult {
 const LAST_SYNC = "last_sync_epoch";
 const CONCURRENCY = 5;
 
-async function inBatches<T, R>(items: T[], size: number, fn: (x: T) => Promise<R>): Promise<R[]> {
+export async function inBatches<T, R>(items: T[], size: number, fn: (x: T) => Promise<R>): Promise<R[]> {
   const out: R[] = [];
   for (let i = 0; i < items.length; i += size) {
     out.push(...(await Promise.all(items.slice(i, i + size).map(fn))));
