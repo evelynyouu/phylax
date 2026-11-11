@@ -25,4 +25,8 @@ describe("requestOrigin", () => {
     expect(requestOrigin(h({ host: "evil.example/path@x" }), "http://localhost:3200/x")).toBe("http://localhost:3200");
     expect(requestOrigin(h({ host: "app.example", "x-forwarded-proto": "javascript" }), "http://localhost/x")).toBe("http://app.example");
   });
+
+  it("falls back when the built origin is not a valid URL (out-of-range port)", () => {
+    expect(requestOrigin(h({ host: "app.example:99999" }), "http://localhost:3200/x")).toBe("http://localhost:3200");
+  });
 });

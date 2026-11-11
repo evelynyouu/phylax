@@ -141,7 +141,7 @@ export async function isConnected(store: Store): Promise<boolean> {
  * the caller's next step, but it is reported (false) so the user can be told to remove the grant
  * at https://myaccount.google.com/permissions. True when revoked or there was nothing to revoke.
  */
-async function revokeBestEffort(c: GmailConnection | null): Promise<boolean> {
+export async function revokeBestEffort(c: GmailConnection | null): Promise<boolean> {
   // A missing TOKEN_ENC_KEY still throws here: that is a setup problem, not a failed revoke.
   if (!c) return true;
   const t = readTokens(c);

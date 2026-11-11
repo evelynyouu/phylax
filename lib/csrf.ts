@@ -1,4 +1,5 @@
-// State-changing routes accept only same-origin browser requests.
+// State-changing routes accept only same-origin browser requests. This compares Origin with the
+// Host header, while requestOrigin below prefers x-forwarded-host; on Vercel the two agree.
 export function sameOrigin(req: Request): boolean {
   const origin = req.headers.get("origin");
   const host = req.headers.get("host");
@@ -23,10 +24,17 @@ function first(v: string | null): string | null {
  */
 export function requestOrigin(headers: Headers, fallbackUrl: string): string {
   const fallback = new URL(fallbackUrl);
+  // x-forwarded-host is trusted because the deploy target (Vercel) overwrites it. Behind other
+  // proxies that pass it through from the client, set APP_URL instead.
   const host = first(headers.get("x-forwarded-host")) ?? first(headers.get("host"));
   // A hostname or bracketed IPv6 and an optional port, nothing else (no path or userinfo).
   if (!host || !/^(\[[0-9a-f:.]+\]|[a-z0-9.-]+)(:\d+)?$/i.test(host)) return fallback.origin;
   const forwarded = first(headers.get("x-forwarded-proto"));
   const proto = forwarded === "http" || forwarded === "https" ? `${forwarded}:` : fallback.protocol;
-  return `${proto}//${host}`;
+  // The regex admits ports like :99999 that URL rejects.
+  try {
+    return new URL(`${proto}//${host}`).origin;
+  } catch {
+    return fallback.origin;
+  }
 }

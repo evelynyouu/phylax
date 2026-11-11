@@ -1,10 +1,11 @@
 import { NextResponse } from "next/server";
 import { DeleteBody } from "@/lib/auth-copy";
-import { disconnect } from "@/lib/gmail";
+import { revokeBestEffort } from "@/lib/gmail";
 import { logError } from "@/lib/log";
 import { requireUser } from "@/lib/route-auth";
 import { isDemo } from "@/lib/session";
 import { storeFor } from "@/lib/store";
+import type { GmailConnection } from "@/lib/store/types";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import { supabaseServer } from "@/lib/supabase/server";
 
@@ -32,13 +33,13 @@ export async function POST(req: Request) {
     return unavailable(e);
   }
 
-  // A Google revoke failure must not block deleting the account; the user is told instead.
-  let revokeFailed: boolean;
+  // Read the Gmail connection (tokens) without removing it, so a failed delete changes nothing.
+  let connection: GmailConnection | null = null;
+  let readFailed = false;
   try {
-    ({ revokeFailed } = await disconnect(await storeFor(user)));
+    connection = await (await storeFor(user)).getGmail();
   } catch {
-    // The connection row is removed with the account either way; the grant may still exist.
-    revokeFailed = true;
+    readFailed = true;
   }
 
   try {
@@ -46,6 +47,15 @@ export async function POST(req: Request) {
     if (error) return unavailable(error);
   } catch (e) {
     return unavailable(e);
+  }
+
+  // The user and their rows (including the connection) are gone; revoke Google's grant from the
+  // tokens read above. A revoke failure must not block anything; the user is told instead.
+  let revokeFailed = readFailed;
+  try {
+    if (!(await revokeBestEffort(connection))) revokeFailed = true;
+  } catch {
+    revokeFailed = true;
   }
 
   // The user is gone; clear the session cookies. A failure here is harmless.

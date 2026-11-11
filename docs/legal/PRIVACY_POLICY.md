@@ -64,9 +64,9 @@ For every message it processes, Subwatch saves one record with only these fields
 - the merchant name, the amount and currency, the billing cycle (weekly, monthly, quarterly, yearly)
 - a due date and a renewal date, if the email states them
 - a cancel or manage-subscription link taken from the email, and whether that link is on the sender's own website
-- how confident the extraction was, and which method produced it (for your account, always Subwatch's fixed rules; see "No AI processing" below)
+- how confident the extraction was, and which method produced it (records created for your account are made by Subwatch's fixed rules; the AI fallback is a local developer tool and is off for users, see "No AI processing" below)
 
-For emails that turn out not to be billing-related, Subwatch keeps only the message ID, the date, the kind of email and the confidence, so the same email is not read again. The merchant, amount, dates and link are not saved for them.
+For emails that turn out not to be billing-related, Subwatch keeps only the message ID, the date, the kind of email, the confidence and the method, so the same email is not read again. The merchant, amount, dates and link are not saved for them.
 
 We do not save the subject line, the sender address, or the body text.
 

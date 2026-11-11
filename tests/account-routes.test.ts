@@ -8,11 +8,17 @@ const s = vi.hoisted(() => ({
   signOuts: 0,
   disconnects: 0,
   revokeFailed: false,
+  gmail: { gmailEmail: "g@x.co" } as { gmailEmail: string } | null,
+  revokes: [] as { email: string; deletedAtCall: number }[],
 }));
 
 vi.mock("@/lib/route-auth", () => ({ requireUser: async () => ({ user: { id: "u1", email: "u@x.co", name: "U" } }) }));
-vi.mock("@/lib/store", () => ({ storeFor: async () => ({ userId: "u1" }) }));
+vi.mock("@/lib/store", () => ({ storeFor: async () => ({ userId: "u1", getGmail: async () => s.gmail }) }));
 vi.mock("@/lib/gmail", () => ({
+  revokeBestEffort: async (c: { gmailEmail: string } | null) => {
+    if (c) s.revokes.push({ email: c.gmailEmail, deletedAtCall: s.deleted.length });
+    return !s.revokeFailed;
+  },
   disconnect: async () => {
     s.disconnects++;
     return { revokeFailed: s.revokeFailed };
@@ -53,7 +59,7 @@ const del = () =>
   deleteAccount(new Request("http://localhost/api/account/delete", { method: "POST", body: JSON.stringify({ confirm: "delete" }), headers: { "content-type": "application/json" } }));
 
 beforeEach(() => {
-  Object.assign(s, { adminThrows: null, deleteError: null, deleted: [], signOuts: 0, disconnects: 0, revokeFailed: false });
+  Object.assign(s, { adminThrows: null, deleteError: null, deleted: [], signOuts: 0, disconnects: 0, revokeFailed: false, gmail: { gmailEmail: "g@x.co" }, revokes: [] });
 });
 
 describe("POST /api/account/delete", () => {
@@ -78,6 +84,9 @@ describe("POST /api/account/delete", () => {
     expect(res.status).toBe(500);
     expect(await res.json()).toEqual({ error: UNAVAILABLE });
     expect(s.signOuts).toBe(0);
+    // Nothing changed: the connection is still stored and Google was not asked to revoke.
+    expect(s.gmail).toEqual({ gmailEmail: "g@x.co" });
+    expect(s.revokes).toEqual([]);
     expect(log).toHaveBeenCalledWith("account delete failed", "database unreachable at db.internal");
     log.mockRestore();
   });
@@ -89,6 +98,12 @@ describe("POST /api/account/delete", () => {
     expect(await res.json()).toEqual({ ok: true, revokeFailed: true });
     expect(s.deleted).toEqual(["u1"]);
     expect(s.signOuts).toBe(1);
+  });
+
+  it("revokes from the tokens read beforehand, only after the user is deleted", async () => {
+    const res = await del();
+    expect(await res.json()).toEqual({ ok: true, revokeFailed: false });
+    expect(s.revokes).toEqual([{ email: "g@x.co", deletedAtCall: 1 }]);
   });
 
   it("reports revokeFailed false on a clean delete", async () => {
