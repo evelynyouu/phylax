@@ -2,7 +2,7 @@ import { expect, it, describe } from "vitest";
 import type { ExtractedRecord } from "../lib/types";
 import type { Store } from "../lib/store/types";
 
-function rec(emailId: string, emailDate: string): ExtractedRecord {
+export function rec(emailId: string, emailDate: string): ExtractedRecord {
   return {
     emailId,
     emailDate,
@@ -33,6 +33,15 @@ export function describeStore(name: string, make: () => Store) {
       expect((await s.loadRecords()).map((r) => r.emailId)).toEqual(["a", "b"]);
       expect(await s.hasRecord("a")).toBe(true);
       expect(await s.hasRecord("zzz")).toBe(false);
+    });
+
+    it("is last-write-wins on a duplicate emailId", async () => {
+      const s = make();
+      await s.saveRecord(rec("a", "2026-09-01T00:00:00Z"));
+      await s.saveRecord({ ...rec("a", "2026-09-01T00:00:00Z"), amount: 20 });
+      const all = await s.loadRecords();
+      expect(all).toHaveLength(1);
+      expect(all[0].amount).toBe(20);
     });
 
     it("sets, reads and clears marks per table", async () => {
