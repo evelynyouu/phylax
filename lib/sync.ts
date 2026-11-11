@@ -1,7 +1,9 @@
 import { FIXTURE_EMAILS } from "../fixtures/emails";
 import { extractEmail } from "./extract";
 import { fetchEmail, gmailConfigured, GmailReconnectError, isInvalidGrant, listMessageIds, updateGmail } from "./gmail";
+import { errorCode, errorMessage, logError } from "./log";
 import { processWide } from "./process-wide";
+import { withRetry } from "./retry";
 import { buildDashboard } from "./resolve";
 import { isDemo } from "./session";
 import type { Store } from "./store/types";
@@ -102,10 +104,20 @@ export async function inBatches<T, R>(items: T[], size: number, fn: (x: T) => Pr
 }
 
 /** One sync per user at a time; a second call while one runs rejects with SyncAlreadyRunningError. */
-export async function runSync(store: Store, onProgress?: (p: SyncProgress) => void, gmail: GmailLayer = realGmail): Promise<SyncResult> {
+export interface SyncOptions {
+  /** Backoff delay between retries; tests inject an instant one. */
+  sleep?: (ms: number) => Promise<void>;
+}
+
+export async function runSync(
+  store: Store,
+  onProgress?: (p: SyncProgress) => void,
+  gmail: GmailLayer = realGmail,
+  opts: SyncOptions = {},
+): Promise<SyncResult> {
   const id = store.userId;
   if (running.has(id)) throw new SyncAlreadyRunningError();
-  const job = runTracked(store, onProgress, gmail);
+  const job = runTracked(store, onProgress, gmail, opts);
   running.set(id, job);
   try {
     return await job;
@@ -114,7 +126,7 @@ export async function runSync(store: Store, onProgress?: (p: SyncProgress) => vo
   }
 }
 
-async function runTracked(store: Store, onProgress: ((p: SyncProgress) => void) | undefined, gmail: GmailLayer): Promise<SyncResult> {
+async function runTracked(store: Store, onProgress: ((p: SyncProgress) => void) | undefined, gmail: GmailLayer, opts: SyncOptions): Promise<SyncResult> {
   const id = store.userId;
   progress.set(id, { running: true, listed: 0, checked: 0, processed: 0, relevant: 0, error: null });
   let skipped = 0;
@@ -130,7 +142,7 @@ async function runTracked(store: Store, onProgress: ((p: SyncProgress) => void) 
   };
   const skip = (n: number) => (skipped += n);
   try {
-    const result = await syncInner(store, gmail, report, skip);
+    const result = await syncInner(store, gmail, report, skip, opts);
     progress.set(id, { ...syncProgress(id), running: false });
     return result;
   } catch (e) {
@@ -145,6 +157,7 @@ async function syncInner(
   gmail: GmailLayer,
   report: (r: SyncResult) => void,
   skip: (n: number) => void,
+  opts: SyncOptions,
 ): Promise<SyncResult> {
   const source = dataSource();
   const result: SyncResult = { source, listed: 0, processed: 0, relevant: 0, llmUsed: 0, errors: 0 };
@@ -201,16 +214,25 @@ async function syncInner(
   report(result);
 
   let revoked = false;
+  const seenReasons = new Set<string>();
   for (let i = 0; i < fresh.length && !revoked; i += CONCURRENCY) {
     await Promise.all(
       fresh.slice(i, i + CONCURRENCY).map(async (id) => {
         try {
-          const email = await gmail.fetchEmail(store, id);
-          if (email) await keep(email);
+          await withRetry(async () => {
+            const email = await gmail.fetchEmail(store, id);
+            if (email) await keep(email);
+          }, opts.sleep);
         } catch (e) {
           // A dead token is one problem, not one error per message.
           if (isInvalidGrant(e)) revoked = true;
           else {
+            // Each distinct reason is logged once per run: message and code only, no ids or content.
+            const reason = `${errorCode(e) ?? ""}|${errorMessage(e)}`;
+            if (!seenReasons.has(reason)) {
+              seenReasons.add(reason);
+              logError("sync: message failed", e);
+            }
             result.errors++;
             report(result);
           }
@@ -219,6 +241,7 @@ async function syncInner(
     );
   }
   if (revoked) return needReconnect();
+  if (result.errors > 0) logError("sync:", { message: `sync finished with ${result.errors} failed messages` });
 
   // Only advance the cursor on a clean run so failed messages are retried next time.
   await updateGmail(store, conn.gmailEmail, (c) => ({
