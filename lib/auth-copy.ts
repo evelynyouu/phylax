@@ -46,6 +46,7 @@ const BAD_LOGIN = "That email and password don't match.";
 const EXISTS = "An account with that email already exists. Sign in instead.";
 const UNCONFIRMED = "Confirm your email first. The link is in your inbox.";
 const RATE_LIMITED = "Too many sign-up attempts right now. Please wait a few minutes and try again.";
+const BAD_ADDRESS = "That email address can't be used. Check it and try again.";
 
 // Supabase Auth error codes (error.code), checked first: they are stable, the messages are not.
 const ERROR_CODES: Record<string, string> = {
@@ -54,7 +55,11 @@ const ERROR_CODES: Record<string, string> = {
   email_exists: EXISTS,
   email_not_confirmed: UNCONFIRMED,
   over_email_send_rate_limit: RATE_LIMITED,
+  email_address_invalid: BAD_ADDRESS,
 };
+
+// Supabase's wording for an address it will not accept, e.g. 'Email address "x@example.com" is invalid'.
+const BAD_ADDRESS_MESSAGE = /^Email address .+ is invalid$/;
 
 const ERRORS: Record<string, string> = {
   "Invalid login credentials": BAD_LOGIN,
@@ -68,7 +73,12 @@ const ERRORS: Record<string, string> = {
  * errors get a generic line, never the raw text.
  */
 export function authErrorMessage(message: string, code?: string | null): string {
-  return (code ? ERROR_CODES[code] : undefined) ?? ERRORS[message] ?? "Something went wrong. Please try again.";
+  return (
+    (code ? ERROR_CODES[code] : undefined) ??
+    ERRORS[message] ??
+    (BAD_ADDRESS_MESSAGE.test(message) ? BAD_ADDRESS : undefined) ??
+    "Something went wrong. Please try again."
+  );
 }
 
 /** The sign-up form's answer when signUp reports an existing email (see signupAlreadyExists). */

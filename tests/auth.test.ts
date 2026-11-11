@@ -19,6 +19,12 @@ describe("auth copy", () => {
     expect(authErrorMessage("Invalid login credentials", "some_new_code")).toBe("That email and password don't match.");
     expect(wait).not.toMatch(/\u2014/);
   });
+  it("says an address Supabase rejects can't be used, by code first, message second", () => {
+    const invalid = "That email address can't be used. Check it and try again.";
+    expect(authErrorMessage('Email address "x@example.com" is invalid', "email_address_invalid")).toBe(invalid);
+    expect(authErrorMessage('Email address "x@example.com" is invalid')).toBe(invalid);
+    expect(invalid).not.toMatch(/\u2014/);
+  });
   it("spots an existing email in a confirm-email sign-up answer (no identities)", () => {
     expect(signupAlreadyExists({ user: { identities: [] } })).toBe(true);
     expect(signupAlreadyExists({ user: { identities: [{ id: "x" }] } })).toBe(false);
