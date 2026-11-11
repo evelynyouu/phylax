@@ -9,3 +9,24 @@ export function sameOrigin(req: Request): boolean {
     return false;
   }
 }
+
+function first(v: string | null): string | null {
+  const s = v?.split(",")[0]?.trim();
+  return s ? s : null;
+}
+
+/**
+ * The origin the browser used, for redirects that must land where its cookies live. Built from
+ * x-forwarded-host / x-forwarded-proto when a proxy sets them, else the Host header and the
+ * request URL's protocol. `next start` builds req.url on localhost even when the browser used
+ * 127.0.0.1, so req.url alone is not enough. Anything malformed falls back to req.url's origin.
+ */
+export function requestOrigin(headers: Headers, fallbackUrl: string): string {
+  const fallback = new URL(fallbackUrl);
+  const host = first(headers.get("x-forwarded-host")) ?? first(headers.get("host"));
+  // A hostname or bracketed IPv6 and an optional port, nothing else (no path or userinfo).
+  if (!host || !/^(\[[0-9a-f:.]+\]|[a-z0-9.-]+)(:\d+)?$/i.test(host)) return fallback.origin;
+  const forwarded = first(headers.get("x-forwarded-proto"));
+  const proto = forwarded === "http" || forwarded === "https" ? `${forwarded}:` : fallback.protocol;
+  return `${proto}//${host}`;
+}

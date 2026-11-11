@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { safeNext } from "@/lib/auth-copy";
+import { requestOrigin } from "@/lib/csrf";
 import { isDemo } from "@/lib/session";
 import { supabaseEnv } from "@/lib/supabase/config";
 import { supabaseServer } from "@/lib/supabase/server";
@@ -8,9 +9,10 @@ import { supabaseServer } from "@/lib/supabase/server";
 // Exchanging it sets the session cookies; then we go to a whitelisted next path.
 export async function GET(req: NextRequest) {
   const url = new URL(req.url);
-  // The session cookies are set on the request's host, so stay on it. APP_URL could name a
-  // different host (127.0.0.1 vs localhost) where those cookies do not exist.
-  const base = url.origin;
+  // The session cookies are set on the browser's host, so stay on it. APP_URL could name a
+  // different host (127.0.0.1 vs localhost), and under next start req.url says localhost even
+  // when the browser used 127.0.0.1, so read the Host header.
+  const base = requestOrigin(req.headers, req.url);
   const next = safeNext(url.searchParams.get("next"));
   if (isDemo()) return NextResponse.redirect(new URL(next, base));
 

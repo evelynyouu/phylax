@@ -1,6 +1,7 @@
 import crypto from "node:crypto";
 import { NextRequest, NextResponse } from "next/server";
 import { gmailFailureRedirect } from "@/lib/auth-copy";
+import { requestOrigin } from "@/lib/csrf";
 import { getOptionalUser } from "@/lib/current-user";
 import { connectGmailWithCode } from "@/lib/gmail";
 import { storeFor } from "@/lib/store";
@@ -18,8 +19,9 @@ const NEXT: Record<string, string> = { signup: "/signup?step=3", app: "/app" };
 // the Gmail connection, for the signed-in Subwatch user (any Gmail address they choose).
 export async function GET(req: NextRequest) {
   const url = new URL(req.url);
-  // APP_URL, not the request origin: Google's redirect URI and this host must match.
-  const base = process.env.APP_URL ?? url.origin;
+  // Google sends the browser here at APP_URL (the registered redirect URI), so the browser's host
+  // is APP_URL's host. Read it from the request so an unset APP_URL does not land on localhost.
+  const base = requestOrigin(req.headers, req.url);
   const nextLabel = req.cookies.get("oauth_next")?.value;
   const done = (to: URL) => {
     const res = NextResponse.redirect(to);

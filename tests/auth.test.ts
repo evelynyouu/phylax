@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { AUTH_MESSAGES, authErrorMessage, DeleteBody, GMAIL_MESSAGES, gmailFailureRedirect, safeNext, validateSignup } from "../lib/auth-copy";
+import { AUTH_MESSAGES, authErrorMessage, DeleteBody, GMAIL_MESSAGES, gmailFailureRedirect, safeNext, signupAlreadyExists, validateSignup } from "../lib/auth-copy";
 import { gate } from "../lib/gate";
 
 describe("auth copy", () => {
@@ -7,6 +7,23 @@ describe("auth copy", () => {
     expect(authErrorMessage("Invalid login credentials")).toBe("That email and password don't match.");
     expect(authErrorMessage("User already registered")).toBe("An account with that email already exists. Sign in instead.");
     expect(authErrorMessage("anything else")).toBe("Something went wrong. Please try again.");
+  });
+  it("tells people to wait when Supabase rate-limits sign-up emails, by code first, message second", () => {
+    const wait = "Too many sign-up attempts right now. Please wait a few minutes and try again.";
+    expect(authErrorMessage("email rate limit exceeded", "over_email_send_rate_limit")).toBe(wait);
+    expect(authErrorMessage("some reworded message", "over_email_send_rate_limit")).toBe(wait);
+    expect(authErrorMessage("email rate limit exceeded")).toBe(wait);
+    // The code wins over a message that maps elsewhere.
+    expect(authErrorMessage("User already registered", "over_email_send_rate_limit")).toBe(wait);
+    expect(authErrorMessage("reworded", "user_already_exists")).toBe("An account with that email already exists. Sign in instead.");
+    expect(authErrorMessage("Invalid login credentials", "some_new_code")).toBe("That email and password don't match.");
+    expect(wait).not.toMatch(/\u2014/);
+  });
+  it("spots an existing email in a confirm-email sign-up answer (no identities)", () => {
+    expect(signupAlreadyExists({ user: { identities: [] } })).toBe(true);
+    expect(signupAlreadyExists({ user: { identities: [{ id: "x" }] } })).toBe(false);
+    expect(signupAlreadyExists({ user: { identities: undefined } })).toBe(false);
+    expect(signupAlreadyExists({ user: null })).toBe(false);
   });
   it("only follows whitelisted next paths after the auth callback", () => {
     expect(safeNext("/app")).toBe("/app");

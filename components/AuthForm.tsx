@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState, type FormEvent } from "react";
-import { AUTH_MESSAGES, authErrorMessage, PASSWORD_HINT, validateSignup, type SignupErrors } from "@/lib/auth-copy";
+import { ACCOUNT_EXISTS_MESSAGE, AUTH_MESSAGES, authErrorMessage, PASSWORD_HINT, signupAlreadyExists, validateSignup, type SignupErrors } from "@/lib/auth-copy";
 import { supabaseEnv } from "@/lib/supabase/config";
 import { supabaseBrowser } from "@/lib/supabase/browser";
 import GoogleIcon from "./GoogleIcon";
@@ -37,7 +37,7 @@ export default function AuthForm({ mode, demo = false }: { mode: "signin" | "sig
     });
     // On success the browser is already leaving for Google.
     if (error) {
-      setError(authErrorMessage(error.message));
+      setError(authErrorMessage(error.message, error.code));
       setBusy(false);
     }
   }
@@ -63,7 +63,7 @@ export default function AuthForm({ mode, demo = false }: { mode: "signin" | "sig
       const auth = supabaseBrowser().auth;
       if (mode === "signin") {
         const { error } = await auth.signInWithPassword({ email, password });
-        if (error) return setError(authErrorMessage(error.message));
+        if (error) return setError(authErrorMessage(error.message, error.code));
         return window.location.assign(next);
       }
       const { data, error } = await auth.signUp({
@@ -71,7 +71,9 @@ export default function AuthForm({ mode, demo = false }: { mode: "signin" | "sig
         password,
         options: { data: { full_name: name }, emailRedirectTo: callbackUrl(next) },
       });
-      if (error) return setError(authErrorMessage(error.message));
+      if (error) return setError(authErrorMessage(error.message, error.code));
+      // Confirm email on and the address is taken: Supabase answers success with no identities.
+      if (signupAlreadyExists(data)) return setError(ACCOUNT_EXISTS_MESSAGE);
       // No session means the project asks people to confirm their email first.
       if (!data.session) return setInfo("Check your email for a link to confirm your account. It brings you back here to connect Gmail.");
       return window.location.assign(next);

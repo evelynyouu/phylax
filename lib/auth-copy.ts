@@ -34,15 +34,44 @@ export function gmailFailureRedirect(next: string | undefined, reason: string): 
   return next === "signup" ? `/signup?step=2&auth=${auth}` : `/app?auth=${auth}`;
 }
 
-const ERRORS: Record<string, string> = {
-  "Invalid login credentials": "That email and password don't match.",
-  "User already registered": "An account with that email already exists. Sign in instead.",
-  "Email not confirmed": "Confirm your email first. The link is in your inbox.",
+const BAD_LOGIN = "That email and password don't match.";
+const EXISTS = "An account with that email already exists. Sign in instead.";
+const UNCONFIRMED = "Confirm your email first. The link is in your inbox.";
+const RATE_LIMITED = "Too many sign-up attempts right now. Please wait a few minutes and try again.";
+
+// Supabase Auth error codes (error.code), checked first: they are stable, the messages are not.
+const ERROR_CODES: Record<string, string> = {
+  invalid_credentials: BAD_LOGIN,
+  user_already_exists: EXISTS,
+  email_exists: EXISTS,
+  email_not_confirmed: UNCONFIRMED,
+  over_email_send_rate_limit: RATE_LIMITED,
 };
 
-/** Plain copy for a Supabase Auth error message. Unknown errors get a generic line, never the raw text. */
-export function authErrorMessage(message: string): string {
-  return ERRORS[message] ?? "Something went wrong. Please try again.";
+const ERRORS: Record<string, string> = {
+  "Invalid login credentials": BAD_LOGIN,
+  "User already registered": EXISTS,
+  "Email not confirmed": UNCONFIRMED,
+  "email rate limit exceeded": RATE_LIMITED,
+};
+
+/**
+ * Plain copy for a Supabase Auth error: by `error.code` when known, else by message. Unknown
+ * errors get a generic line, never the raw text.
+ */
+export function authErrorMessage(message: string, code?: string | null): string {
+  return (code ? ERROR_CODES[code] : undefined) ?? ERRORS[message] ?? "Something went wrong. Please try again.";
+}
+
+/** The sign-up form's answer when signUp reports an existing email (see signupAlreadyExists). */
+export const ACCOUNT_EXISTS_MESSAGE = EXISTS;
+
+/**
+ * With "Confirm email" on, Supabase answers a sign-up for an existing email with success and a
+ * user whose `identities` list is empty, instead of an error. Spot that answer.
+ */
+export function signupAlreadyExists(data: { user: { identities?: unknown[] | null } | null }): boolean {
+  return Array.isArray(data.user?.identities) && data.user.identities.length === 0;
 }
 
 const NEXT_PATHS = new Set(["/app", "/signup?step=2"]);
