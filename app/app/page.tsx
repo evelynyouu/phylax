@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Suspense } from "react";
 import AttentionList from "@/components/AttentionList";
 import DashboardChart from "@/components/DashboardChart";
+import { ConnectGmailEmpty, ReconnectNotice } from "@/components/ConnectGmail";
 import SyncButton from "@/components/SyncButton";
 import { loadApp } from "@/lib/app-data";
 import { addDays } from "@/lib/extract/dates";
@@ -41,7 +42,8 @@ function PageHead({ title, eyebrow, action }: { title: string; eyebrow: string; 
 }
 
 async function Dashboard() {
-  const { dashboard: d, today } = await loadApp();
+  const { dashboard: d, today, connected, reconnect } = await loadApp();
+  if (!connected) return <ConnectGmailEmpty title="Dashboard" />;
   const series = dailySeries(d, today, 60);
   const active = d.subscriptions.filter((s) => s.status === "active").length;
   const trials = d.subscriptions.filter((s) => s.status === "trial").length;
@@ -54,6 +56,7 @@ async function Dashboard() {
   return (
     <>
       <PageHead title="Dashboard" eyebrow={longDate(today)} action={<SyncButton />} />
+      {reconnect && <ReconnectNotice />}
 
       {d.subscriptions.length === 0 && d.bills.length === 0 ? (
         <div className="empty-card">

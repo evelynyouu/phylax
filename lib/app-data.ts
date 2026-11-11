@@ -1,21 +1,29 @@
 import { connection } from "next/server";
+import { cache } from "react";
 import { getCurrentUser } from "./current-user";
 import { todayIso } from "./extract/dates";
 import { ago } from "./format";
+import { storeFor } from "./store";
+import type { Store } from "./store/types";
 import { getDashboard, lastSyncedAt } from "./sync";
 
-/** Everything an /app page needs at request time. Call inside a Suspense boundary. */
-export async function loadApp() {
+/**
+ * Everything an /app page needs at request time, for the signed-in user. Call inside a Suspense
+ * boundary. Cached per request, so the layout and the page share one read.
+ */
+export const loadApp = cache(async () => {
   await connection();
   const user = await getCurrentUser();
-  const { dashboard, source } = await getDashboard();
+  const store = await storeFor(user);
+  const { dashboard, source, connected, reconnect } = await getDashboard(store);
   // getDashboard pins "today" in demo mode so the sample data stays current.
   const today = process.env.SUBWATCH_TODAY ?? todayIso();
-  return { user, dashboard, source, today };
-}
+  return { user, store, dashboard, source, connected, reconnect, today };
+});
 
-export async function loadSyncNote(source: "gmail" | "fixtures"): Promise<string> {
+export async function loadSyncNote(store: Store, source: "gmail" | "fixtures", connected: boolean): Promise<string> {
   if (source === "fixtures") return "Sample data, not your Gmail";
-  const at = lastSyncedAt();
+  if (!connected) return "Gmail not connected";
+  const at = await lastSyncedAt(store);
   return at ? `Gmail synced ${ago(at)}` : "Gmail not synced yet";
 }

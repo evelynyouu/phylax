@@ -21,6 +21,10 @@ describe("memory store", () => {
     expect(demoStore()).toBe(demoStore());
     expect(demoStore().userId).toBe("demo");
   });
+
+  it("demoStore lives on globalThis, so pages and route handlers bundled apart share it", () => {
+    expect((globalThis as unknown as Record<symbol, unknown>)[Symbol.for("subwatch.demoStore")]).toBe(demoStore());
+  });
 });
 
 describe("isDemo", () => {

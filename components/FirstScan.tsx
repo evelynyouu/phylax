@@ -40,7 +40,8 @@ export default function FirstScan() {
     fetch("/api/sync", { method: "POST" })
       .then(async (res) => {
         const data = await res.json().catch(() => ({}));
-        // 409 means a sync is already running; the poll keeps tracking it.
+        if (data.error === "reconnect") throw new Error("Google did not accept the Gmail connection. Connect Gmail again from your dashboard.");
+        // Otherwise 409 means a sync is already running; the poll keeps tracking it.
         if (!res.ok && res.status !== 409) throw new Error(data.error ?? "The scan failed");
         if (res.status === 409) {
           while (!stop) {

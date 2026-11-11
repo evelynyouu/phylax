@@ -106,6 +106,9 @@ async function SignUpBody({ searchParams }: { searchParams: PageProps<"/signup">
                 </ul>
               </div>
             </div>
+            <p className="muted" style={{ marginTop: 16 }}>
+              You can connect any Gmail account. It does not have to match the email you signed up with.
+            </p>
             {!isDemo() && !gmailConfigured() && <p className="auth-msg">{AUTH_MESSAGES.not_configured.text}</p>}
             <div className="su-actions">
               <a href={connectHref} className="btn btn-primary" aria-disabled={!isDemo() && !gmailConfigured() ? true : undefined}>

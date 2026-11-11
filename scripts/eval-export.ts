@@ -1,8 +1,12 @@
 // Export a seeded sample of your Gmail into an encrypted local corpus for labeling.
-// Usage: npm run eval:export -- [--query 160] [--random 60] [--seed 1] [--query-max 1500] [--all-max 5000] [--force]
+// Usage: npm run eval:export -- --user <uuid> [--query 160] [--random 60] [--seed 1] [--query-max 1500] [--all-max 5000] [--force]
+// --user is your Subwatch account id (Supabase Auth > Users). The script reads that account's
+// Gmail connection with the service role key (SUPABASE_SERVICE_ROLE_KEY in .env.local).
 import { corpusExists, EVAL_DIR, writeCorpus, writeMeta } from "../lib/eval/corpus";
 import { exportCorpus } from "../lib/eval/export";
 import { fetchEmail, gmailConfigured, isConnected, listIdsForQuery, SYNC_MAX_MESSAGES } from "../lib/gmail";
+import { supabaseStore } from "../lib/store/supabase";
+import { supabaseAdmin } from "../lib/supabase/admin";
 
 try {
   process.loadEnvFile(".env.local");
@@ -21,6 +25,15 @@ function flag(name: string, fallback: number): number {
   return n;
 }
 
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+function userFlag(): string {
+  const i = process.argv.indexOf("--user");
+  const id = i === -1 ? undefined : process.argv[i + 1];
+  if (!id || !UUID.test(id)) fail("Pass --user <uuid>, your Subwatch account id from Supabase Auth > Users.");
+  return id;
+}
+
 function fail(msg: string): never {
   console.error(msg);
   process.exit(1);
@@ -34,14 +47,19 @@ async function main() {
     queryMax: flag("query-max", SYNC_MAX_MESSAGES), // what sync reads on its first run
     allMax: flag("all-max", 5000),
   };
+  const userId = userFlag();
   if (!gmailConfigured()) fail("Set GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET in .env.local.");
-  if (!isConnected()) fail("Gmail is not connected. Run npm run dev and choose Connect Gmail first.");
+  const store = supabaseStore(supabaseAdmin(), userId);
+  if (!(await isConnected(store))) fail("That account has not connected Gmail. Run npm run dev, sign in and choose Connect Gmail first.");
   if (corpusExists(EVAL_DIR) && !process.argv.includes("--force")) {
     fail("data/eval already has a corpus. Labels are keyed to it; pass --force to replace it.");
   }
 
   console.log("Listing and fetching messages...");
-  const { entries, failed, listing } = await exportCorpus({ listIds: listIdsForQuery, fetchEmail }, opts);
+  const { entries, failed, listing } = await exportCorpus(
+    { listIds: (q, max) => listIdsForQuery(store, q, max), fetchEmail: (id) => fetchEmail(store, id) },
+    opts,
+  );
   if (entries.length === 0) fail(`Nothing was exported (${failed} failed). The existing corpus, if any, is unchanged.`);
   writeCorpus(EVAL_DIR, entries);
   writeMeta(EVAL_DIR, { exportedAt: new Date().toISOString(), ...listing });

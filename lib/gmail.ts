@@ -1,15 +1,14 @@
 import { google, type gmail_v1 } from "googleapis";
 import { decrypt, encrypt } from "./crypto";
-import { getKv, setKv } from "./db";
 import { extractLinks, htmlToText } from "./html";
+import type { GmailConnection, Store } from "./store/types";
 import type { RawEmail } from "./types";
 
 // Read-only. The app can never send, modify, label, or delete mail.
-// openid, email and profile grant no mailbox access.
+// openid and email grant no mailbox access; they tell us which Gmail address was connected,
+// which may differ from the Subwatch account's email.
 export const GMAIL_SCOPE = "https://www.googleapis.com/auth/gmail.readonly";
-export const SCOPES = [GMAIL_SCOPE, "openid", "email", "profile"];
-
-const TOKEN_KEY = "google_tokens";
+export const SCOPES = [GMAIL_SCOPE, "openid", "email"];
 
 function appUrl(): string {
   return process.env.APP_URL ?? "http://localhost:3000";
@@ -36,55 +35,134 @@ export function authUrl(state: string): string {
   });
 }
 
-export type GmailConnectResult = { ok: true } | { ok: false; reason: "no_gmail" };
-
-/** Exchanges the OAuth code and stores the Gmail tokens. The caller has already checked who is signed in. */
-export async function saveGmailTokens(code: string): Promise<GmailConnectResult> {
-  const { tokens } = await oauthClient().getToken(code);
-  // Google's consent screen lets people untick individual scopes.
-  if (!tokens.scope?.split(" ").includes(GMAIL_SCOPE)) return { ok: false, reason: "no_gmail" };
-
-  const existing = loadTokens();
-  // Google only returns a refresh token on first consent; keep the old one if this response lacks it.
-  const merged = { ...tokens, refresh_token: tokens.refresh_token ?? existing?.refresh_token };
-  setKv(TOKEN_KEY, encrypt(JSON.stringify(merged)));
-  return { ok: true };
+/** Google refused the stored refresh token (expired or revoked). The user has to reconnect. */
+export class GmailReconnectError extends Error {
+  constructor() {
+    super("reconnect");
+    this.name = "GmailReconnectError";
+  }
 }
 
-function loadTokens(): { refresh_token?: string | null; [k: string]: unknown } | null {
-  const raw = getKv(TOKEN_KEY);
-  if (!raw) return null;
+/**
+ * True for Google's invalid_grant: the refresh token expired (every 7 days while the OAuth app
+ * is in Testing) or the user revoked access. Gaxios puts it on response.data.error; the message
+ * carries it too.
+ */
+export function isInvalidGrant(e: unknown): boolean {
+  if (e instanceof GmailReconnectError) return true;
+  if (!e || typeof e !== "object") return false;
+  const data = (e as { response?: { data?: unknown } }).response?.data;
+  if (data && typeof data === "object" && (data as { error?: unknown }).error === "invalid_grant") return true;
+  return e instanceof Error && /\binvalid_grant\b/.test(e.message);
+}
+
+type Tokens = { refresh_token?: string | null; [k: string]: unknown };
+
+function readTokens(c: GmailConnection | null): Tokens | null {
+  if (!c?.encTokens) return null;
   try {
-    return JSON.parse(decrypt(raw));
-  } catch {
+    return JSON.parse(decrypt(c.encTokens));
+  } catch (e) {
+    // A missing or malformed key is a setup problem, not a broken connection.
+    if (e instanceof Error && e.message.startsWith("TOKEN_ENC_KEY")) throw e;
     return null;
   }
 }
 
-export function isConnected(): boolean {
-  return !!loadTokens();
+// Read-modify-write of the connection row, one at a time per store, so a token refresh and
+// the sync's cursor update never overwrite each other.
+const writes = new WeakMap<Store, Promise<void>>();
+
+/** Updates the stored connection if there still is one. Serialized per store. */
+export function updateGmail(store: Store, fn: (c: GmailConnection) => GmailConnection): Promise<void> {
+  const next = (writes.get(store) ?? Promise.resolve())
+    .catch(() => {})
+    .then(async () => {
+      const c = await store.getGmail();
+      if (c) await store.setGmail(fn(c));
+    });
+  writes.set(store, next);
+  return next;
 }
 
-export async function disconnect(): Promise<void> {
-  const t = loadTokens();
+// One Gmail client per store object (a store lives for one request or one script run), so a
+// sync does not re-read and decrypt the tokens for every message.
+const clients = new WeakMap<Store, Promise<gmail_v1.Gmail>>();
+
+export type GmailConnectResult = { ok: true; gmailEmail: string } | { ok: false; reason: "no_identity" | "no_gmail" };
+
+/**
+ * Exchanges the OAuth code and stores the Gmail connection for the store's user. The caller has
+ * already checked who is signed in; the connection belongs to that Subwatch user, whatever
+ * Gmail address they picked.
+ */
+export async function connectGmailWithCode(code: string, store: Store): Promise<GmailConnectResult> {
+  const client = oauthClient();
+  const { tokens } = await client.getToken(code);
+  // Google's consent screen lets people untick individual scopes.
+  if (!tokens.scope?.split(" ").includes(GMAIL_SCOPE)) return { ok: false, reason: "no_gmail" };
+  if (!tokens.id_token) return { ok: false, reason: "no_identity" };
+  const ticket = await client.verifyIdToken({ idToken: tokens.id_token, audience: process.env.GOOGLE_CLIENT_ID });
+  const gmailEmail = ticket.getPayload()?.email;
+  if (!gmailEmail) return { ok: false, reason: "no_identity" };
+
+  const existing = await store.getGmail();
+  const same = existing?.gmailEmail.toLowerCase() === gmailEmail.toLowerCase();
+  const old = same ? readTokens(existing) : null;
+  // Google only returns a refresh token on first consent; keep the old one if this response lacks it.
+  const merged = { ...tokens, refresh_token: tokens.refresh_token ?? old?.refresh_token };
+  await store.setGmail({
+    gmailEmail,
+    encTokens: encrypt(JSON.stringify(merged)),
+    // Reconnecting the same Gmail keeps the cursor; a different Gmail rescans 13 months.
+    lastSyncEpoch: same ? existing!.lastSyncEpoch : null,
+    needsReconnect: false,
+  });
+  return { ok: true, gmailEmail };
+}
+
+export async function isConnected(store: Store): Promise<boolean> {
+  return (await store.getGmail()) !== null;
+}
+
+/** Revokes Google's grant (best effort), then deletes the connection. Records stay. */
+export async function disconnect(store: Store): Promise<void> {
+  const t = readTokens(await store.getGmail());
   if (t?.refresh_token) {
     try {
       await oauthClient().revokeToken(String(t.refresh_token));
     } catch {
-      // Revocation is best effort; we still drop the local copy below.
+      // Revocation is best effort; we still drop the stored copy below.
     }
   }
-  setKv(TOKEN_KEY, "");
+  await store.setGmail(null);
+  clients.delete(store);
 }
 
-function gmailClient(): gmail_v1.Gmail {
-  const tokens = loadTokens();
-  if (!tokens) throw new Error("Gmail is not connected");
+function gmailClient(store: Store): Promise<gmail_v1.Gmail> {
+  let p = clients.get(store);
+  if (!p) {
+    p = makeClient(store);
+    clients.set(store, p);
+    p.catch(() => clients.delete(store));
+  }
+  return p;
+}
+
+async function makeClient(store: Store): Promise<gmail_v1.Gmail> {
+  const conn = await store.getGmail();
+  if (!conn) throw new Error("Gmail is not connected");
+  let tokens = readTokens(conn);
+  // Stored tokens that no longer decrypt are as good as revoked.
+  if (!tokens) throw new GmailReconnectError();
   const client = oauthClient();
   client.setCredentials(tokens);
   client.on("tokens", (t) => {
-    const merged = { ...tokens, ...t, refresh_token: t.refresh_token ?? tokens.refresh_token };
-    setKv(TOKEN_KEY, encrypt(JSON.stringify(merged)));
+    tokens = { ...tokens, ...t, refresh_token: t.refresh_token ?? tokens!.refresh_token };
+    const enc = encrypt(JSON.stringify(tokens));
+    updateGmail(store, (c) => ({ ...c, encTokens: enc })).catch(() => {
+      // The refreshed access token still works for this run; the next run refreshes again.
+    });
   });
   return google.gmail({ version: "v1", auth: client });
 }
@@ -103,8 +181,8 @@ export function syncQuery(afterEpochSeconds: number | null): string {
   return afterEpochSeconds ? `${BILLING_QUERY} after:${afterEpochSeconds}` : `${BILLING_QUERY} newer_than:400d`;
 }
 
-export async function listIdsForQuery(q: string, max: number): Promise<string[]> {
-  const gmail = gmailClient();
+export async function listIdsForQuery(store: Store, q: string, max: number): Promise<string[]> {
+  const gmail = await gmailClient(store);
   const ids: string[] = [];
   let pageToken: string | undefined;
   do {
@@ -118,8 +196,8 @@ export async function listIdsForQuery(q: string, max: number): Promise<string[]>
 /** Sync reads at most this many query matches per run, newest first. */
 export const SYNC_MAX_MESSAGES = 1500;
 
-export async function listMessageIds(afterEpochSeconds: number | null, maxMessages = SYNC_MAX_MESSAGES): Promise<string[]> {
-  return listIdsForQuery(syncQuery(afterEpochSeconds), maxMessages);
+export async function listMessageIds(store: Store, afterEpochSeconds: number | null, maxMessages = SYNC_MAX_MESSAGES): Promise<string[]> {
+  return listIdsForQuery(store, syncQuery(afterEpochSeconds), maxMessages);
 }
 
 function walk(part: gmail_v1.Schema$MessagePart, out: { plain: string[]; html: string[] }) {
@@ -132,8 +210,8 @@ function walk(part: gmail_v1.Schema$MessagePart, out: { plain: string[]; html: s
   for (const p of part.parts ?? []) walk(p, out);
 }
 
-export async function fetchEmail(id: string): Promise<RawEmail | null> {
-  const gmail = gmailClient();
+export async function fetchEmail(store: Store, id: string): Promise<RawEmail | null> {
+  const gmail = await gmailClient(store);
   const res = await gmail.users.messages.get({ userId: "me", id, format: "full" });
   const payload = res.data.payload;
   if (!payload) return null;

@@ -1,5 +1,6 @@
 import crypto from "node:crypto";
 import { connection, NextResponse, type NextRequest } from "next/server";
+import { getOptionalUser } from "@/lib/current-user";
 import { authUrl, gmailConfigured } from "@/lib/gmail";
 
 const cookieOpts = {
@@ -13,6 +14,8 @@ const cookieOpts = {
 export async function GET(req: NextRequest) {
   await connection();
   const base = process.env.APP_URL ?? new URL(req.url).origin;
+  // Gmail belongs to a Subwatch account: sign in first, then connect.
+  if (!(await getOptionalUser())) return NextResponse.redirect(new URL("/signin", base));
   if (!gmailConfigured()) {
     return NextResponse.redirect(new URL("/signin?auth=not_configured", base));
   }

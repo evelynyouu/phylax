@@ -31,13 +31,14 @@ export function supabaseStore(client: SupabaseClient, userId: string): Store {
     },
     async getGmail() {
       const { data, error } = await client
-        .from("gmail_connections").select("gmail_email, enc_tokens, last_sync_epoch").eq("user_id", userId).maybeSingle();
+        .from("gmail_connections").select("gmail_email, enc_tokens, last_sync_epoch, needs_reconnect").eq("user_id", userId).maybeSingle();
       check(error);
       if (!data) return null;
       return {
         gmailEmail: data.gmail_email,
         encTokens: data.enc_tokens,
         lastSyncEpoch: data.last_sync_epoch === null ? null : Number(data.last_sync_epoch),
+        needsReconnect: data.needs_reconnect === true,
       };
     },
     async setGmail(c: GmailConnection | null) {
@@ -46,7 +47,7 @@ export function supabaseStore(client: SupabaseClient, userId: string): Store {
         return check(error);
       }
       const { error } = await client.from("gmail_connections").upsert(
-        { user_id: userId, gmail_email: c.gmailEmail, enc_tokens: c.encTokens, last_sync_epoch: c.lastSyncEpoch },
+        { user_id: userId, gmail_email: c.gmailEmail, enc_tokens: c.encTokens, last_sync_epoch: c.lastSyncEpoch, needs_reconnect: c.needsReconnect },
         { onConflict: "user_id" },
       );
       check(error);

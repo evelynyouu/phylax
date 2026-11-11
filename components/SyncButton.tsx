@@ -14,6 +14,13 @@ export default function SyncButton() {
     try {
       const res = await fetch("/api/sync", { method: "POST" });
       const data = await res.json();
+      if (res.status === 409 && data.error === "reconnect") {
+        // The dashboard's reconnect notice takes it from here.
+        setState("error");
+        setMessage("Gmail needs reconnecting");
+        router.refresh();
+        return;
+      }
       if (!res.ok) throw new Error(data.error ?? "Sync failed");
       setState("done");
       setMessage(data.processed === 0 ? "Up to date" : `Read ${data.processed} new emails`);

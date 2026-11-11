@@ -25,21 +25,21 @@ GOOGLE_CLIENT_ID=...
 GOOGLE_CLIENT_SECRET=...
 # optional: LLM fallback for emails the rules cannot parse
 ANTHROPIC_API_KEY=...
-# optional: 64 hex chars, encrypts the Gmail refresh token at rest.
-# If unset, a key file is generated in data/ with 0600 permissions.
+# required: 64 hex chars, encrypts the Gmail refresh token at rest (openssl rand -hex 32).
+# Only demo mode (npm run demo) may run without it.
 TOKEN_ENC_KEY=
 ```
 
 5. `npm run dev`, open http://127.0.0.1:3000, choose **Connect Gmail**, then **Scan inbox**.
 
-While the Google app is in "Testing" status, Google expires refresh tokens after 7 days, so you will need to reconnect weekly. `gmail.readonly` is a restricted scope, so publishing the app for other people requires Google's verification and a security assessment. For personal use, Testing mode is fine.
+While the Google app is in "Testing" status, Google expires refresh tokens after 7 days, so you will need to reconnect weekly; the dashboard shows a **Reconnect Gmail** notice when that happens and keeps your list. `gmail.readonly` is a restricted scope, so publishing the app for other people requires Google's verification and a security assessment. For personal use, Testing mode is fine.
 
 ## How it works
 
 ```
 Gmail (read-only) -> sync -> rules extractor -> [low confidence] -> LLM fallback
                                   |                                      |
-                                  +------------- records (SQLite) -------+
+                                  +------------ records (Supabase) ------+
                                                        |
                                   entity resolution + recurrence detection
                                                        |
@@ -48,7 +48,7 @@ Gmail (read-only) -> sync -> rules extractor -> [low confidence] -> LLM fallback
 
 - **Rules first.** Classification, amounts, dates, cadence, and cancel links come from patterns and a merchant table. The model only sees emails the rules score below 0.7, or that look billing-related but matched nothing.
 - **Resolution.** Records are grouped by merchant. A merchant is a subscription when emails state a cadence, a renewal or trial notice exists, or charges repeat. One-off purchases are ignored. Cancelled subscriptions are detected from cancellation emails.
-- **Storage.** Only the merchant, amount, dates, and cancel link from each email are saved, in `data/subwatch.db`. Email text is not stored. The optional eval corpus in `data/eval/` is the one exception: it stores sampled email bodies, encrypted with the token key, only when you run `npm run eval:export`.
+- **Storage.** Only the merchant, amount, dates, and cancel link from each email are saved, in the signed-in user's rows in Supabase (row level security keeps each account to its own data). Email text is not stored. The optional eval corpus in `data/eval/` is the one exception: it stores sampled email bodies, encrypted with the token key, only when you run `npm run eval:export`.
 
 ## Security model
 
@@ -76,7 +76,7 @@ The fixtures in `fixtures/emails.ts` are synthetic and were labeled and tuned by
 Connect Gmail first (see above). Then:
 
 ```bash
-npm run eval:export   # samples about 220 emails into data/eval, encrypted
+npm run eval:export -- --user <your Supabase user id>   # samples about 220 emails into data/eval, encrypted (needs SUPABASE_SERVICE_ROLE_KEY)
 npm run eval:label    # label them in the terminal; resumable, type q to stop
 npm run eval:real     # precision and recall per field, rules only
 npm run eval:real:llm # same, plus a column with the LLM fallback

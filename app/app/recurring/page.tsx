@@ -1,5 +1,6 @@
 import { Suspense } from "react";
 import RecurringView, { type SubRow } from "@/components/RecurringView";
+import { ConnectGmailEmpty } from "@/components/ConnectGmail";
 import { loadApp } from "@/lib/app-data";
 import { CATEGORY_LABELS, categoryFor } from "@/lib/categories";
 import { daysBetween } from "@/lib/extract/dates";
@@ -60,6 +61,7 @@ function toRow(s: Subscription, today: string): SubRow {
 }
 
 async function Recurring() {
-  const { dashboard, today } = await loadApp();
+  const { dashboard, today, connected } = await loadApp();
+  if (!connected) return <ConnectGmailEmpty title="Recurring" />;
   return <RecurringView rows={dashboard.subscriptions.map((s) => toRow(s, today))} />;
 }

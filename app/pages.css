@@ -12,7 +12,9 @@
 .notice-bar.warn { background: var(--mauve-fill); color: var(--mauve-ink); }
 .empty-card { margin-top: 28px; background: var(--surface); border-radius: var(--r-card); padding: 28px; text-align: center; }
 .empty-card .display { font-size: 26px; }
-.empty-card p:last-child { margin-top: 8px; font-size: 15px; color: var(--moss); }
+.empty-card p:last-child, .empty-card .empty-body { margin-top: 8px; font-size: 15px; color: var(--moss); }
+.empty-card .empty-actions { margin-top: 20px; display: flex; justify-content: center; }
+.reconnect-bar { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
 
 /* ---- Dashboard ---- */
 .out-card { margin-top: 28px; background: var(--surface); border-radius: 28px; padding: 28px clamp(20px, 3vw, 32px); }

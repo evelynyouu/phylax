@@ -56,9 +56,11 @@ export function describeStore(name: string, make: () => Store) {
     it("stores and deletes the Gmail connection", async () => {
       const s = make();
       expect(await s.getGmail()).toBeNull();
-      const c = { gmailEmail: "a@b.com", encTokens: "enc", lastSyncEpoch: 123 };
+      const c = { gmailEmail: "a@b.com", encTokens: "enc", lastSyncEpoch: 123, needsReconnect: false };
       await s.setGmail(c);
       expect(await s.getGmail()).toEqual(c);
+      await s.setGmail({ ...c, needsReconnect: true });
+      expect(await s.getGmail()).toEqual({ ...c, needsReconnect: true });
       await s.setGmail(null);
       expect(await s.getGmail()).toBeNull();
     });

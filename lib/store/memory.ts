@@ -1,3 +1,4 @@
+import { processWide } from "../process-wide";
 import type { ExtractedRecord } from "../types";
 import type { GmailConnection, MarkTable, Store } from "./types";
 
@@ -38,9 +39,10 @@ export function memoryStore(userId = "memory"): Store {
   };
 }
 
-let demo: Store | null = null;
-
-/** Process-wide demo store (userId "demo"). Starts empty; the sync fills it from fixtures. */
+/**
+ * Process-wide demo store (userId "demo"). Starts empty; the sync fills it from fixtures.
+ * Kept on globalThis so pages and route handlers share it.
+ */
 export function demoStore(): Store {
-  return (demo ??= memoryStore("demo"));
+  return processWide("demoStore", () => memoryStore("demo"));
 }

@@ -4,8 +4,10 @@ import AppShell from "@/components/AppShell";
 import { loadApp, loadSyncNote } from "@/lib/app-data";
 
 async function AccountSlot() {
-  const { user, source } = await loadApp();
-  return <Account user={user} syncNote={await loadSyncNote(source)} demo={source === "fixtures"} />;
+  const { user, store, source, connected } = await loadApp();
+  return (
+    <Account user={user} syncNote={await loadSyncNote(store, source, connected)} demo={source === "fixtures"} connected={connected} />
+  );
 }
 
 // The shell prerenders; the account block reads the session and streams in.

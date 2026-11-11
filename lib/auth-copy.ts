@@ -8,6 +8,7 @@ export const AUTH_MESSAGES: Record<string, { text: string; info?: boolean }> = {
   denied: { text: "Google sign-in was cancelled. Try again when you're ready." },
   invalid_state: { text: "The sign-in could not be verified. Please try again." },
   failed: { text: "Google sign-in failed. Check the OAuth settings in the README and try again." },
+  no_identity: { text: "Google did not say which Gmail account you chose. Please try connecting again." },
   no_gmail: { text: "Subwatch needs read-only Gmail access to work. On Google's screen, keep the Gmail box ticked." },
   signed_out: { text: "You're signed out.", info: true },
 };

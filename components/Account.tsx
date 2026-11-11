@@ -7,7 +7,7 @@ function initials(name: string): string {
 }
 
 /** Sidebar footer: sync status, who is signed in, and sign out. */
-export default function Account({ user, syncNote, demo }: { user: AppUser; syncNote: string; demo: boolean }) {
+export default function Account({ user, syncNote, demo, connected }: { user: AppUser; syncNote: string; demo: boolean; connected: boolean }) {
   return (
     <>
       <p className="sync-note">{syncNote}</p>
@@ -24,7 +24,7 @@ export default function Account({ user, syncNote, demo }: { user: AppUser; syncN
           </button>
         </form>
       </div>
-      {!demo && <DisconnectGmail />}
+      {!demo && connected && <DisconnectGmail />}
     </>
   );
 }

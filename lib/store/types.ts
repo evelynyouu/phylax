@@ -4,6 +4,8 @@ export interface GmailConnection {
   gmailEmail: string;
   encTokens: string;
   lastSyncEpoch: number | null;
+  /** Google refused the refresh token (invalid_grant); the user must reconnect. Records stay. */
+  needsReconnect: boolean;
 }
 
 export type MarkTable = "dismissed" | "manual_cancels" | "paid" | "reminders";
