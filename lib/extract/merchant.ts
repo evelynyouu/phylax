@@ -73,7 +73,11 @@ export function cleanName(raw: string): string {
     .replace(NOISE_WORDS, " ")
     .replace(/[|:()\[\]]+/g, " ")
     .replace(/\s+/g, " ")
-    .trim();
+    .trim()
+    // Removing noise words can leave separators behind ("Acme, Inc." -> "Acme, ."). Trim them,
+    // keeping a final period that belongs to an abbreviation like "A.B.".
+    .replace(/^[\s,.;:\-]+/, "")
+    .replace(/(?:[\s,;:\-]+\.?)+$/, "");
   return cleaned || raw.trim();
 }
 
