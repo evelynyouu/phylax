@@ -1,0 +1,72 @@
+# Decisions and deferred items: supabase-accounts branch
+
+Every ruling the controller made on the user's behalf, and every minor finding deferred, in order. From the build ledger, 2026-11-10 to 2026-11-11.
+
+## Rulings
+- Pre-flight: Ruling: contract suite lives in tests/store-contract.ts (exported describeStore), imported by tests/store.test.ts and tests/rls.integration.test.ts; importing a *.test.ts file re-runs its tests; cost if wrong: none
+- Pre-flight: Ruling: Task 4 creates lib/supabase/admin.ts (supabaseAdmin) for eval-export --user; Task 5 reuses it; T4 consumes it before T5 produces it; cost if wrong: none
+- Pre-flight: Ruling: Task 4 makes lib/crypto.ts loadKey require TOKEN_ENC_KEY unless isDemo() (no key-file fallback outside demo), with a test; Global Constraint had no owner; key files do not survive serverless deploys; cost if wrong: local dev needs the env var set
+- PM: Ruling: carry PM risks into Task 4's dispatch: (1) signed-in user with no Gmail connection gets an explicit empty state on /app pages with a "Connect Gmail" action, (2) an expired or revoked Gmail token (invalid_grant) surfaces as a "Reconnect Gmail" state instead of a failed sync, (3) sign-up step 2 copy explains the Gmail you connect can differ from your account email; plan did not define these states; real users hit them in Testing mode within 7 days; cost if wrong: a little extra UI
+- Task 2: Ruling: no Supabase project/keys yet (user setup pending); implementer writes migration, clients, supabaseStore and the integration test, verifies offline (test:db must skip cleanly without env); the live RLS run is a pending verification the controller runs once keys exist, before the final review; the manual Step 1 needs the user's account; cost if wrong: RLS bugs surface later, but before merge
+- Task 2: Ruling: test:db uses its own vitest.integration.config.mts (CLI path cannot override the main config's exclude) and .gitignore gains !.env.example; needed for the plan's script and file to exist; cost if wrong: none
+- Task 2: Ruling: re-grade Minor 1 (no explicit grants; policies not scoped to authenticated) to Important for the grant part; if the project lacks default grants every store call fails with "permission denied"; fold into fix round 1 with `to authenticated` policies, explicit grants to authenticated, revoke from anon; cost if wrong: two redundant SQL lines
+- Task 3: Ruling: Task 3 removes the HMAC session and owner check; the existing Gmail OAuth callback keeps only token exchange and saving (no session cookie, no owner check), still on lib/db.ts; Task 4 replaces it with the store-based connectGmailWithCode; otherwise deleting the HMAC session breaks the callback mid-plan; cost if wrong: none
+- Task 3: Ruling: brief Steps 4 (Google provider in Supabase) and 6 (manual sign-up checks) need the user's Supabase project; implementer does everything else and verifies offline; manual checks join the pending live verification; cost if wrong: auth bugs surface at live check, before merge
+- PM Task 2: ACCEPTED WITH NOTES; PM asked to block Task 3 until live test:db passes. Ruling: do not block; Task 3 (auth wiring) does not consume RLS behavior, and waiting stalls on user setup; the live RLS run remains a hard gate before the final review and merge, along with the PM's live-run risks (created_at parsing, bigint last_sync_epoch, 42501 codes); cost if wrong: an RLS fix after Task 3/4 touches the migration only. Task 3 implementer a296f50a1322ace63 (opus) dispatched.
+- Task 3: Ruling: OAuth and email-confirm redirects use window.location.origin, not APP_URL; APP_URL is server-only and the PKCE cookie must stay on the starting origin; Supabase's redirect allow-list is the guard; cost if wrong: add NEXT_PUBLIC_APP_URL later
+- Task 3: Ruling: AuthForm takes an optional demo prop so demo mode never builds a Supabase client; required by Global Constraints; cost if wrong: none
+- Task 3: Ruling: with email confirmation on, sign-up shows "Check your email" instead of step 2; disconnecting Gmail no longer signs the user out (Supabase account is separate from Gmail); cost if wrong: copy tweaks
+- Task 3: Ruling: carry two Task 3 minors into Task 4 because Task 4 rewrites those files: /api/auth/google redirects a signed-out visitor to /signin before Google consent; drop unused openid/email/profile scopes only if Task 4's gmailEmail display does not need email (plan keeps [gmail.readonly, openid, email]; drop profile); cost if wrong: none
+- Task 4: Ruling: reconnect state stored as gmail_connections.needs_reconnect via a second migration 20261111000000_gmail_needs_reconnect.sql (with RLS unchanged); survives reload as required; cost if wrong: one column
+- Task 4: Ruling: demo store, sync locks and progress maps live on globalThis (lib/process-wide.ts); Next loads pages and route handlers as separate module instances, so a module singleton existed twice (bug found in demo check); cost if wrong: none
+- Task 2 (post-completion): live run found 42601 syntax error (TO before FOR in create policy, from fix round 1). Fixed by haiku agent a51d3bd429047d0f3 in b07af50; verified by grep and npm test; the live test:db run is the re-review. Ruling: no separate re-review dispatch; the live suite exercises this SQL directly; cost if wrong: none
+- Final: Ruling: fix wave includes Important 1 (failed Gmail connect loses error), Important 2 (batched known-ids check for first sync), the /auth/callback url.origin fix, and re-graded Minors 3 (records hidden after disconnect contradict the shown copy), 4 (reconnect notice on every /app page), 5 (token cross-write on Gmail switch, privacy within an account), 6 (revoke old grant on switch), 8 (raw error text to browser), 9 (doc drift); each affects what a real user sees or trusts; cost if wrong: a larger fix diff
+- Goal: Ruling: Google OAuth client and SUPABASE_SERVICE_ROLE_KEY cannot be created by the controller (user's Google Cloud account and Supabase dashboard); live Gmail reading and live account deletion are verified as far as possible offline and left as a morning checklist; cost if wrong: none, stated honestly
+- Final fix: Ruling: Reconnect/Disconnected notices render from the /app layout above every page head (dashboard previously showed Reconnect under its head); one place for all four pages; cost if wrong: frontend placement, user is redesigning anyway
+- Compliance: Ruling: LLM fallback off for real users (extractEmail useLlm defaults false; sync never enables it); only explicit local eval --llm uses it; removes the undisclosed transfer of email text to Anthropic without any UI; cost if wrong: lower extraction recall on odd emails until a disclosed opt-in exists
+- Compliance: Ruling: eval-export --user only for EVAL_OWNER_USER_ID (developer's own account), refuse otherwise; Google forbids humans reading other users' mail; cost if wrong: one env var
+- Compliance: Ruling: non-billing records saved minimally (emailId, emailDate, relevant:false, kind); data minimization; cost if wrong: none (they are only dedup markers)
+- Compliance: Ruling: deferred to the user's frontend: /privacy and /terms pages, pre-consent Gmail disclosure, landing copy accuracy, localStorage cleanup on delete; deferred to the user: Google verification/CASA, lawyer review; UI is out of scope tonight per user; cost if wrong: must be done before public launch
+- Compliance fix: Ruling: requestOrigin trusts x-forwarded-host/proto; set by Vercel; a client cannot inject headers into another user's browser, and redirects carry no secrets; cost if wrong: self-redirect only
+- Compliance fix: Ruling: accepted deviation from "lib/extract unchanged": lib/extract/index.ts useLlm default flipped to false (eval output unchanged, eval passes useLlm explicitly); privacy requires it; cost if wrong: none
+- Compliance fix: Ruling: re-grade review Minors 4 (failed deleteUser leaves Gmail revoked) and 6 (legal docs line refs and one inaccurate sentence) to Important; goal requires accurate legal docs and a failed delete should change nothing; cleanup pass; cost if wrong: small diff
+- Cleanup a74e27d2026accaa1 (sonnet): 5f77fc9, 159 tests. Ruling: if reading the Gmail connection fails before delete, the account is still deleted and revokeFailed:true is returned; the user asked to delete; cost if wrong: one manual revoke at myaccount.google.com/permissions
+
+## Deferred minors
+- Task 1: minor (deferred): memoryStore.saveRecord/loadRecords share object references (marks and gmail are copied)
+- Task 1: minor (deferred): contract does not pin last-write-wins on duplicate saveRecord; check Supabase upsert matches in Task 2
+- Task 1: minor (deferred): tests/store.test.ts inline record duplicates rec() in store-contract.ts
+- Task 2: minor (deferred): clean() in rls test ignores delete errors
+- Task 2: minor (deferred): anon read assertion passes on error too; assert error explicitly
+- Task 2: minor (deferred): loadRecords tie order not deterministic (add secondary order by email_id)
+- Task 2: minor (deferred): check() drops PostgREST error code
+- Task 2: minor (deferred): ! assertions on missing Supabase env give generic error
+- Task 2: minor (deferred): use (select auth.uid()) form in policies for performance
+- Task 2: minor (deferred): nested ternary for B's insert payload in rls test; use a per-table map
+- Task 2: minor (deferred): B's update/delete attempts in rls test only checked indirectly via A's final rows
+- Task 3: minor (deferred): authErrorMessage matches message text; map Supabase error.code first; google() lacks try/catch (busy can stick)
+- Task 3: minor (deferred): /auth/callback redirects to APP_URL host while cookies are set on request origin; use url.origin
+- Task 3: minor (deferred): email-confirm exchange failure shows Google-specific copy; signed-out Gmail callback return has no message
+- Task 3: minor (deferred): /signup without step shows create-account form to signed-in users
+- Task 3: minor (deferred): lib/supabase/server.ts setAll ignores the no-cache headers argument
+- Task 3: minor (deferred): README still describes single-owner sign-in (Task 5 rewrites README)
+- Task 4: minor (deferred): connectGmailWithCode has no unit test (needs Google mocks)
+- Task 4: minor (deferred): per-user sync lock is per server process only
+- Task 4: minor (deferred): connecting a different Gmail address keeps the old address's records in the account
+- Task 4: minor (deferred): sync checks hasRecord one id at a time (up to 1500 sequential Supabase round trips on first sync; may matter for maxDuration on deploy)
+- Task 4: minor (deferred): GET /api/sync keys progress by user.id while runSync keys by store.userId (equal only by convention in demo)
+- Task 4: minor (deferred): switching Gmail mid-sync can write the old run's cursor onto the new connection (skips rescan)
+- Task 4: minor (deferred): old Gmail refresh token not revoked when a different address connects
+- Task 4: minor (deferred): sync progress map never shrinks
+- Task 4: minor (deferred): loadSyncNote re-reads the Gmail connection already read by getDashboard
+- Task 5: minor (deferred): README/.env.example should say the publishable key goes in NEXT_PUBLIC_SUPABASE_ANON_KEY
+- Task 5: minor (deferred): README should say APP_URL must equal the exact host and port opened in the browser
+- Task 5: minor (deferred): delete route order/failure behavior untested beyond DeleteBody schema
+- Final: minor (deferred): first-scan progress wrong on multi-instance hosts (keep progress in Supabase later)
+- Final: minor (deferred): revoking the old Gmail grant on switch is awaited, so a slow Google response delays that connect
+- Final: minor (deferred): /app?auth= failure banner shown only on the dashboard and Connect Gmail empty state
+- Final: minor (deferred): layout-level Gmail notice does not refresh on client-side navigation between /app pages (every state change already calls router.refresh)
+- Compliance fix: minor (deferred): HSTS also sent by next start over http (ignored by browsers)
+- Compliance fix: minor (deferred): revokeFailed not surfaced in UI yet (frontend)
+- Compliance fix: minor (deferred): pre-change non-billing records not rewritten to the minimal form
+- Compliance fix: minor (deferred): route tests missing for requestOrigin use in /api/auth/google and the Gmail callback
