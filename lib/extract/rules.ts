@@ -57,24 +57,38 @@ export function classify(subject: string, body: string): { kind: EmailKind; sour
 
 // ---------- amounts ----------
 
-const CURRENCY: Record<string, string> = { $: "USD", "€": "EUR", "£": "GBP" };
+const CURRENCY: Record<string, string> = { $: "USD", "€": "EUR", "£": "GBP", USD: "USD", EUR: "EUR", GBP: "GBP" };
+
+// "$9.99" / "€10" / "£5.00", or a bare number followed by an ISO code: "709.40 USD", "1,234.00 EUR".
+const AMOUNT_RE =
+  /([$€£])\s?(\d{1,3}(?:,\d{3})+|\d+)(?:\.(\d{2}))?|(?<![\d.,$€£])(\d{1,3}(?:,\d{3})+|\d+)(?:\.(\d{2}))?\s?(USD|EUR|GBP)\b/g;
+
+// Legal, insurance and liability fine print quotes dollar figures that are never what the user paid.
+const FINE_PRINT =
+  /(limited to|liabilit|penalt|fine of|up to|maximum|coverage|insured|insurance|compensation|imprisonment)/;
 
 export function pickAmount(text: string): { amount: number; currency: string } | null {
-  const re = /([$€£])\s?(\d{1,3}(?:,\d{3})+|\d+)(?:\.(\d{2}))?/g;
   let best: { amount: number; currency: string; score: number; index: number } | null = null;
 
-  for (const m of text.matchAll(re)) {
+  for (const m of text.matchAll(AMOUNT_RE)) {
     const i = m.index!;
+    const symbol = m[1] ?? m[6];
+    const whole = m[2] ?? m[4];
+    const cents = m[3] ?? m[5];
     const before = text.slice(Math.max(0, i - 70), i).toLowerCase();
     const near = text.slice(Math.max(0, i - 25), i).toLowerCase();
+    // The fine-print check looks only at the current sentence or line, so a total that follows a
+    // liability sentence is not penalized for it.
+    const clause = before.split(/\.\s|\n/).pop() ?? "";
     let score = 0;
     if (/(total|amount (due|charged|paid)|you['’]ll be charged|will be charged|charged|payment of|balance due|new price|billed)/.test(before))
       score += 3;
     if (/(subtotal|tax|fee|discount|save|off|credit|was|from|saving)\W*$/.test(near)) score -= 3;
-    const amount = parseFloat(m[2].replace(/,/g, "") + (m[3] ? "." + m[3] : ""));
+    if (FINE_PRINT.test(clause)) score -= 3;
+    const amount = parseFloat(whole.replace(/,/g, "") + (cents ? "." + cents : ""));
     if (!Number.isFinite(amount) || amount <= 0 || amount > 100000) continue;
     if (!best || score > best.score || (score === best.score && i > best.index)) {
-      best = { amount, currency: CURRENCY[m[1]], score, index: i };
+      best = { amount, currency: CURRENCY[symbol], score, index: i };
     }
   }
   if (!best || best.score < 0) return null;
@@ -138,11 +152,22 @@ export function assignDates(
 
 // ---------- cadence ----------
 
+// A generic "a/per/'/' <unit>" only counts right after a price ("$9.99 a month", "$15/mo",
+// "12.99 USD per month"); on its own it matches prose like "at least a week prior to departure".
+const PRICE = String.raw`(?:[$€£]\s?\d[\d,]*(?:\.\d{2})?(?:\s?(?:USD|EUR|GBP))?|\d[\d,]*(?:\.\d{2})?\s?(?:USD|EUR|GBP))`;
+const perUnit = (unit: string) => String.raw`${PRICE}\s{0,2}(?:\/|\b(?:per|a)\b)\s{0,2}(?:${unit})\b`;
+
 const STRONG: [Cadence, RegExp][] = [
-  ["monthly", /((per|a|\/)\s?(month|mo)\b|billed monthly|monthly (plan|subscription|membership|charge)|every month)/i],
-  ["yearly", /((per|a|\/)\s?(year|yr)\b|billed (annually|yearly)|(annual|yearly) (plan|subscription|membership|charge|renewal)|every 12 months)/i],
-  ["quarterly", /((per|a|\/)\s?quarter\b|quarterly|every 3 months)/i],
-  ["weekly", /((per|a|\/)\s?week\b|billed weekly|weekly (plan|subscription|charge))/i],
+  ["monthly", new RegExp(`(${perUnit("month|mo")}|billed monthly|monthly (plan|subscription|membership|charge)|every month)`, "i")],
+  [
+    "yearly",
+    new RegExp(
+      `(${perUnit("year|yr")}|billed (annually|yearly)|(annual|yearly) (plan|subscription|membership|charge|renewal)|every 12 months)`,
+      "i"
+    ),
+  ],
+  ["quarterly", new RegExp(`(${perUnit("quarter")}|quarterly|every 3 months)`, "i")],
+  ["weekly", new RegExp(`(${perUnit("week|wk")}|billed weekly|weekly (plan|subscription|charge))`, "i")],
 ];
 
 export function detectCadence(text: string): Cadence | null {
