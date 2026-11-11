@@ -35,22 +35,22 @@ Subwatch uses Supabase for accounts and storage, and Google for Gmail access.
 
 Copy `.env.example` to `.env.local` and fill it in. `TOKEN_ENC_KEY` is 64 hex characters: `openssl rand -hex 32`. `SUPABASE_SERVICE_ROLE_KEY` is used only to delete accounts and by the eval export script. `ANTHROPIC_API_KEY` is optional (LLM fallback for emails the rules cannot parse).
 
-Use one host everywhere: either `127.0.0.1` or `localhost`, the same in `APP_URL`, every Google redirect URI, and the address you open in the browser. A mismatch breaks Google sign-in.
+`APP_URL` must equal the exact host and port you open in the browser, for example `http://127.0.0.1:3000`. Use one host everywhere: either `127.0.0.1` or `localhost`, the same in `APP_URL`, every Google redirect URI, and the address you open in the browser. A mismatch breaks Google sign-in and Connect Gmail.
 
 ### 4. Run
 
-`npm run dev`, open the address from `APP_URL`, sign up, choose **Connect Gmail**, then **Scan inbox**.
+`npm run dev`, open the address from `APP_URL`, sign up, and choose **Connect Gmail**. Step 3 of sign-up starts the first scan. After that, use **Sync now** on the dashboard to read new billing email.
 
 ### Disconnect and delete
 
-- **Disconnect Gmail** revokes Subwatch's Gmail access but keeps the records it already found. If you then connect a different Gmail address, its records are added alongside the old ones.
+- **Disconnect Gmail** revokes Subwatch's Gmail access but keeps the records it already found; the app keeps showing them with a notice to connect again. If you then connect a different Gmail address, its records are added alongside the old ones, and the old address's access is revoked.
 - **Delete account** removes everything: your account and all saved records. Your Gmail itself is never touched.
 
 ### Deploy
 
 This is a manual checklist; nothing here is automated.
 
-1. Import the repo in Vercel.
+1. Import the repo in Vercel. Pick the same region for Supabase and your host, so each database call stays short.
 2. Set every variable from `.env.example`, with `APP_URL` set to the Vercel URL.
 3. Add `${APP_URL}/api/auth/callback` to the Google OAuth client's redirect URIs.
 4. Add `${APP_URL}/auth/callback` to Supabase Authentication > URL Configuration > Redirect URLs, and set the Supabase Site URL to `APP_URL`.
