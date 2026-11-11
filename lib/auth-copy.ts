@@ -1,3 +1,5 @@
+import { z } from "zod";
+
 // Copy and pure checks for sign-in, sign-up and the OAuth routes. No Supabase or Next imports,
 // so it is safe in client components and easy to test.
 
@@ -49,3 +51,6 @@ export function validateSignup({ name, email, password }: SignupInput): SignupEr
   if (password.length < 8) errors.password = PASSWORD_HINT;
   return errors;
 }
+
+/** Body of POST /api/account/delete. The user must have typed the word "delete". */
+export const DeleteBody = z.object({ confirm: z.literal("delete") });

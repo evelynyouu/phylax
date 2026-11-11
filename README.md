@@ -13,26 +13,48 @@ npm install
 npm run demo        # http://127.0.0.1:3000 with 45 sample emails
 ```
 
-## Connect your Gmail
+## Set up your own copy
 
-1. In Google Cloud Console, create a project and enable the **Gmail API**.
+Subwatch uses Supabase for accounts and storage, and Google for Gmail access.
+
+### 1. Supabase
+
+1. Create a project at supabase.com.
+2. In Project Settings > Data API, copy the **Project URL**. Use the bare `https://<ref>.supabase.co`, not the `/rest/v1` address. In Project Settings > API Keys, copy the anon or publishable key. Put both in `.env.local` (see step 3).
+3. For development, turn off **Confirm email** (Authentication > Sign In / Providers > Email), so new accounts can sign in at once.
+4. In the SQL Editor, run both files in `supabase/migrations/`, in filename order: `20261110000000_init.sql`, then `20261111000000_gmail_needs_reconnect.sql`.
+5. Only for `npm run test:db`: create two users in Authentication > Users with auto confirm on, then set `SUPABASE_TEST_EMAIL_A`, `SUPABASE_TEST_EMAIL_B` and `SUPABASE_TEST_PASSWORD` (the same password for both).
+
+### 2. Google Cloud
+
+1. Create a project and enable the **Gmail API**.
 2. Configure the OAuth consent screen (External). Add the scope `.../auth/gmail.readonly` and add your own address as a test user.
-3. Create an **OAuth client ID** of type Web application with the redirect URI `http://localhost:3000/api/auth/callback`.
-4. Create `.env.local`:
+3. Create an **OAuth client ID** of type Web application with two redirect URIs: `http://127.0.0.1:3000/api/auth/callback` (Gmail connection) and your Supabase callback, `https://<ref>.supabase.co/auth/v1/callback` (Google sign-in).
 
-```bash
-GOOGLE_CLIENT_ID=...
-GOOGLE_CLIENT_SECRET=...
-# optional: LLM fallback for emails the rules cannot parse
-ANTHROPIC_API_KEY=...
-# required: 64 hex chars, encrypts the Gmail refresh token at rest (openssl rand -hex 32).
-# Only demo mode (npm run demo) may run without it.
-TOKEN_ENC_KEY=
-```
+### 3. Environment
 
-5. `npm run dev`, open http://127.0.0.1:3000, choose **Connect Gmail**, then **Scan inbox**.
+Copy `.env.example` to `.env.local` and fill it in. `TOKEN_ENC_KEY` is 64 hex characters: `openssl rand -hex 32`. `SUPABASE_SERVICE_ROLE_KEY` is used only to delete accounts and by the eval export script. `ANTHROPIC_API_KEY` is optional (LLM fallback for emails the rules cannot parse).
 
-While the Google app is in "Testing" status, Google expires refresh tokens after 7 days, so you will need to reconnect weekly; the dashboard shows a **Reconnect Gmail** notice when that happens and keeps your list. `gmail.readonly` is a restricted scope, so publishing the app for other people requires Google's verification and a security assessment. For personal use, Testing mode is fine.
+Use one host everywhere: either `127.0.0.1` or `localhost`, the same in `APP_URL`, every Google redirect URI, and the address you open in the browser. A mismatch breaks Google sign-in.
+
+### 4. Run
+
+`npm run dev`, open the address from `APP_URL`, sign up, choose **Connect Gmail**, then **Scan inbox**.
+
+### Disconnect and delete
+
+- **Disconnect Gmail** revokes Subwatch's Gmail access but keeps the records it already found. If you then connect a different Gmail address, its records are added alongside the old ones.
+- **Delete account** removes everything: your account and all saved records. Your Gmail itself is never touched.
+
+### Deploy
+
+This is a manual checklist; nothing here is automated.
+
+1. Import the repo in Vercel.
+2. Set every variable from `.env.example`, with `APP_URL` set to the Vercel URL.
+3. Add `${APP_URL}/api/auth/callback` to the Google OAuth client's redirect URIs.
+4. Add `${APP_URL}/auth/callback` to Supabase Authentication > URL Configuration > Redirect URLs, and set the Supabase Site URL to `APP_URL`.
+5. Sign up on the live URL, connect Gmail, and confirm the first scan finishes. If it times out, note your plan's function duration limit under Known limits (sync resumes from stored records on the next run).
 
 ## How it works
 
@@ -58,8 +80,10 @@ Email is untrusted input.
 - The LLM has no tools. Its output is one JSON object checked with a schema, and every date, amount, and URL it returns must appear in the source email or it is dropped.
 - A sender whose display name is a known brand but whose domain is not (`Netflix <billing@netflix-account-support.co>`) is discarded as phishing.
 - Cancel links must be `https`. A link on the sender's own domain opens directly. Any other domain shows a warning with the real hostname first.
-- State-changing routes accept only same-origin requests. OAuth uses a random `state` cookie. Tokens are encrypted with AES-256-GCM.
-- The server binds to `127.0.0.1`. There is no login, so do not expose it on a network without adding authentication.
+- Sign-in is Supabase Auth. Row level security limits every table to the signed-in user's own rows.
+- Gmail refresh tokens are encrypted with AES-256-GCM using `TOKEN_ENC_KEY`.
+- The Supabase service role key bypasses row level security. It is used only to delete an account (and by the developer eval export script), never for request data.
+- State-changing routes accept only same-origin requests and check the session. OAuth uses a random `state` cookie.
 
 ## Tests and eval
 
@@ -73,10 +97,10 @@ The fixtures in `fixtures/emails.ts` are synthetic and were labeled and tuned by
 
 ### Eval on your own inbox
 
-Connect Gmail first (see above). Then:
+Connect Gmail first (see above). The eval scripts need `TOKEN_ENC_KEY`; to read an existing `data/eval` corpus created before accounts were added, set `TOKEN_ENC_KEY` to the contents of `data/.token-key`. Exporting from a real account also needs `SUPABASE_SERVICE_ROLE_KEY` and `--user <uuid>`. Then:
 
 ```bash
-npm run eval:export -- --user <your Supabase user id>   # samples about 220 emails into data/eval, encrypted (needs SUPABASE_SERVICE_ROLE_KEY)
+npm run eval:export -- --user <your Supabase user id>   # samples about 220 emails into data/eval, encrypted (needs SUPABASE_SERVICE_ROLE_KEY and TOKEN_ENC_KEY)
 npm run eval:label    # label them in the terminal; resumable, type q to stop
 npm run eval:real     # precision and recall per field, rules only
 npm run eval:real:llm # same, plus a column with the LLM fallback
@@ -96,3 +120,10 @@ rm -rf data/eval      # delete the corpus when you are done
 - Merchants outside the alias table are named from the sender's display name, so a product sold by a larger company (YouTube Premium) shows under the company (Google).
 - Amounts are in the currency symbol found in the email. There is no conversion.
 - Relative dates such as "this Thursday" are not parsed.
+- There is no forgot-password flow yet.
+- Email confirmation links work only in the same browser that signed up.
+- While the Google app is in "Testing" status, it allows up to 100 listed test users, and Google expires Gmail refresh tokens after 7 days. The dashboard then shows **Reconnect Gmail** and keeps your list.
+- `gmail.readonly` is a restricted scope, so a public launch needs Google's restricted-scope verification and security assessment.
+- Free Supabase projects pause after about a week idle.
+- One sync runs per server process. On a host with several instances, a second sync may run in parallel.
+- A long first scan can hit your host's function duration limit; sync resumes from stored records on the next run.

@@ -1,4 +1,5 @@
 import type { AppUser } from "@/lib/current-user";
+import DeleteAccount from "./DeleteAccount";
 import DisconnectGmail from "./DisconnectGmail";
 
 function initials(name: string): string {
@@ -25,6 +26,7 @@ export default function Account({ user, syncNote, demo, connected }: { user: App
         </form>
       </div>
       {!demo && connected && <DisconnectGmail />}
+      {!demo && <DeleteAccount />}
     </>
   );
 }

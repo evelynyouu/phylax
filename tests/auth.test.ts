@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { authErrorMessage, safeNext, validateSignup } from "../lib/auth-copy";
+import { authErrorMessage, DeleteBody, safeNext, validateSignup } from "../lib/auth-copy";
 import { gate } from "../lib/gate";
 
 describe("auth copy", () => {
@@ -38,5 +38,13 @@ describe("route gate", () => {
       expect(gate({ path: p, method: "GET", signedIn: false })).toBe("next");
     }
     expect(gate({ path: "/api/auth/signout", method: "POST", signedIn: false })).toBe("next");
+  });
+});
+
+describe("account deletion", () => {
+  it("refuses account deletion without the typed confirmation", () => {
+    expect(DeleteBody.safeParse({ confirm: "delete" }).success).toBe(true);
+    expect(DeleteBody.safeParse({ confirm: "yes" }).success).toBe(false);
+    expect(DeleteBody.safeParse({}).success).toBe(false);
   });
 });

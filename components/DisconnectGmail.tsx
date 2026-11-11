@@ -7,7 +7,7 @@ export default function DisconnectGmail() {
   const router = useRouter();
   const [busy, setBusy] = useState(false);
   async function disconnect() {
-    if (!window.confirm("Disconnect Gmail? Subwatch revokes its access. Saved results stay in your account.")) return;
+    if (!window.confirm("Disconnect Gmail? Subwatch revokes its access. What it already found stays in your account until you delete the account.")) return;
     setBusy(true);
     try {
       await fetch("/api/auth/disconnect", { method: "POST" });
