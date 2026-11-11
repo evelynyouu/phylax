@@ -3,6 +3,8 @@
 import { useRouter } from "next/navigation";
 import { useRef, useState } from "react";
 import type { Category } from "@/lib/categories";
+import SubscriptionForm from "./SubscriptionForm";
+import type { FormValues } from "@/lib/subscription-edit";
 import { Chip, MerchantMark } from "./ui";
 
 export interface SubRow {
@@ -28,6 +30,10 @@ export interface SubRow {
   emails: number;
   manualCancel: boolean;
   cancelledNote: string;
+  edited: boolean;
+  manual: boolean;
+  /** The editable values, as the form shows them. */
+  form: FormValues;
 }
 
 const ORDER: Category[] = ["streaming", "software", "storage", "shopping", "learning", "other"];
@@ -50,6 +56,14 @@ export default function RecurringView({ rows }: { rows: SubRow[] }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const dialog = useRef<HTMLDialogElement>(null);
+  const formDialog = useRef<HTMLDialogElement>(null);
+  const [form, setForm] = useState<{ mode: "add" } | { mode: "edit"; row: SubRow } | null>(null);
+
+  function openForm(f: { mode: "add" } | { mode: "edit"; row: SubRow }) {
+    dialog.current?.close();
+    setForm(f);
+    requestAnimationFrame(() => formDialog.current?.showModal());
+  }
 
   const live = rows.filter((r) => r.status !== "cancelled");
   const cancelled = rows.filter((r) => r.status === "cancelled");
@@ -127,11 +141,16 @@ export default function RecurringView({ rows }: { rows: SubRow[] }) {
             {live.length} subscription{live.length === 1 ? "" : "s"}, {usd(monthly)} a month before trials convert.
           </p>
         </div>
-        {savedYear > 0 && (
-          <p aria-live="polite" className="saved-pill">
-            Cancelled here: {usd(savedYear)} a year
-          </p>
-        )}
+        <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
+          {savedYear > 0 && (
+            <p aria-live="polite" className="saved-pill">
+              Cancelled here: {usd(savedYear)} a year
+            </p>
+          )}
+          <button type="button" className="btn btn-ghost" onClick={() => openForm({ mode: "add" })}>
+            Add a recurring payment
+          </button>
+        </div>
       </div>
 
       <div className="filters">
@@ -176,6 +195,7 @@ export default function RecurringView({ rows }: { rows: SubRow[] }) {
                     {r.merchant}
                     {r.status === "trial" && <span className="tag tag-trial">Free trial</span>}
                     {r.priceTag && <span className="tag tag-attention">{r.priceTag}</span>}
+                    {r.manual ? <span className="tag tag-neutral">Added by you</span> : r.edited && <span className="tag tag-neutral">Edited</span>}
                   </p>
                   <p className="plan">{r.subtitle}</p>
                 </div>
@@ -301,6 +321,9 @@ export default function RecurringView({ rows }: { rows: SubRow[] }) {
                 <p>Cancel from the company&apos;s account settings, then mark it here.</p>
               </div>
             )}
+            <button type="button" className="btn btn-ghost btn-block" disabled={busy} onClick={() => openForm({ mode: "edit", row: open })}>
+              Edit details
+            </button>
             <button type="button" className="btn btn-ghost btn-block" disabled={busy} onClick={() => mark(open.merchantKey, false)}>
               {busy ? "Saving" : "I've cancelled it"}
             </button>
@@ -316,6 +339,20 @@ export default function RecurringView({ rows }: { rows: SubRow[] }) {
               Stop tracking {open.merchant}
             </button>
           </div>
+        )}
+      </dialog>
+
+      <dialog ref={formDialog} className="side-dialog" aria-labelledby="form-h" onClose={() => setForm(null)}>
+        {form && (
+          <SubscriptionForm
+            key={form.mode === "edit" ? form.row.merchantKey : "add"}
+            mode={form.mode}
+            merchantKey={form.mode === "edit" ? form.row.merchantKey : undefined}
+            initial={form.mode === "edit" ? form.row.form : { merchant: "", amount: "", cadence: "monthly", nextChargeDate: "" }}
+            manual={form.mode === "edit" && form.row.manual}
+            canUndo={form.mode === "edit" && (form.row.edited || form.row.manual)}
+            onClose={() => formDialog.current?.close()}
+          />
         )}
       </dialog>
     </>

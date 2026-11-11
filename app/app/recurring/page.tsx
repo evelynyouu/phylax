@@ -57,6 +57,14 @@ function toRow(s: Subscription, today: string): SubRow {
     cancelledNote: s.manualCancel
       ? `Marked cancelled here.${yearly ? ` Saves ${money(yearly, s.currency)} a year.` : ""}`
       : `Cancellation email received.${s.lastChargeDate ? ` Last charged ${shortDate(s.lastChargeDate, refYear)}.` : ""}`,
+    edited: s.edited,
+    manual: s.manual,
+    form: {
+      merchant: s.merchant,
+      amount: s.amount !== null ? String(s.amount) : "",
+      cadence: s.cadence ?? "",
+      nextChargeDate: s.nextChargeDate ?? "",
+    },
   };
 }
 

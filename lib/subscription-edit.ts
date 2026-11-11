@@ -67,3 +67,42 @@ export function parseEdit(body: unknown): EditResult {
 }
 
 export const DeleteEditBody = z.object({ merchantKey: z.string().regex(KEY) });
+
+/** What the form holds: strings, as typed. */
+export interface FormValues {
+  merchant: string;
+  amount: string;
+  cadence: string; // "" | Cadence
+  nextChargeDate: string; // "" | YYYY-MM-DD
+}
+
+type FormContext = { mode: "add" } | { mode: "edit"; merchantKey: string; initial: FormValues; manual?: boolean };
+
+const blank = (s: string) => s.trim() === "";
+// A number when it parses; otherwise the raw text, so the server rejects it with its own message.
+const amountOf = (s: string): number | string | null => (blank(s) ? null : Number.isFinite(Number(s)) ? Number(s) : s.trim());
+
+/**
+ * Builds the API body. Editing sends only the fields the user changed, so an unchanged field keeps
+ * following what the emails say (for example a later price change).
+ */
+export function toEditBody(v: FormValues, ctx: FormContext) {
+  if (ctx.mode === "add") {
+    return {
+      merchant: v.merchant.trim(),
+      amount: amountOf(v.amount),
+      cadence: blank(v.cadence) ? null : v.cadence,
+      nextChargeDate: blank(v.nextChargeDate) ? null : v.nextChargeDate,
+      manual: true,
+    };
+  }
+  const changed = (k: keyof FormValues) => v[k].trim() !== ctx.initial[k].trim();
+  return {
+    merchantKey: ctx.merchantKey,
+    merchant: changed("merchant") && !blank(v.merchant) ? v.merchant.trim() : null,
+    amount: changed("amount") ? amountOf(v.amount) : null,
+    cadence: changed("cadence") && !blank(v.cadence) ? v.cadence : null,
+    nextChargeDate: changed("nextChargeDate") && !blank(v.nextChargeDate) ? v.nextChargeDate : null,
+    manual: ctx.manual === true,
+  };
+}
