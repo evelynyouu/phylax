@@ -16,7 +16,7 @@ const DAY_MS = 86400000;
 export const DEMO_USER: SessionUser = { email: "demo@subwatch.local", name: "Demo account" };
 
 export function isDemo(): boolean {
-  return process.env.DATA_SOURCE === "fixtures";
+  return process.env.DATA_SOURCE === "fixtures" && process.env.NODE_ENV !== "production";
 }
 
 export function sessionKey(): Buffer {

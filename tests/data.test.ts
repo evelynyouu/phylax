@@ -201,4 +201,15 @@ describe("sync progress", () => {
       else process.env.DATA_SOURCE = prev;
     }
   });
+
+  it("a one-off purchase after 'I've cancelled it' does not bring the subscription back", () => {
+    const order = rec({ emailDate: "2026-11-09T15:00:00Z", amount: 34.18, cadence: null });
+    const d = buildDashboard([...netflix, order], { today: "2026-11-10", manualCancels: new Map([["netflix", "2026-11-08T10:00:00Z"]]) });
+    expect(d.subscriptions.find((s) => s.merchantKey === "netflix")!.status).toBe("cancelled");
+  });
+
+  it("leaves one-off purchases off the calendar's past charges", () => {
+    const order = rec({ emailDate: "2026-10-28T15:00:00Z", amount: 34.18, cadence: null });
+    expect(buildDashboard([...netflix, order], { today: TODAY }).receipts.some((r) => r.amount === 34.18)).toBe(false);
+  });
 });

@@ -53,13 +53,16 @@ function modeCadence(records: ExtractedRecord[]): Cadence | null {
 
 const day = (iso: string) => iso.slice(0, 10);
 
+/** A receipt is recurring if it states a cadence or its amount appears on 2+ receipts of the merchant. */
+export function isRecurringReceipt(r: ExtractedRecord, sameMerchantReceipts: ExtractedRecord[]): boolean {
+  return !!r.cadence || sameMerchantReceipts.filter((o) => o.amount === r.amount).length >= 2;
+}
+
 function buildSubscription(key: string, group: ExtractedRecord[], today: string, manualAt?: string): Subscription | null {
   // A receipt only counts toward a subscription if it states a cadence or the same amount repeats.
   // This keeps one-off purchases (e.g. an Amazon order) from masquerading as the recurring charge.
   const allReceipts = group.filter((r) => r.kind === "receipt" && r.amount !== null);
-  const receipts = allReceipts.filter(
-    (r) => r.cadence || allReceipts.filter((o) => o.amount === r.amount).length >= 2
-  );
+  const receipts = allReceipts.filter((r) => isRecurringReceipt(r, allReceipts));
   const renewals = group.filter((r) => r.kind === "renewal_notice");
   const trials = group.filter((r) => r.kind === "trial_ending");
   const priceChanges = group.filter((r) => r.kind === "price_change" && r.amount !== null);
@@ -86,7 +89,8 @@ function buildSubscription(key: string, group: ExtractedRecord[], today: string,
     !!lastCancel && (!lastChargeDate || day(lastCancel.emailDate) >= lastChargeDate) &&
     !renewals.some((r) => r.emailDate > lastCancel.emailDate);
   // "I've cancelled it" holds until a receipt newer than the moment the user said so.
-  const newestReceipt = mostRecent(allReceipts);
+  // One-off purchases (non-recurring receipts) do not count as a newer charge.
+  const newestReceipt = mostRecent(receipts);
   const manual = !!manualAt && (!newestReceipt || newestReceipt.emailDate <= manualAt);
   const isCancelled = cancelled || manual;
   const status: Subscription["status"] = isCancelled ? "cancelled" : liveTrial ? "trial" : "active";
@@ -307,8 +311,13 @@ export function buildDashboard(
 
   // Past charges for the calendar: receipts from merchants we track as subscriptions.
   const subKeys = new Set(subscriptions.map((s) => s.merchantKey));
-  const receipts: PastCharge[] = relevant
-    .filter((r) => r.kind === "receipt" && r.amount !== null && subKeys.has(r.merchantKey!))
+  const receiptsByMerchant = new Map<string, ExtractedRecord[]>();
+  for (const r of relevant) {
+    if (r.kind !== "receipt" || r.amount === null || !subKeys.has(r.merchantKey!)) continue;
+    receiptsByMerchant.set(r.merchantKey!, [...(receiptsByMerchant.get(r.merchantKey!) ?? []), r]);
+  }
+  const receipts: PastCharge[] = [...receiptsByMerchant.values()]
+    .flatMap((list) => list.filter((r) => isRecurringReceipt(r, list)))
     .map((r) => ({
       merchantKey: r.merchantKey!,
       merchant: subscriptions.find((s) => s.merchantKey === r.merchantKey)!.merchant,
