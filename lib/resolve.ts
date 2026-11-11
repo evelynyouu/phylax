@@ -194,7 +194,13 @@ const annualOf = (amount: number | null, cadence: Cadence | null) =>
  * The user's corrections win over what the emails said, and survive re-scans because they are stored
  * apart from the records. A manual entry with no email subscription becomes its own subscription.
  */
-function applyEdits(subscriptions: Subscription[], edits: SubscriptionEdit[], dismissed: Set<string>, today: string) {
+function applyEdits(
+  subscriptions: Subscription[],
+  edits: SubscriptionEdit[],
+  dismissed: Set<string>,
+  manualCancels: Map<string, string>,
+  today: string,
+) {
   for (const e of edits) {
     if (dismissed.has(e.merchantKey)) continue;
     const next = (d: string | null, cadence: Cadence | null) => (d && cadence ? rollForward(d, cadence, today) : d);
@@ -212,10 +218,11 @@ function applyEdits(subscriptions: Subscription[], edits: SubscriptionEdit[], di
     if (!e.manual) continue; // a correction for a merchant that is no longer found has nothing to correct
     const nextChargeDate = next(e.nextChargeDate, e.cadence);
     if (e.amount === null && nextChargeDate === null) continue; // nothing to show (same rule as email subscriptions)
+    const cancelled = manualCancels.has(e.merchantKey);
     subscriptions.push({
       merchantKey: e.merchantKey,
       merchant: e.merchant ?? e.merchantKey,
-      status: "active",
+      status: cancelled ? "cancelled" : "active",
       amount: e.amount,
       currency: e.currency ?? "USD",
       cadence: e.cadence,
@@ -226,7 +233,7 @@ function applyEdits(subscriptions: Subscription[], edits: SubscriptionEdit[], di
       cancelUrlTrusted: false,
       evidenceEmailIds: [],
       annualCost: annualOf(e.amount, e.cadence),
-      manualCancel: false,
+      manualCancel: cancelled,
       edited: false,
       manual: true,
     });
@@ -264,7 +271,7 @@ export function buildDashboard(
     const s = buildSubscription(key, group, today, manualCancels.get(key));
     if (s) subscriptions.push(s);
   }
-  applyEdits(subscriptions, opts.edits ?? [], dismissed, today);
+  applyEdits(subscriptions, opts.edits ?? [], dismissed, manualCancels, today);
   const statusRank = { active: 0, trial: 1, cancelled: 2 } as const;
   subscriptions.sort(
     (a, b) =>

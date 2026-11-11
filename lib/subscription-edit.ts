@@ -10,6 +10,7 @@ export const EDIT_MESSAGES = {
   cycle: "Choose a billing cycle: weekly, monthly, quarterly or yearly.",
   date: "Enter the next charge date as a real date (YYYY-MM-DD).",
   currency: "Choose a currency: USD, EUR or GBP.",
+  amountOrDate: "Enter an amount or a next charge date so the payment can be tracked.",
 } as const;
 
 const KEY = /^[a-z0-9]{1,100}$/;
@@ -50,6 +51,7 @@ export function parseEdit(body: unknown): EditResult {
   const manual = b.manual === true;
   const merchant = b.merchant ?? null;
   if (manual && !merchant) return { ok: false, error: EDIT_MESSAGES.name };
+  if (manual && !b.merchantKey && b.amount == null && b.nextChargeDate == null) return { ok: false, error: EDIT_MESSAGES.amountOrDate };
   const key = b.merchantKey ?? (merchant ? toMerchantKey(merchant) : "");
   if (!KEY.test(key)) return { ok: false, error: manual ? EDIT_MESSAGES.name : "bad request" };
   return {
@@ -63,6 +65,22 @@ export function parseEdit(body: unknown): EditResult {
       nextChargeDate: b.nextChargeDate ?? null,
       manual,
     },
+  };
+}
+
+type Edit = Omit<SubscriptionEdit, "updatedAt">;
+
+/** Applies an incoming edit on top of the stored one: fields left null keep their stored value. */
+export function mergeEdit(stored: SubscriptionEdit | undefined, incoming: Edit): Edit {
+  if (!stored) return incoming;
+  return {
+    merchantKey: incoming.merchantKey,
+    merchant: incoming.merchant ?? stored.merchant,
+    amount: incoming.amount ?? stored.amount,
+    currency: incoming.currency ?? stored.currency,
+    cadence: incoming.cadence ?? stored.cadence,
+    nextChargeDate: incoming.nextChargeDate ?? stored.nextChargeDate,
+    manual: stored.manual || incoming.manual,
   };
 }
 
@@ -96,7 +114,8 @@ export function toEditBody(v: FormValues, ctx: FormContext) {
       manual: true,
     };
   }
-  const changed = (k: keyof FormValues) => v[k].trim() !== ctx.initial[k].trim();
+  // A manual payment has no emails to fall back on, so every field is sent.
+  const changed = (k: keyof FormValues) => ctx.manual === true || v[k].trim() !== ctx.initial[k].trim();
   return {
     merchantKey: ctx.merchantKey,
     merchant: changed("merchant") && !blank(v.merchant) ? v.merchant.trim() : null,

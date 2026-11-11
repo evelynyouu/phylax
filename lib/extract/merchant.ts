@@ -76,9 +76,20 @@ export function cleanName(raw: string): string {
     .trim()
     // Removing noise words can leave separators behind ("Acme, Inc." -> "Acme, ."). Trim them,
     // keeping a final period that belongs to an abbreviation like "A.B.".
-    .replace(/^[\s,.;:\-]+/, "")
-    .replace(/(?:[\s,;:\-]+\.?)+$/, "");
-  return cleaned || raw.trim();
+    .replace(/^[\s,.;:\-]+/, "");
+  return trimTrailingSeparators(cleaned) || raw.trim();
+}
+
+const SEPARATOR = /[\s,;:\-]/;
+
+/** Drops trailing separators and a period that follows one, scanning once from the end (no regex backtracking). */
+function trimTrailingSeparators(s: string): string {
+  let end = s.length;
+  for (;;) {
+    if (end > 0 && SEPARATOR.test(s[end - 1])) end--;
+    else if (end > 1 && s[end - 1] === "." && SEPARATOR.test(s[end - 2])) end -= 2;
+    else return s.slice(0, end);
+  }
 }
 
 export function merchantKey(name: string): string {
