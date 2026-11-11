@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { authErrorMessage, DeleteBody, safeNext, validateSignup } from "../lib/auth-copy";
+import { AUTH_MESSAGES, authErrorMessage, DeleteBody, GMAIL_MESSAGES, gmailFailureRedirect, safeNext, validateSignup } from "../lib/auth-copy";
 import { gate } from "../lib/gate";
 
 describe("auth copy", () => {
@@ -16,6 +16,25 @@ describe("auth copy", () => {
   it("validates sign-up input", () => {
     expect(validateSignup({ name: "", email: "a@b.co", password: "12345678" })).toEqual({ name: "Enter your name." });
     expect(validateSignup({ name: "E", email: "nope", password: "short" })).toEqual({ email: "Enter an email address with an @.", password: "At least 8 characters." });
+  });
+});
+
+describe("Gmail connect failures", () => {
+  it("send a signed-in user back to where the connect started, never to /signin", () => {
+    expect(gmailFailureRedirect("signup", "denied")).toBe("/signup?step=2&auth=denied");
+    expect(gmailFailureRedirect("app", "no_gmail")).toBe("/app?auth=no_gmail");
+    expect(gmailFailureRedirect(undefined, "failed")).toBe("/app?auth=failed");
+    expect(gmailFailureRedirect("https://evil.example", "invalid_state")).toBe("/app?auth=invalid_state");
+  });
+
+  it("have Gmail wording for every callback reason, separate from sign-in wording", () => {
+    for (const r of ["denied", "no_gmail", "invalid_state", "failed", "no_identity", "not_configured"]) {
+      expect(GMAIL_MESSAGES[r]?.text).toBeTruthy();
+    }
+    expect(GMAIL_MESSAGES.denied.text).toBe("Connecting Gmail was cancelled. Try again when you're ready.");
+    expect(GMAIL_MESSAGES.no_gmail.text).toBe("Subwatch needs read-only Gmail access. On Google's screen, keep the Gmail box ticked.");
+    expect(AUTH_MESSAGES.denied.text).toBe("Google sign-in was cancelled. Try again when you're ready.");
+    for (const m of [...Object.values(GMAIL_MESSAGES), ...Object.values(AUTH_MESSAGES)]) expect(m.text).not.toMatch(/\u2014/);
   });
 });
 

@@ -14,8 +14,8 @@ export function memoryStore(userId = "memory"): Store {
   };
   return {
     userId,
-    async hasRecord(emailId) {
-      return records.has(emailId);
+    async knownIds(ids) {
+      return new Set(ids.filter((id) => records.has(id)));
     },
     async saveRecord(r) {
       records.set(r.emailId, r);

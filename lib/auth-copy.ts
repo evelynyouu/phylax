@@ -3,17 +3,36 @@ import { z } from "zod";
 // Copy and pure checks for sign-in, sign-up and the OAuth routes. No Supabase or Next imports,
 // so it is safe in client components and easy to test.
 
-// Copy for ?auth= codes set by the OAuth routes and sign-out.
-export const AUTH_MESSAGES: Record<string, { text: string; info?: boolean }> = {
+export type AuthMessage = { text: string; info?: boolean };
+
+// Copy for ?auth= codes on /signin: Supabase sign-in failures (/auth/callback) and sign-out.
+export const AUTH_MESSAGES: Record<string, AuthMessage> = {
   not_configured: { text: "Google sign-in is not set up yet. Add GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET as the README describes, or run npm run demo for sample data." },
   accounts_not_configured: { text: "Accounts are not set up yet. Add the Supabase keys as the README describes, or run npm run demo for sample data." },
   denied: { text: "Google sign-in was cancelled. Try again when you're ready." },
-  invalid_state: { text: "The sign-in could not be verified. Please try again." },
   failed: { text: "Google sign-in failed. Check the OAuth settings in the README and try again." },
-  no_identity: { text: "Google did not say which Gmail account you chose. Please try connecting again." },
-  no_gmail: { text: "Subwatch needs read-only Gmail access to work. On Google's screen, keep the Gmail box ticked." },
   signed_out: { text: "You're signed out.", info: true },
 };
+
+// Copy for ?auth= codes set by the Connect Gmail flow (/api/auth/google and /api/auth/callback),
+// shown on sign-up step 2 and on /app.
+export const GMAIL_MESSAGES: Record<string, AuthMessage> = {
+  not_configured: { text: "Connecting Gmail is not set up yet. Add GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET as the README describes, or run npm run demo for sample data." },
+  denied: { text: "Connecting Gmail was cancelled. Try again when you're ready." },
+  no_gmail: { text: "Subwatch needs read-only Gmail access. On Google's screen, keep the Gmail box ticked." },
+  invalid_state: { text: "Subwatch could not verify the answer from Google. Please connect Gmail again." },
+  failed: { text: "Connecting Gmail failed. Check the OAuth settings in the README and try again." },
+  no_identity: { text: "Google did not say which Gmail account you chose. Please connect Gmail again." },
+};
+
+/**
+ * Where a signed-in user lands when connecting Gmail fails: back where they started, with the
+ * reason. `next` is the oauth_next cookie label; anything but "signup" means the app.
+ */
+export function gmailFailureRedirect(next: string | undefined, reason: string): string {
+  const auth = encodeURIComponent(reason);
+  return next === "signup" ? `/signup?step=2&auth=${auth}` : `/app?auth=${auth}`;
+}
 
 const ERRORS: Record<string, string> = {
   "Invalid login credentials": "That email and password don't match.",

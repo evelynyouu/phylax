@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { getOptionalUser } from "@/lib/current-user";
 import { requireUser } from "@/lib/route-auth";
 import { storeFor } from "@/lib/store";
-import { getDashboard, GmailReconnectError, runSync, SyncAlreadyRunningError, syncProgress } from "@/lib/sync";
+import { getDashboard, GmailReconnectError, runSync, SYNC_FAILED_MESSAGE, SyncAlreadyRunningError, syncProgress } from "@/lib/sync";
 
 export const maxDuration = 300;
 
@@ -17,7 +17,9 @@ export async function POST(req: Request) {
     if (e instanceof SyncAlreadyRunningError) return NextResponse.json({ error: e.message }, { status: 409 });
     // Google refused the token. Nothing was deleted; the dashboard asks the user to reconnect.
     if (e instanceof GmailReconnectError) return NextResponse.json({ error: "reconnect" }, { status: 409 });
-    return NextResponse.json({ error: e instanceof Error ? e.message : "sync failed" }, { status: 500 });
+    // The message can carry database or Google details: log it here, send a fixed line.
+    console.error("sync failed", e);
+    return NextResponse.json({ error: SYNC_FAILED_MESSAGE }, { status: 500 });
   }
 }
 

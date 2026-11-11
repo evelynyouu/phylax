@@ -13,7 +13,8 @@ export type MarkTable = "dismissed" | "manual_cancels" | "paid" | "reminders";
 /** Per-user storage. Every method is scoped to `userId`. */
 export interface Store {
   userId: string;
-  hasRecord(emailId: string): Promise<boolean>;
+  /** Which of these email ids already have a stored record. One call for the whole list. */
+  knownIds(ids: string[]): Promise<Set<string>>;
   saveRecord(r: ExtractedRecord): Promise<void>;
   /** Ordered by emailDate ascending. */
   loadRecords(): Promise<ExtractedRecord[]>;

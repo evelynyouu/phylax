@@ -14,7 +14,7 @@ export default function CalendarPage() {
 }
 
 async function Calendar() {
-  const { dashboard, today, connected } = await loadApp();
-  if (!connected) return <ConnectGmailEmpty title="Calendar" />;
+  const { dashboard, today, gmail } = await loadApp();
+  if (gmail === "connect") return <ConnectGmailEmpty title="Calendar" />;
   return <CalendarView subscriptions={dashboard.subscriptions} bills={dashboard.bills} receipts={dashboard.receipts} today={today} />;
 }

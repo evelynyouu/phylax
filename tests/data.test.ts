@@ -1,11 +1,13 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { billKey, chargesForMonth } from "../lib/calendar";
 import { categoryFor } from "../lib/categories";
-import { GMAIL_SCOPE, SCOPES } from "../lib/gmail";
+import { GMAIL_SCOPE, SCOPES, updateGmail } from "../lib/gmail";
 import { buildDashboard } from "../lib/resolve";
 import { memoryStore } from "../lib/store/memory";
 import { dataSource, getDashboard, GmailReconnectError, runSync, syncProgress, type GmailLayer } from "../lib/sync";
+import type { Store } from "../lib/store/types";
 import type { ExtractedRecord, Subscription } from "../lib/types";
+import { gmailState } from "../lib/views";
 
 const TODAY = "2026-11-09";
 
@@ -307,11 +309,98 @@ describe("expired Gmail token (invalid_grant)", { timeout: 15000 }, () => {
     expect(c!.lastSyncEpoch).toBeGreaterThan(1000);
   });
 
+  it("checks which listed ids are already stored in one batched call, not one per id", async () => {
+    const base = await connected("batched");
+    for (let i = 0; i < 300; i++) await base.saveRecord(rec({ emailDate: "2026-09-01T00:00:00Z", emailId: `m${i}` }));
+    const calls: number[] = [];
+    const s: Store = {
+      ...base,
+      knownIds: async (ids) => {
+        calls.push(ids.length);
+        return base.knownIds(ids);
+      },
+    };
+    let fetched = 0;
+    const gmail: GmailLayer = {
+      configured: () => true,
+      listMessageIds: async () => Array.from({ length: 450 }, (_, i) => `m${i}`),
+      fetchEmail: async (_s, id) => {
+        fetched++;
+        return raw(id);
+      },
+    };
+    const r = await runSync(s, undefined, gmail);
+    expect(calls).toEqual([450]);
+    expect(fetched).toBe(150);
+    expect(r).toMatchObject({ listed: 450, processed: 150 });
+  });
+
+  it("a sync for mailbox A never writes its cursor onto mailbox B connected meanwhile", async () => {
+    const s = await connected("switched");
+    const b = { gmailEmail: "other@gmail.com", encTokens: "enc-b", lastSyncEpoch: null, needsReconnect: false };
+    const gmail: GmailLayer = {
+      configured: () => true,
+      listMessageIds: async () => ["m1"],
+      fetchEmail: async (_s, id) => {
+        // The user connects a different Gmail while this sync is reading mail.
+        await s.setGmail(b);
+        return raw(id);
+      },
+    };
+    await runSync(s, undefined, gmail);
+    expect(await s.getGmail()).toEqual(b);
+  });
+
+  it("a reconnect flag for mailbox A is not set on mailbox B", async () => {
+    const s = await connected("switched-grant");
+    const b = { gmailEmail: "other@gmail.com", encTokens: "enc-b", lastSyncEpoch: null, needsReconnect: false };
+    const gmail: GmailLayer = {
+      configured: () => true,
+      listMessageIds: async () => ["m1"],
+      fetchEmail: async () => {
+        await s.setGmail(b);
+        throw grant();
+      },
+    };
+    await expect(runSync(s, undefined, gmail)).rejects.toBeInstanceOf(GmailReconnectError);
+    expect(await s.getGmail()).toEqual(b);
+  });
+
   it("refuses without a connection", async () => {
     const s = memoryStore("none");
     const gmail: GmailLayer = { configured: () => true, listMessageIds: async () => [], fetchEmail: async () => null };
     await expect(runSync(s, undefined, gmail)).rejects.toThrow(/not connected/);
+    // Progress is polled by the browser, so it carries a fixed line, never the raw error text.
+    expect(syncProgress("none").error).toBe("Sync failed. Please try again.");
     expect(await getDashboard(s)).toMatchObject({ connected: false, reconnect: false });
+  });
+});
+
+describe("Gmail connection writes", () => {
+  it("a token write for mailbox A is skipped once the row belongs to mailbox B", async () => {
+    const s = memoryStore("swap");
+    await s.setGmail({ gmailEmail: "a@gmail.com", encTokens: "enc-a", lastSyncEpoch: 10, needsReconnect: false });
+    const b = { gmailEmail: "b@gmail.com", encTokens: "enc-b", lastSyncEpoch: null, needsReconnect: false };
+    await s.setGmail(b);
+    await updateGmail(s, "a@gmail.com", (c) => ({ ...c, encTokens: "enc-a-refreshed" }));
+    expect(await s.getGmail()).toEqual(b);
+  });
+
+  it("still writes when the row is the same mailbox (address case does not matter)", async () => {
+    const s = memoryStore("same");
+    await s.setGmail({ gmailEmail: "A@gmail.com", encTokens: "enc-a", lastSyncEpoch: 10, needsReconnect: false });
+    await updateGmail(s, "a@gmail.com", (c) => ({ ...c, encTokens: "enc-a2" }));
+    expect((await s.getGmail())!.encTokens).toBe("enc-a2");
+  });
+});
+
+describe("Gmail state of an /app page", () => {
+  it("shows the connect empty state only when not connected and nothing was found", () => {
+    expect(gmailState({ connected: false, reconnect: false, hasData: false })).toBe("connect");
+    expect(gmailState({ connected: false, reconnect: false, hasData: true })).toBe("disconnected");
+    expect(gmailState({ connected: true, reconnect: true, hasData: true })).toBe("reconnect");
+    expect(gmailState({ connected: true, reconnect: true, hasData: false })).toBe("reconnect");
+    expect(gmailState({ connected: true, reconnect: false, hasData: false })).toBe("ok");
   });
 });
 

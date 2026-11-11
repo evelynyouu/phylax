@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 import Account from "@/components/Account";
 import AppShell from "@/components/AppShell";
+import { GmailNotice } from "@/components/ConnectGmail";
 import { loadApp, loadSyncNote } from "@/lib/app-data";
 
 async function AccountSlot() {
@@ -10,7 +11,13 @@ async function AccountSlot() {
   );
 }
 
-// The shell prerenders; the account block reads the session and streams in.
+// Reconnect or "not connected" notice, the same on every /app page.
+async function GmailNoticeSlot() {
+  const { gmail } = await loadApp();
+  return <GmailNotice state={gmail} />;
+}
+
+// The shell prerenders; the account block and the Gmail notice read the session and stream in.
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   return (
     <AppShell
@@ -20,6 +27,9 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         </Suspense>
       }
     >
+      <Suspense fallback={null}>
+        <GmailNoticeSlot />
+      </Suspense>
       {children}
     </AppShell>
   );

@@ -31,7 +31,7 @@ export interface SyncProgress {
   checked: number; // already stored + newly processed, for progress
   processed: number;
   relevant: number;
-  /** "reconnect" when Google refused the token; otherwise the failure message. */
+  /** "reconnect" when Google refused the token; otherwise SYNC_FAILED_MESSAGE, never the raw error. */
   error: string | null;
 }
 
@@ -61,6 +61,9 @@ export class SyncAlreadyRunningError extends Error {
     this.name = "SyncAlreadyRunningError";
   }
 }
+
+/** What the browser sees when a sync fails for any reason but a refused token. */
+export const SYNC_FAILED_MESSAGE = "Sync failed. Please try again.";
 
 const CONCURRENCY = 5;
 
@@ -105,7 +108,7 @@ async function runTracked(store: Store, onProgress: ((p: SyncProgress) => void) 
     progress.set(id, { ...syncProgress(id), running: false });
     return result;
   } catch (e) {
-    const error = e instanceof GmailReconnectError ? "reconnect" : e instanceof Error ? e.message : "Sync failed";
+    const error = e instanceof GmailReconnectError ? "reconnect" : SYNC_FAILED_MESSAGE;
     progress.set(id, { ...syncProgress(id), running: false, error });
     throw e;
   }
@@ -131,8 +134,9 @@ async function syncInner(
   if (source === "fixtures") {
     result.listed = FIXTURE_EMAILS.length;
     report(result);
+    const known = await store.knownIds(FIXTURE_EMAILS.map((e) => e.id));
     for (const email of FIXTURE_EMAILS) {
-      if (await store.hasRecord(email.id)) {
+      if (known.has(email.id)) {
         skip(1);
         report(result);
         continue;
@@ -147,8 +151,9 @@ async function syncInner(
   if (!conn) throw new Error("Gmail is not connected");
 
   // Google refused the token: keep the connection row and every record, flag it, and stop.
+  // Writes name this sync's mailbox, so they skip a different Gmail connected meanwhile.
   const needReconnect = async (): Promise<never> => {
-    await updateGmail(store, (c) => ({ ...c, needsReconnect: true }));
+    await updateGmail(store, conn.gmailEmail, (c) => ({ ...c, needsReconnect: true }));
     throw new GmailReconnectError();
   };
 
@@ -163,8 +168,8 @@ async function syncInner(
     throw e;
   }
   result.listed = ids.length;
-  const fresh: string[] = [];
-  for (const id of ids) if (!(await store.hasRecord(id))) fresh.push(id);
+  const known = await store.knownIds(ids);
+  const fresh = ids.filter((id) => !known.has(id));
   skip(ids.length - fresh.length);
   report(result);
 
@@ -189,7 +194,7 @@ async function syncInner(
   if (revoked) return needReconnect();
 
   // Only advance the cursor on a clean run so failed messages are retried next time.
-  await updateGmail(store, (c) => ({
+  await updateGmail(store, conn.gmailEmail, (c) => ({
     ...c,
     needsReconnect: false,
     lastSyncEpoch: result.errors === 0 ? startedAt : c.lastSyncEpoch,

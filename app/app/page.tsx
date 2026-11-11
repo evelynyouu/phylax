@@ -2,9 +2,10 @@ import Link from "next/link";
 import { Suspense } from "react";
 import AttentionList from "@/components/AttentionList";
 import DashboardChart from "@/components/DashboardChart";
-import { ConnectGmailEmpty, ReconnectNotice } from "@/components/ConnectGmail";
+import { ConnectGmailEmpty } from "@/components/ConnectGmail";
 import SyncButton from "@/components/SyncButton";
 import { loadApp } from "@/lib/app-data";
+import { GMAIL_MESSAGES } from "@/lib/auth-copy";
 import { addDays } from "@/lib/extract/dates";
 import { longDate, money } from "@/lib/format";
 import { attentionItems, categoryTotals, dailySeries } from "@/lib/views";
@@ -21,10 +22,10 @@ const BAR: Record<string, string> = {
   other: "var(--bar-other)",
 };
 
-export default function DashboardPage() {
+export default function DashboardPage({ searchParams }: PageProps<"/app">) {
   return (
     <Suspense fallback={<PageHead title="Dashboard" eyebrow="Loading" />}>
-      <Dashboard />
+      <Dashboard searchParams={searchParams} />
     </Suspense>
   );
 }
@@ -41,9 +42,12 @@ function PageHead({ title, eyebrow, action }: { title: string; eyebrow: string; 
   );
 }
 
-async function Dashboard() {
-  const { dashboard: d, today, connected, reconnect } = await loadApp();
-  if (!connected) return <ConnectGmailEmpty title="Dashboard" />;
+async function Dashboard({ searchParams }: { searchParams: PageProps<"/app">["searchParams"] }) {
+  const { dashboard: d, today, gmail } = await loadApp();
+  // Set by the Connect Gmail callback when connecting failed (lib/auth-copy.ts gmailFailureRedirect).
+  const code = (await searchParams).auth;
+  const failure = typeof code === "string" ? (GMAIL_MESSAGES[code]?.text ?? null) : null;
+  if (gmail === "connect") return <ConnectGmailEmpty title="Dashboard" message={failure} />;
   const series = dailySeries(d, today, 60);
   const active = d.subscriptions.filter((s) => s.status === "active").length;
   const trials = d.subscriptions.filter((s) => s.status === "trial").length;
@@ -56,7 +60,11 @@ async function Dashboard() {
   return (
     <>
       <PageHead title="Dashboard" eyebrow={longDate(today)} action={<SyncButton />} />
-      {reconnect && <ReconnectNotice />}
+      {failure && (
+        <p role="alert" className="notice-bar warn">
+          {failure}
+        </p>
+      )}
 
       {d.subscriptions.length === 0 && d.bills.length === 0 ? (
         <div className="empty-card">

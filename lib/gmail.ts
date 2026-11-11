@@ -73,13 +73,21 @@ function readTokens(c: GmailConnection | null): Tokens | null {
 // the sync's cursor update never overwrite each other.
 const writes = new WeakMap<Store, Promise<void>>();
 
-/** Updates the stored connection if there still is one. Serialized per store. */
-export function updateGmail(store: Store, fn: (c: GmailConnection) => GmailConnection): Promise<void> {
+function sameMailbox(a: string, b: string): boolean {
+  return a.toLowerCase() === b.toLowerCase();
+}
+
+/**
+ * Updates the stored connection if it is still `gmailEmail`. Serialized per store. If the user
+ * disconnected or connected a different Gmail meanwhile, the write is skipped, so mailbox A's
+ * tokens or cursor never land on mailbox B's row.
+ */
+export function updateGmail(store: Store, gmailEmail: string, fn: (c: GmailConnection) => GmailConnection): Promise<void> {
   const next = (writes.get(store) ?? Promise.resolve())
     .catch(() => {})
     .then(async () => {
       const c = await store.getGmail();
-      if (c) await store.setGmail(fn(c));
+      if (c && sameMailbox(c.gmailEmail, gmailEmail)) await store.setGmail(fn(c));
     });
   writes.set(store, next);
   return next;
@@ -107,8 +115,10 @@ export async function connectGmailWithCode(code: string, store: Store): Promise<
   if (!gmailEmail) return { ok: false, reason: "no_identity" };
 
   const existing = await store.getGmail();
-  const same = existing?.gmailEmail.toLowerCase() === gmailEmail.toLowerCase();
+  const same = !!existing && sameMailbox(existing.gmailEmail, gmailEmail);
   const old = same ? readTokens(existing) : null;
+  // Switching to a different Gmail: drop the old mailbox's grant at Google, as disconnect does.
+  if (existing && !same) await revokeBestEffort(existing);
   // Google only returns a refresh token on first consent; keep the old one if this response lacks it.
   const merged = { ...tokens, refresh_token: tokens.refresh_token ?? old?.refresh_token };
   await store.setGmail({
@@ -118,6 +128,7 @@ export async function connectGmailWithCode(code: string, store: Store): Promise<
     lastSyncEpoch: same ? existing!.lastSyncEpoch : null,
     needsReconnect: false,
   });
+  clients.delete(store);
   return { ok: true, gmailEmail };
 }
 
@@ -125,16 +136,21 @@ export async function isConnected(store: Store): Promise<boolean> {
   return (await store.getGmail()) !== null;
 }
 
+/** Revokes the connection's grant at Google. Best effort: never throws, never blocks the caller's next step. */
+async function revokeBestEffort(c: GmailConnection | null): Promise<void> {
+  // A missing TOKEN_ENC_KEY still throws here: that is a setup problem, not a failed revoke.
+  const t = readTokens(c);
+  if (!t?.refresh_token) return;
+  try {
+    await oauthClient().revokeToken(String(t.refresh_token));
+  } catch {
+    // Revocation is best effort; the caller still replaces or drops the stored copy.
+  }
+}
+
 /** Revokes Google's grant (best effort), then deletes the connection. Records stay. */
 export async function disconnect(store: Store): Promise<void> {
-  const t = readTokens(await store.getGmail());
-  if (t?.refresh_token) {
-    try {
-      await oauthClient().revokeToken(String(t.refresh_token));
-    } catch {
-      // Revocation is best effort; we still drop the stored copy below.
-    }
-  }
+  await revokeBestEffort(await store.getGmail());
   await store.setGmail(null);
   clients.delete(store);
 }
@@ -160,7 +176,7 @@ async function makeClient(store: Store): Promise<gmail_v1.Gmail> {
   client.on("tokens", (t) => {
     tokens = { ...tokens, ...t, refresh_token: t.refresh_token ?? tokens!.refresh_token };
     const enc = encrypt(JSON.stringify(tokens));
-    updateGmail(store, (c) => ({ ...c, encTokens: enc })).catch(() => {
+    updateGmail(store, conn.gmailEmail, (c) => ({ ...c, encTokens: enc })).catch(() => {
       // The refreshed access token still works for this run; the next run refreshes again.
     });
   });

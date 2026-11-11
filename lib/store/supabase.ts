@@ -6,15 +6,22 @@ function check(error: { message: string } | null) {
   if (error) throw new Error(error.message);
 }
 
+const KNOWN_IDS_CHUNK = 200;
+
 /** Per-user store over Supabase. Row level security enforces isolation; user_id is set explicitly too. */
 export function supabaseStore(client: SupabaseClient, userId: string): Store {
   return {
     userId,
-    async hasRecord(emailId) {
-      const { data, error } = await client
-        .from("records").select("email_id").eq("user_id", userId).eq("email_id", emailId).maybeSingle();
-      check(error);
-      return data !== null;
+    async knownIds(ids) {
+      const known = new Set<string>();
+      // Chunked so the id list stays well inside PostgREST's URL length limit.
+      for (let i = 0; i < ids.length; i += KNOWN_IDS_CHUNK) {
+        const { data, error } = await client
+          .from("records").select("email_id").eq("user_id", userId).in("email_id", ids.slice(i, i + KNOWN_IDS_CHUNK));
+        check(error);
+        for (const row of data ?? []) known.add(row.email_id as string);
+      }
+      return known;
     },
     async saveRecord(r) {
       const { error } = await client.from("records").upsert(

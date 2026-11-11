@@ -31,8 +31,17 @@ export function describeStore(name: string, make: () => Store) {
       await s.saveRecord(rec("a", "2026-09-01T00:00:00Z"));
       await s.saveRecord(rec("a", "2026-09-01T00:00:00Z"));
       expect((await s.loadRecords()).map((r) => r.emailId)).toEqual(["a", "b"]);
-      expect(await s.hasRecord("a")).toBe(true);
-      expect(await s.hasRecord("zzz")).toBe(false);
+    });
+
+    it("answers which ids are already stored in one call, across chunks", async () => {
+      const s = make();
+      await s.saveRecord(rec("a", "2026-09-01T00:00:00Z"));
+      await s.saveRecord(rec("k-300", "2026-09-02T00:00:00Z"));
+      expect(await s.knownIds([])).toEqual(new Set());
+      expect(await s.knownIds(["a", "zzz"])).toEqual(new Set(["a"]));
+      // More ids than one Supabase chunk (200), with a known id in a later chunk.
+      const many = Array.from({ length: 450 }, (_, i) => `k-${i}`);
+      expect(await s.knownIds(["a", ...many])).toEqual(new Set(["a", "k-300"]));
     });
 
     it("is last-write-wins on a duplicate emailId", async () => {

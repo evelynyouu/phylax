@@ -61,7 +61,7 @@ function toRow(s: Subscription, today: string): SubRow {
 }
 
 async function Recurring() {
-  const { dashboard, today, connected } = await loadApp();
-  if (!connected) return <ConnectGmailEmpty title="Recurring" />;
+  const { dashboard, today, gmail } = await loadApp();
+  if (gmail === "connect") return <ConnectGmailEmpty title="Recurring" />;
   return <RecurringView rows={dashboard.subscriptions.map((s) => toRow(s, today))} />;
 }

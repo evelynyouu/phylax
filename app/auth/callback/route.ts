@@ -8,7 +8,9 @@ import { supabaseServer } from "@/lib/supabase/server";
 // Exchanging it sets the session cookies; then we go to a whitelisted next path.
 export async function GET(req: NextRequest) {
   const url = new URL(req.url);
-  const base = process.env.APP_URL ?? url.origin;
+  // The session cookies are set on the request's host, so stay on it. APP_URL could name a
+  // different host (127.0.0.1 vs localhost) where those cookies do not exist.
+  const base = url.origin;
   const next = safeNext(url.searchParams.get("next"));
   if (isDemo()) return NextResponse.redirect(new URL(next, base));
 

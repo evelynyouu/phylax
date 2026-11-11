@@ -23,6 +23,18 @@ const ATTENTION_DAYS = 7;
 const REMINDER_DAYS = 2;
 const PRICE_LOOKBACK_DAYS = 45;
 
+export type GmailState = "ok" | "connect" | "disconnected" | "reconnect";
+
+/**
+ * How an /app page treats the Gmail connection. "connect": nothing to show yet, so the page is
+ * the Connect Gmail empty state. "disconnected": records found before stay on screen under a
+ * notice. "reconnect": Google refused the token; records stay under the Reconnect notice.
+ */
+export function gmailState({ connected, reconnect, hasData }: { connected: boolean; reconnect: boolean; hasData: boolean }): GmailState {
+  if (!connected) return hasData ? "disconnected" : "connect";
+  return reconnect ? "reconnect" : "ok";
+}
+
 export function attentionItems(d: Dashboard, today: string): AttentionItem[] {
   const refYear = Number(today.slice(0, 4));
   const out: AttentionItem[] = [];

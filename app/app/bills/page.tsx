@@ -15,8 +15,8 @@ export default function BillsPage() {
 }
 
 async function Bills() {
-  const { dashboard: d, today, connected } = await loadApp();
-  if (!connected) return <ConnectGmailEmpty title="Bills and deadlines" />;
+  const { dashboard: d, today, gmail } = await loadApp();
+  if (gmail === "connect") return <ConnectGmailEmpty title="Bills and deadlines" />;
   const refYear = Number(today.slice(0, 4));
   // Overdue bills stay listed (lib/resolve.ts keeps 14 days of grace); trials and renewals only while still ahead.
   const rows: BillRow[] = d.due

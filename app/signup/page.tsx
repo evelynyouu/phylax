@@ -3,7 +3,7 @@ import Link from "next/link";
 import { Suspense } from "react";
 import FirstScan from "@/components/FirstScan";
 import AuthForm from "@/components/AuthForm";
-import { AUTH_MESSAGES } from "@/lib/auth-copy";
+import { AUTH_MESSAGES, GMAIL_MESSAGES } from "@/lib/auth-copy";
 import { getOptionalUser } from "@/lib/current-user";
 import { gmailConfigured } from "@/lib/gmail";
 import { isDemo } from "@/lib/session";
@@ -42,7 +42,10 @@ async function SignUpBody({ searchParams }: { searchParams: PageProps<"/signup">
   // Steps 2 and 3 need a session: connecting Gmail belongs to a signed-in account.
   const step = signedIn && (asked === 2 || asked === 3) ? asked : 1;
   const code = typeof sp.auth === "string" ? sp.auth : null;
-  const msg = code ? AUTH_MESSAGES[code] : null;
+  // Steps 2 and 3 only get codes from the Connect Gmail flow; step 2 already says inline when
+  // Gmail is not configured, so that code is not repeated at the top.
+  const messages = step === 1 ? AUTH_MESSAGES : GMAIL_MESSAGES;
+  const msg = code && !(step === 2 && code === "not_configured") ? messages[code] : null;
   const connectHref = isDemo() ? "/signup?step=3" : "/api/auth/google?next=signup";
 
   return (
@@ -109,7 +112,7 @@ async function SignUpBody({ searchParams }: { searchParams: PageProps<"/signup">
             <p className="muted" style={{ marginTop: 16 }}>
               You can connect any Gmail account. It does not have to match the email you signed up with.
             </p>
-            {!isDemo() && !gmailConfigured() && <p className="auth-msg">{AUTH_MESSAGES.not_configured.text}</p>}
+            {!isDemo() && !gmailConfigured() && <p className="auth-msg">{GMAIL_MESSAGES.not_configured.text}</p>}
             <div className="su-actions">
               <a href={connectHref} className="btn btn-primary" aria-disabled={!isDemo() && !gmailConfigured() ? true : undefined}>
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
