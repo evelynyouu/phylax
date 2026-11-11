@@ -270,19 +270,25 @@ export async function getDashboard(
       await (running.get(store.userId) ?? runSync(store));
     }
   }
-  const [records, dismissed, manualCancels, paid, reminders, conn] = await Promise.all([
+  const [records, dismissed, manualCancels, paid, reminders, conn, edits] = await Promise.all([
     store.loadRecords(),
     store.marks("dismissed"),
     store.marks("manual_cancels"),
     store.marks("paid"),
     store.marks("reminders"),
     source === "fixtures" ? Promise.resolve(null) : store.getGmail(),
+    // Edits are optional: if their table is missing (migration not applied yet) the dashboard still works.
+    store.listEdits().catch((e) => {
+      logError("dashboard: could not load subscription edits", e);
+      return [];
+    }),
   ]);
   const dashboard = buildDashboard(records, {
     dismissed: new Set(dismissed.keys()),
     manualCancels,
     paid: new Set(paid.keys()),
     reminders: new Set(reminders.keys()),
+    edits,
   });
   if (source === "fixtures") return { dashboard, source, connected: true, reconnect: false };
   return { dashboard, source, connected: conn !== null, reconnect: conn?.needsReconnect === true };

@@ -1,12 +1,13 @@
 import { processWide } from "../process-wide";
 import type { ExtractedRecord } from "../types";
-import type { GmailConnection, MarkTable, Store } from "./types";
+import type { GmailConnection, MarkTable, Store, SubscriptionEdit } from "./types";
 
 /** A fresh, empty in-memory store. Used for tests and the demo. */
 export function memoryStore(userId = "memory"): Store {
   const records = new Map<string, ExtractedRecord>();
   const markTables = new Map<MarkTable, Map<string, string>>();
   let gmail: GmailConnection | null = null;
+  const edits = new Map<string, SubscriptionEdit>();
   const table = (t: MarkTable) => {
     let m = markTables.get(t);
     if (!m) markTables.set(t, (m = new Map()));
@@ -35,6 +36,15 @@ export function memoryStore(userId = "memory"): Store {
     async setMark(t, key, on) {
       if (on) table(t).set(key, new Date().toISOString());
       else table(t).delete(key);
+    },
+    async listEdits() {
+      return [...edits.values()].map((e) => ({ ...e }));
+    },
+    async saveEdit(e) {
+      edits.set(e.merchantKey, { ...e, updatedAt: new Date().toISOString() });
+    },
+    async deleteEdit(merchantKey) {
+      edits.delete(merchantKey);
     },
   };
 }

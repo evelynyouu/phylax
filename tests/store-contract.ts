@@ -25,6 +25,20 @@ export function rec(emailId: string, emailDate: string): ExtractedRecord {
 /** Shared contract for every Store implementation. */
 export function describeStore(name: string, make: () => Store) {
   describe(`${name} store contract`, () => {
+    it("saves, replaces, lists and deletes subscription edits", async () => {
+      const s = make();
+      const base = { merchantKey: "netflix", merchant: "Netflix", amount: 15.49, currency: "USD", cadence: "monthly" as const, nextChargeDate: "2026-12-14", manual: false };
+      await s.saveEdit(base);
+      await s.saveEdit({ ...base, amount: 17.99 });
+      await s.saveEdit({ merchantKey: "gym", merchant: "Gym", amount: 40, currency: "USD", cadence: "monthly", nextChargeDate: null, manual: true });
+      const edits = (await s.listEdits()).sort((a, b) => a.merchantKey.localeCompare(b.merchantKey));
+      expect(edits.map((e) => [e.merchantKey, e.amount, e.manual])).toEqual([["gym", 40, true], ["netflix", 17.99, false]]);
+      expect(edits[1].nextChargeDate).toBe("2026-12-14");
+      expect(typeof edits[0].updatedAt).toBe("string");
+      await s.deleteEdit("netflix");
+      expect((await s.listEdits()).map((e) => e.merchantKey)).toEqual(["gym"]);
+    });
+
     it("saves, dedupes and orders records", async () => {
       const s = make();
       await s.saveRecord(rec("b", "2026-10-02T00:00:00Z"));

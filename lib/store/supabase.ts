@@ -1,5 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
-import type { ExtractedRecord } from "../types";
+import type { Cadence, ExtractedRecord } from "../types";
 import type { GmailConnection, MarkTable, Store } from "./types";
 
 function check(error: { message: string } | null) {
@@ -75,6 +75,44 @@ export function supabaseStore(client: SupabaseClient, userId: string): Store {
         const { error } = await client.from(table).delete().eq("user_id", userId).eq("key", key);
         check(error);
       }
+    },
+    async listEdits() {
+      const { data, error } = await client
+        .from("subscription_edits")
+        .select("merchant_key, merchant, amount, currency, cadence, next_charge_date, manual, updated_at")
+        .eq("user_id", userId);
+      check(error);
+      return (data ?? []).map((row) => ({
+        merchantKey: row.merchant_key as string,
+        merchant: (row.merchant as string | null) ?? null,
+        amount: row.amount === null ? null : Number(row.amount),
+        currency: (row.currency as string | null) ?? null,
+        cadence: (row.cadence as Cadence | null) ?? null,
+        nextChargeDate: (row.next_charge_date as string | null) ?? null,
+        manual: row.manual === true,
+        updatedAt: new Date(row.updated_at).toISOString(),
+      }));
+    },
+    async saveEdit(e) {
+      const { error } = await client.from("subscription_edits").upsert(
+        {
+          user_id: userId,
+          merchant_key: e.merchantKey,
+          merchant: e.merchant,
+          amount: e.amount,
+          currency: e.currency,
+          cadence: e.cadence,
+          next_charge_date: e.nextChargeDate,
+          manual: e.manual,
+          updated_at: new Date().toISOString(),
+        },
+        { onConflict: "user_id,merchant_key" },
+      );
+      check(error);
+    },
+    async deleteEdit(merchantKey) {
+      const { error } = await client.from("subscription_edits").delete().eq("user_id", userId).eq("merchant_key", merchantKey);
+      check(error);
     },
   };
 }

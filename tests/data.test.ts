@@ -114,6 +114,8 @@ describe("calendar", () => {
     evidenceEmailIds: [],
     annualCost: 120,
     manualCancel: false,
+    edited: false,
+    manual: false,
     ...over,
   });
   const empty = { subscriptions: [], bills: [], receipts: [] };

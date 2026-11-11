@@ -59,6 +59,8 @@ export interface Subscription {
   evidenceEmailIds: string[];
   annualCost: number | null;
   manualCancel: boolean; // the user said "I've cancelled it" and no newer receipt has arrived
+  edited: boolean; // the user corrected one or more fields
+  manual: boolean; // the user added this recurring payment by hand; no email behind it
 }
 
 export interface UpcomingPayment {

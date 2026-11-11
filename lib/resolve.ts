@@ -1,5 +1,6 @@
 import { addDays, addMonths, daysBetween, todayIso } from "./extract/dates";
 import { billKey } from "./calendar";
+import type { SubscriptionEdit } from "./store/types";
 import type { BillItem, Cadence, Dashboard, DueItem, ExtractedRecord, PastCharge, Subscription, UpcomingPayment } from "./types";
 
 const PERIODS_PER_YEAR: Record<Cadence, number> = { weekly: 52, monthly: 12, quarterly: 4, yearly: 1 };
@@ -181,7 +182,55 @@ function buildSubscription(key: string, group: ExtractedRecord[], today: string,
     evidenceEmailIds: group.map((r) => r.emailId),
     annualCost: annual,
     manualCancel: manual,
+    edited: false,
+    manual: false,
   };
+}
+
+const annualOf = (amount: number | null, cadence: Cadence | null) =>
+  amount !== null && cadence ? Math.round(amount * PERIODS_PER_YEAR[cadence] * 100) / 100 : null;
+
+/**
+ * The user's corrections win over what the emails said, and survive re-scans because they are stored
+ * apart from the records. A manual entry with no email subscription becomes its own subscription.
+ */
+function applyEdits(subscriptions: Subscription[], edits: SubscriptionEdit[], dismissed: Set<string>, today: string) {
+  for (const e of edits) {
+    if (dismissed.has(e.merchantKey)) continue;
+    const next = (d: string | null, cadence: Cadence | null) => (d && cadence ? rollForward(d, cadence, today) : d);
+    const existing = subscriptions.find((s) => s.merchantKey === e.merchantKey);
+    if (existing) {
+      if (e.merchant !== null) existing.merchant = e.merchant;
+      if (e.amount !== null) existing.amount = e.amount;
+      if (e.currency !== null) existing.currency = e.currency;
+      if (e.cadence !== null) existing.cadence = e.cadence;
+      if (e.nextChargeDate !== null) existing.nextChargeDate = next(e.nextChargeDate, existing.cadence);
+      existing.annualCost = annualOf(existing.amount, existing.cadence);
+      existing.edited = true;
+      continue;
+    }
+    if (!e.manual) continue; // a correction for a merchant that is no longer found has nothing to correct
+    const nextChargeDate = next(e.nextChargeDate, e.cadence);
+    if (e.amount === null && nextChargeDate === null) continue; // nothing to show (same rule as email subscriptions)
+    subscriptions.push({
+      merchantKey: e.merchantKey,
+      merchant: e.merchant ?? e.merchantKey,
+      status: "active",
+      amount: e.amount,
+      currency: e.currency ?? "USD",
+      cadence: e.cadence,
+      lastChargeDate: null,
+      nextChargeDate,
+      priceChange: null,
+      cancelUrl: null,
+      cancelUrlTrusted: false,
+      evidenceEmailIds: [],
+      annualCost: annualOf(e.amount, e.cadence),
+      manualCancel: false,
+      edited: false,
+      manual: true,
+    });
+  }
 }
 
 export function buildDashboard(
@@ -192,6 +241,7 @@ export function buildDashboard(
     manualCancels?: Map<string, string>; // merchantKey -> ISO time the user marked it cancelled
     paid?: Set<string>; // bill keys
     reminders?: Set<string>; // bill keys
+    edits?: SubscriptionEdit[]; // the user's corrections and hand-added recurring payments
   } = {}
 ): Dashboard {
   const today = opts.today ?? process.env.SUBWATCH_TODAY ?? todayIso();
@@ -214,6 +264,7 @@ export function buildDashboard(
     const s = buildSubscription(key, group, today, manualCancels.get(key));
     if (s) subscriptions.push(s);
   }
+  applyEdits(subscriptions, opts.edits ?? [], dismissed, today);
   const statusRank = { active: 0, trial: 1, cancelled: 2 } as const;
   subscriptions.sort(
     (a, b) =>

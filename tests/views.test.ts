@@ -19,6 +19,8 @@ const sub = (over: Partial<Subscription>): Subscription => ({
   evidenceEmailIds: ["a", "b", "c"],
   annualCost: 185.88,
   manualCancel: false,
+  edited: false,
+  manual: false,
   ...over,
 });
 
