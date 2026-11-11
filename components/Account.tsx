@@ -1,4 +1,4 @@
-import type { SessionUser } from "@/lib/session";
+import type { AppUser } from "@/lib/current-user";
 import DisconnectGmail from "./DisconnectGmail";
 
 function initials(name: string): string {
@@ -7,7 +7,7 @@ function initials(name: string): string {
 }
 
 /** Sidebar footer: sync status, who is signed in, and sign out. */
-export default function Account({ user, syncNote, demo }: { user: SessionUser; syncNote: string; demo: boolean }) {
+export default function Account({ user, syncNote, demo }: { user: AppUser; syncNote: string; demo: boolean }) {
   return (
     <>
       <p className="sync-note">{syncNote}</p>

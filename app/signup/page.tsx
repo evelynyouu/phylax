@@ -2,9 +2,8 @@ import { connection } from "next/server";
 import Link from "next/link";
 import { Suspense } from "react";
 import FirstScan from "@/components/FirstScan";
-import GoogleIcon from "@/components/GoogleIcon";
-import { Field, Tag } from "@/components/ui";
-import { AUTH_MESSAGES } from "@/lib/auth-messages";
+import AuthForm from "@/components/AuthForm";
+import { AUTH_MESSAGES } from "@/lib/auth-copy";
 import { getOptionalUser } from "@/lib/current-user";
 import { gmailConfigured } from "@/lib/gmail";
 import { isDemo } from "@/lib/session";
@@ -40,8 +39,8 @@ async function SignUpBody({ searchParams }: { searchParams: PageProps<"/signup">
   const sp = await searchParams;
   const asked = Number(sp.step);
   const signedIn = (await getOptionalUser()) !== null;
-  // Step 3 needs a session: it only follows a successful Google connection (or demo mode).
-  const step = asked === 3 && signedIn ? 3 : asked === 2 || asked === 3 ? 2 : 1;
+  // Steps 2 and 3 need a session: connecting Gmail belongs to a signed-in account.
+  const step = signedIn && (asked === 2 || asked === 3) ? asked : 1;
   const code = typeof sp.auth === "string" ? sp.auth : null;
   const msg = code ? AUTH_MESSAGES[code] : null;
   const connectHref = isDemo() ? "/signup?step=3" : "/api/auth/google?next=signup";
@@ -81,22 +80,7 @@ async function SignUpBody({ searchParams }: { searchParams: PageProps<"/signup">
           <>
             <h1>Create your account</h1>
             <p className="lede">Then connect Gmail and Subwatch starts the first scan.</p>
-            <p style={{ marginTop: 20, fontSize: 14, color: "var(--muted)" }}>
-              Email and password accounts <Tag tone="neutral">Coming soon</Tag> For now, your Google account is your Subwatch account.
-            </p>
-            <div className="su-fields">
-              <Field id="su-name" label="Name" autoComplete="name" placeholder="Evelyn You" disabled />
-              <Field id="su-email" label="Email" type="email" autoComplete="email" placeholder="you@berkeley.edu" disabled />
-            </div>
-            <div style={{ marginTop: 18 }}>
-              <Field id="su-pw" label="Password" type="password" autoComplete="new-password" hint="At least 8 characters." disabled />
-            </div>
-            <div className="su-actions">
-              <Link href="/signup?step=2" className="btn btn-primary">
-                <GoogleIcon />
-                Continue with Google
-              </Link>
-            </div>
+            <AuthForm mode="signup" demo={isDemo()} />
           </>
         )}
 

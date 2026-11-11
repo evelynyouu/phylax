@@ -1,15 +1,15 @@
 import { NextResponse } from "next/server";
-import { guardMutation } from "@/lib/route-auth";
+import { getOptionalUser } from "@/lib/current-user";
+import { requireUser } from "@/lib/route-auth";
 import { getDashboard, runSync, syncProgress } from "@/lib/sync";
-import { userFromRequest } from "@/lib/route-auth";
 
 export const maxDuration = 300;
 
 let running = false;
 
 export async function POST(req: Request) {
-  const denied = guardMutation(req);
-  if (denied) return denied;
+  const auth = await requireUser(req);
+  if ("denied" in auth) return auth.denied;
   if (running) return NextResponse.json({ error: "A sync is already running" }, { status: 409 });
   running = true;
   try {
@@ -22,9 +22,12 @@ export async function POST(req: Request) {
   }
 }
 
-/** Progress of the running sync, plus what has been found so far. Used by sign-up step 3. */
-export async function GET(req: Request) {
-  if (!userFromRequest(req)) return NextResponse.json({ error: "signed out" }, { status: 401 });
+/**
+ * Progress of the running sync, plus what has been found so far. Used by sign-up step 3.
+ * A same-origin GET carries no Origin header, so this checks the session only; it changes nothing.
+ */
+export async function GET() {
+  if (!(await getOptionalUser())) return NextResponse.json({ error: "signed out" }, { status: 401 });
   const p = syncProgress();
   const { dashboard } = await getDashboard();
   return NextResponse.json({

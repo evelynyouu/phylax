@@ -1,11 +1,13 @@
 import { NextResponse } from "next/server";
 import { sameOrigin } from "@/lib/csrf";
-import { SESSION_COOKIE } from "@/lib/session";
+import { isDemo } from "@/lib/session";
+import { supabaseEnv } from "@/lib/supabase/config";
+import { supabaseServer } from "@/lib/supabase/server";
 
 export async function POST(req: Request) {
   if (!sameOrigin(req)) return NextResponse.json({ error: "forbidden" }, { status: 403 });
+  // supabaseServer clears the session cookies through cookies(), which this response carries.
+  if (!isDemo() && supabaseEnv()) await (await supabaseServer()).auth.signOut();
   // 303 so the browser follows the form POST with a GET.
-  const res = NextResponse.redirect(new URL("/signin?auth=signed_out", process.env.APP_URL ?? req.url), 303);
-  res.cookies.delete(SESSION_COOKIE);
-  return res;
+  return NextResponse.redirect(new URL("/signin?auth=signed_out", process.env.APP_URL ?? req.url), 303);
 }

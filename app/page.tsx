@@ -21,7 +21,7 @@ function Logo() {
 }
 
 export default function Home() {
-  // In demo mode the dashboard is sample data anyone can open; otherwise it is the owner's real data.
+  // In demo mode the dashboard is sample data anyone can open; otherwise it is the signed-in user's real data.
   const demo = isDemo();
   return (
     <div className="landing">

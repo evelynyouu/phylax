@@ -1,41 +1,21 @@
 import { describe, expect, it } from "vitest";
+import { authErrorMessage, safeNext, validateSignup } from "../lib/auth-copy";
 import { gate } from "../lib/gate";
-import { checkOwner, createSessionToken, verifySessionToken } from "../lib/session";
 
-const KEY = Buffer.alloc(32, 7);
-const NOW = Date.parse("2026-11-10T12:00:00Z");
-const USER = { email: "me@example.com", name: "Evelyn You" };
-
-describe("session tokens", () => {
-  it("round-trips a signed session", () => {
-    const t = createSessionToken(USER, KEY, NOW);
-    expect(verifySessionToken(t, KEY, NOW + 1000)).toEqual(USER);
+describe("auth copy", () => {
+  it("maps auth errors to plain copy", () => {
+    expect(authErrorMessage("Invalid login credentials")).toBe("That email and password don't match.");
+    expect(authErrorMessage("User already registered")).toBe("An account with that email already exists. Sign in instead.");
+    expect(authErrorMessage("anything else")).toBe("Something went wrong. Please try again.");
   });
-
-  it("rejects a tampered payload or signature", () => {
-    const t = createSessionToken(USER, KEY, NOW);
-    const [payload, sig] = t.split(".");
-    const forged = Buffer.from(JSON.stringify({ ...USER, email: "x@evil.example", exp: NOW + 1e9 })).toString("base64url");
-    expect(verifySessionToken(`${forged}.${sig}`, KEY, NOW)).toBeNull();
-    expect(verifySessionToken(`${payload}.${sig.slice(0, -2)}AA`, KEY, NOW)).toBeNull();
-    expect(verifySessionToken(t, Buffer.alloc(32, 8), NOW)).toBeNull();
+  it("only follows whitelisted next paths after the auth callback", () => {
+    expect(safeNext("/app")).toBe("/app");
+    expect(safeNext("/signup?step=2")).toBe("/signup?step=2");
+    for (const bad of ["https://evil.example", "//evil.example", "/app@evil", "", null]) expect(safeNext(bad)).toBe("/app");
   });
-
-  it("rejects an expired session and garbage input", () => {
-    const t = createSessionToken(USER, KEY, NOW);
-    expect(verifySessionToken(t, KEY, NOW + 31 * 86400000)).toBeNull();
-    for (const bad of ["", "abc", "a.b.c", ".", "not-base64.zz"]) expect(verifySessionToken(bad, KEY, NOW)).toBeNull();
-    expect(verifySessionToken(undefined, KEY, NOW)).toBeNull();
-  });
-});
-
-describe("single owner", () => {
-  it("accepts the first account and the same account again, case-insensitively", () => {
-    expect(checkOwner(null, "Me@Example.com")).toBe(true);
-    expect(checkOwner("me@example.com", "ME@example.com")).toBe(true);
-  });
-  it("refuses a different Google account", () => {
-    expect(checkOwner("me@example.com", "someone@else.com")).toBe(false);
+  it("validates sign-up input", () => {
+    expect(validateSignup({ name: "", email: "a@b.co", password: "12345678" })).toEqual({ name: "Enter your name." });
+    expect(validateSignup({ name: "E", email: "nope", password: "short" })).toEqual({ email: "Enter an email address with an @.", password: "At least 8 characters." });
   });
 });
 

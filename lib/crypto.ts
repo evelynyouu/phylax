@@ -34,8 +34,3 @@ export function decrypt(payload: string): string {
   decipher.setAuthTag(tag);
   return Buffer.concat([decipher.update(enc), decipher.final()]).toString("utf8");
 }
-
-/** A purpose-specific key derived from the token key, so one secret never serves two jobs. */
-export function deriveKey(label: string): Buffer {
-  return crypto.createHmac("sha256", loadKey()).update(label).digest();
-}
