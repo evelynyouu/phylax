@@ -14,7 +14,7 @@ vi.mock("../lib/log", async (orig) => ({
   logError: (...a: unknown[]) => void h.logs.push(a),
 }));
 
-import { isTransientError } from "../lib/retry";
+import { isTransientError, retryDelay } from "../lib/retry";
 import { memoryStore } from "../lib/store/memory";
 import { runSync, type GmailLayer } from "../lib/sync";
 
@@ -40,6 +40,32 @@ describe("isTransientError", () => {
     expect(isTransientError(Object.assign(new Error("invalid_grant"), { response: { data: { error: "invalid_grant" } } }))).toBe(false);
     expect(isTransientError(null)).toBe(false);
     expect(isTransientError("x")).toBe(false);
+  });
+});
+
+const quota403 = (over: object = {}) =>
+  Object.assign(new Error("Quota exceeded for quota metric 'Total Query Cost' and limit 'Units per minute per user'"), { code: 403, status: 403, ...over });
+
+describe("quota errors", () => {
+  it("treats 403 quota/rate as transient by message or reason, in both shapes", () => {
+    expect(isTransientError(quota403())).toBe(true);
+    expect(isTransientError(Object.assign(new Error("x"), { code: 403, response: { status: 403, data: { error: { message: "Quota exceeded for x", errors: [] } } } }))).toBe(true);
+    for (const r of ["quotaExceeded", "rateLimitExceeded", "userRateLimitExceeded"]) {
+      expect(isTransientError(httpErr(403, r))).toBe(true);
+      expect(isTransientError(Object.assign(new Error("x"), { code: 403, response: { data: { error: { errors: [{ reason: r }] } } } }))).toBe(true);
+    }
+    expect(isTransientError(httpErr(403, "forbidden"))).toBe(false);
+    expect(isTransientError(httpErr(403, "insufficientPermissions"))).toBe(false);
+  });
+  it("retryDelay: 5/20/60 s for quota and 429, 500/1000/2000 otherwise", () => {
+    expect([0, 1, 2].map((a) => retryDelay(quota403(), a))).toEqual([5000, 20000, 60000]);
+    expect([0, 1, 2].map((a) => retryDelay(httpErr(429), a))).toEqual([5000, 20000, 60000]);
+    expect([0, 1, 2].map((a) => retryDelay(httpErr(503), a))).toEqual([500, 1000, 2000]);
+  });
+  it("retryDelay honors Retry-After seconds, capped at 60 s", () => {
+    expect(retryDelay(Object.assign(httpErr(429), { response: { headers: { "retry-after": "7" } } }), 0)).toBe(7000);
+    expect(retryDelay(Object.assign(httpErr(429), { response: { headers: { "retry-after": "500" } } }), 0)).toBe(60000);
+    expect(retryDelay(Object.assign(httpErr(503), { response: { headers: { "retry-after": "3" } } }), 0)).toBe(3000);
   });
 });
 
@@ -73,7 +99,19 @@ describe("sync retries", () => {
     expect(result.errors).toBe(0);
     expect(result.processed).toBe(1);
     expect(n).toBe(3);
-    expect(delays).toEqual([500, 1000]);
+    expect(delays).toEqual([5000, 20000]);
+    expect((await s.getGmail())?.lastSyncEpoch).not.toBe(1000);
+  });
+
+  it("saves a message that fails twice with the quota 403 then succeeds", async () => {
+    let n = 0;
+    const { s, result, delays } = await run(async (_s, id) => {
+      if (++n <= 2) throw quota403();
+      return raw(id);
+    });
+    expect(result.errors).toBe(0);
+    expect(result.processed).toBe(1);
+    expect(delays).toEqual([5000, 20000]);
     expect((await s.getGmail())?.lastSyncEpoch).not.toBe(1000);
   });
 

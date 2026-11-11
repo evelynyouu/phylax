@@ -67,7 +67,7 @@ export class SyncAlreadyRunningError extends Error {
 /** What the browser sees when a sync fails for any reason but a refused token. */
 export const SYNC_FAILED_MESSAGE = "Sync failed. Please try again.";
 
-const CONCURRENCY = 5;
+const CONCURRENCY = 3;
 
 /**
  * What sync saves for an email. A non-billing record exists only so the next sync does not
