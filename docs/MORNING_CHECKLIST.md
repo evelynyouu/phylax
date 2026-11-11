@@ -40,8 +40,8 @@ Also check Authentication > Users and delete `e2e-signup-1794386389@example.com`
 
 The new UI needs these to stay legal and honest (details in docs/legal/GAPS.md):
 
-- `/privacy` and `/terms` pages from docs/legal/PRIVACY_POLICY.md and TERMS.md (fill in the [CONTACT EMAIL] placeholders), linked from the landing page, sign-up and the app.
-- A short disclosure right before every Connect Gmail button: what is read, what is saved, that Subwatch never sends, changes or deletes mail, and that you can disconnect or delete anytime.
+- `/privacy` and `/terms` already exist (plain styling) and render docs/legal/PRIVACY_POLICY.md and TERMS.md. Fill in every placeholder such as [CONTACT EMAIL] and [EFFECTIVE DATE], and delete the reviewer notes in TERMS.md: Google rejects template text. Restyle the pages in your frontend.
+- The Gmail disclosure already exists at `/connect-gmail` and on sign-up step 2 (components/GmailDisclosure.tsx). Every Connect Gmail button must keep going through it.
 - Landing copy must match docs/legal/DATA_INVENTORY.md exactly (what is stored).
 - Show `revokeFailed` from Disconnect and Delete as "Remove Subwatch at myaccount.google.com/permissions".
 - Clear the `subwatch.dismissed-attention` localStorage key on sign-out and delete.
@@ -56,7 +56,9 @@ The new UI needs these to stay legal and honest (details in docs/legal/GAPS.md):
 
 ## What was verified overnight
 
-- 157+ unit tests, typecheck, lint, production build; the extraction eval is unchanged.
+- 202 unit tests, typecheck, lint, production build; the extraction eval is unchanged.
+- The full Google OAuth flow against a simulated Google (consent URL and scopes, state checks, every failure path, encrypted token storage per user, first scan, reconnect, switching Gmail with revoke). A real Google client is still needed for the live run (section 1).
+- Live against your Supabase project: signing up with an email that already exists is detected and shows "already exists".
 - Against your real Supabase project: the data-isolation suite (17/17): no user can read, add, change or delete another user's rows in any table; signed-out visitors read nothing.
 - Live in a real browser on a production build: sign-in, wrong password, sign-out, signed-out redirects and 401s, cross-site requests refused (403), two real accounts isolated, no redirect can leave the site, security headers present.
 - Not verified live (needs sections 1 to 3): Google sign-in, Connect Gmail and a real scan, a successful account deletion, a fresh sign-up end to end.
