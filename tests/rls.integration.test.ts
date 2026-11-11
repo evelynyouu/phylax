@@ -1,7 +1,7 @@
 import { afterEach, beforeAll, describe, expect, it } from "vitest";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { supabaseStore } from "../lib/store/supabase";
-import { describeStore, rec } from "./store-contract";
+import { describeStore } from "./store-contract";
 
 try {
   process.loadEnvFile(".env.local");
@@ -50,21 +50,43 @@ describe.skipIf(!configured)("supabase (live, RLS)", () => {
 
   describeStore("supabase", () => supabaseStore(clientA, idA));
 
-  it("user B cannot read or write user A's rows with the anon key", async () => {
-    const storeA = supabaseStore(clientA, idA);
-    await storeA.saveRecord(rec("a1", "2026-10-01T00:00:00Z"));
-    await storeA.setGmail({ gmailEmail: "a@x.com", encTokens: "enc", lastSyncEpoch: null });
-    const { data } = await clientB.from("records").select("*").eq("user_id", idA);
-    expect(data).toEqual([]);
-    expect((await clientB.from("gmail_connections").select("*")).data).toEqual([]);
-    const ins = await clientB.from("paid").insert({ user_id: idA, key: "x|2026-11-20" });
-    expect(ins.error).not.toBeNull();
+  const seed: Record<(typeof tables)[number], Record<string, unknown>> = {
+    records: { email_id: "a1", email_date: "2026-10-01T00:00:00Z", data: { emailId: "a1" } },
+    gmail_connections: { gmail_email: "a@x.com", enc_tokens: "enc", last_sync_epoch: null },
+    dismissed: { key: "k" },
+    manual_cancels: { key: "k" },
+    paid: { key: "k" },
+    reminders: { key: "k" },
+  };
+  const patch: Record<(typeof tables)[number], Record<string, unknown>> = {
+    records: { data: { hacked: true } },
+    gmail_connections: { enc_tokens: "hacked" },
+    dismissed: { key: "hacked" },
+    manual_cancels: { key: "hacked" },
+    paid: { key: "hacked" },
+    reminders: { key: "hacked" },
+  };
+
+  it.each(tables)("user B cannot read, insert, update or delete user A's rows in %s", async (t) => {
+    const { error: seedErr } = await clientA.from(t).insert({ user_id: idA, ...seed[t] });
+    expect(seedErr).toBeNull();
+    const before = (await clientA.from(t).select("*").eq("user_id", idA)).data;
+    expect(before).toHaveLength(1);
+
+    expect((await clientB.from(t).select("*").eq("user_id", idA)).data).toEqual([]);
+    expect((await clientB.from(t).insert({ user_id: idA, ...seed[t], ...(t === "records" ? { email_id: "b1" } : t === "gmail_connections" ? {} : { key: "bk" }) })).error).not.toBeNull();
+    await clientB.from(t).update(patch[t]).eq("user_id", idA);
+    await clientB.from(t).delete().eq("user_id", idA);
+
+    expect((await clientA.from(t).select("*").eq("user_id", idA)).data).toEqual(before);
   });
 
-  it("an anonymous client reads nothing", async () => {
-    await supabaseStore(clientA, idA).saveRecord(rec("a1", "2026-10-01T00:00:00Z"));
+  it.each(tables)("an anonymous client reads nothing from %s", async (t) => {
+    await clientA.from(t).insert({ user_id: idA, ...seed[t] });
     const anonClient = createClient(url!, anon!, { auth: { persistSession: false, autoRefreshToken: false } });
-    const { data } = await anonClient.from("records").select("*");
+    const { data, error } = await anonClient.from(t).select("*");
+    // With anon access revoked this is a permission error (data null); an empty array is also safe.
+    expect(error !== null || (data ?? []).length === 0).toBe(true);
     expect(data ?? []).toEqual([]);
   });
 });
