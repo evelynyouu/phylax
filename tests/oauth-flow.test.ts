@@ -230,6 +230,17 @@ describe("GET /api/auth/callback failures", () => {
     }
   }
 
+  it("checks the state before honoring error=, so a cross-site link cannot abort a connect", async () => {
+    for (const cookies of [{} as Record<string, string>, { oauth_state: "b".repeat(48) }]) {
+      const res = await callback(callbackReq({ error: "access_denied", state: "a".repeat(48) }, { ...cookies, oauth_next: "app" }));
+      expect(location(res)).toBe("http://127.0.0.1:3200/app?auth=invalid_state");
+    }
+    const noState = await callback(callbackReq({ error: "access_denied" }, { oauth_state: "a".repeat(48), oauth_next: "app" }));
+    expect(location(noState)).toBe("http://127.0.0.1:3200/app?auth=invalid_state");
+    const real = await callback(callbackReq({ error: "access_denied", state: "a".repeat(48) }, { oauth_state: "a".repeat(48), oauth_next: "app" }));
+    expect(location(real)).toBe("http://127.0.0.1:3200/app?auth=denied");
+  });
+
   it("a signed-out callback goes to /signin and stores nothing", async () => {
     h.user = null;
     const res = await callback(callbackReq({ state: "a".repeat(48), code: "c" }, { oauth_state: "a".repeat(48) }));
@@ -267,6 +278,9 @@ describe("happy path: connect, then sync", () => {
     expect(conn!.encTokens).not.toContain("{");
     const tokens = JSON.parse(decryptWithKey(conn!.encTokens, KEY));
     expect(tokens).toMatchObject({ access_token: "ya29.alice-access", refresh_token: "1//alice-refresh", scope: FULL_SCOPE });
+    // Google's identity token is used once to read the address and is not kept.
+    expect(tokens).not.toHaveProperty("id_token");
+    expect(Object.keys(tokens).sort()).toEqual(["access_token", "refresh_token", "scope"].concat(Object.keys(tokens).filter((k) => ["expiry_date", "token_type"].includes(k))).sort());
     // A different key cannot read it.
     expect(() => decryptWithKey(conn!.encTokens, "00".repeat(32))).toThrow();
     expect(await bob.getGmail()).toBeNull();

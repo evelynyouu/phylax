@@ -47,6 +47,24 @@ describe("privacy and terms pages", () => {
   });
 });
 
+describe("markdown line breaks and links", () => {
+  it("renders single line breaks inside a paragraph as <br />", () => {
+    const out = html(<>{renderMarkdown("Effective date: X\nLast updated: Y\n\nNext")}</>);
+    expect(out).toBe("<p>Effective date: X<br/>Last updated: Y</p><p>Next</p>");
+  });
+
+  it("links only https:, mailto:, and same-site paths; anything else is plain text", () => {
+    const out = html(<>{renderMarkdown("[a](https://x.example) [b](mailto:a@b.co) [c](/privacy) [d](#top) [e](data:text/html,hi) [f](javascript:alert(1)) [g](http://x.example)")}</>);
+    expect(out).toContain('href="https://x.example"');
+    expect(out).toContain('href="mailto:a@b.co"');
+    expect(out).toContain('href="/privacy"');
+    expect(out).toContain('href="#top"');
+    expect(out).not.toMatch(/href="(data|javascript|http):/);
+    expect(out).toContain("[e](data:text/html,hi)");
+    expect(out).not.toContain("<a href=\"javascript");
+  });
+});
+
 describe("links to the privacy and terms pages", () => {
   it("sit under Sign out in the app sidebar", () => {
     const out = html(<Account user={{ id: "u", email: "u@x.co", name: "U" }} syncNote="" demo connected={false} />);
@@ -59,6 +77,12 @@ describe("links to the privacy and terms pages", () => {
     expect(out).toContain("By creating an account you agree to the");
     expect(out).toMatch(/agree to the <a[^>]*href="\/terms"[^>]*>Terms<\/a> and <a[^>]*href="\/privacy"[^>]*>Privacy Policy<\/a>\./);
     expect(out.indexOf("By creating an account")).toBeGreaterThan(out.lastIndexOf("Continue with Google"));
+  });
+
+  it("sign-in mode also shows the agreement line under the Google button", () => {
+    const out = html(<AuthForm mode="signin" />);
+    expect(out).toMatch(/By creating an account you agree to the <a[^>]*href="\/terms"[^>]*>Terms<\/a> and <a[^>]*href="\/privacy"[^>]*>Privacy Policy<\/a>\./);
+    expect(out.indexOf("By creating an account")).toBeGreaterThan(out.indexOf("Continue with Google"));
   });
 
   it("appear on sign-in near the form footer", () => {

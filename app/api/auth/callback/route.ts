@@ -40,8 +40,10 @@ export async function GET(req: NextRequest) {
   const code = url.searchParams.get("code");
   const expected = req.cookies.get("oauth_state")?.value;
 
+  // Check the state first, so a link from another site cannot abort an in-progress connect.
+  if (!state || !expected || !safeEqual(state, expected)) return fail("invalid_state");
   if (url.searchParams.get("error")) return fail("denied");
-  if (!state || !code || !expected || !safeEqual(state, expected)) return fail("invalid_state");
+  if (!code) return fail("invalid_state");
 
   let result;
   try {

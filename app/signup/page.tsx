@@ -91,7 +91,7 @@ async function SignUpBody({ searchParams }: { searchParams: PageProps<"/signup">
         {step === 2 && (
           <>
             <h1>Connect Gmail</h1>
-            <p className="lede">Google will ask you to allow read-only access. Here is exactly what that means.</p>
+            <p className="lede">Google will ask you to allow read-only access. Here is what that means.</p>
             <GmailDisclosure />
             {!isDemo() && !gmailConfigured() && <p className="auth-msg">{GMAIL_MESSAGES.not_configured.text}</p>}
             <div className="su-actions">

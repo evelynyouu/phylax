@@ -120,7 +120,10 @@ export async function connectGmailWithCode(code: string, store: Store): Promise<
   // Switching to a different Gmail: drop the old mailbox's grant at Google, as disconnect does.
   if (existing && !same) await revokeBestEffort(existing);
   // Google only returns a refresh token on first consent; keep the old one if this response lacks it.
-  const merged = { ...tokens, refresh_token: tokens.refresh_token ?? old?.refresh_token };
+  // The ID token was only needed to read the Gmail address above; it is not kept.
+  const kept = { ...tokens };
+  delete kept.id_token;
+  const merged = { ...kept, refresh_token: tokens.refresh_token ?? old?.refresh_token };
   await store.setGmail({
     gmailEmail,
     encTokens: encrypt(JSON.stringify(merged)),

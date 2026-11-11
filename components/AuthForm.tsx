@@ -115,6 +115,9 @@ export default function AuthForm({ mode, demo = false }: { mode: "signin" | "sig
             Continue with Google
           </button>
         )}
+        <p className="fine" style={{ marginTop: 12 }}>
+          By creating an account you agree to the <Link href="/terms">Terms</Link> and <Link href="/privacy">Privacy Policy</Link>.
+        </p>
         <p className="or">or use email</p>
         <form onSubmit={submit}>
           <div className="stack-16">

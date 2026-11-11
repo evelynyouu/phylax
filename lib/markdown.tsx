@@ -1,13 +1,16 @@
 import fs from "node:fs";
 import path from "node:path";
 import Link from "next/link";
-import type { ReactNode } from "react";
+import { Fragment, type ReactNode } from "react";
 
 // A tiny Markdown renderer for the subset docs/legal/*.md use: #, ## and ### headings,
 // paragraphs, "- " lists, pipe tables, "---" rules, **bold**, `code` and [text](url) links.
 // It builds React elements, so text is escaped by React and no raw HTML is ever injected.
 
 const INLINE = /\*\*(.+?)\*\*|`([^`]+)`|\[([^\]]+)\]\(([^)]+)\)/g;
+
+// Only these link targets are rendered as links; anything else (data:, javascript:, ...) is plain text.
+const SAFE_HREF = /^(https:\/\/|mailto:|\/|#)/i;
 
 function href(raw: string): string {
   // Links written against the [APP URL] placeholder point at this site.
@@ -24,7 +27,12 @@ function inline(text: string, key: string): ReactNode[] {
     if (m[1] !== undefined) out.push(<strong key={k}>{inline(m[1], k)}</strong>);
     else if (m[2] !== undefined) out.push(<code key={k}>{m[2]}</code>);
     else {
-      const to = href(m[4]);
+      const to = href(m[4].trim());
+      if (!SAFE_HREF.test(to) || to.startsWith("//")) {
+        out.push(m[0]);
+        last = m.index + m[0].length;
+        continue;
+      }
       out.push(
         to.startsWith("/") ? (
           <Link key={k} href={to}>
@@ -119,7 +127,16 @@ export function renderMarkdown(src: string): ReactNode[] {
     // A paragraph runs until a blank line or the start of another block.
     const para: string[] = [];
     while (i < lines.length && lines[i].trim() && !/^(#{1,3}\s|-{3,}\s*$|\||- )/.test(lines[i])) para.push(lines[i++].trim());
-    out.push(<p key={key}>{inline(para.join(" "), key)}</p>);
+    out.push(
+      <p key={key}>
+        {para.map((t, n) => (
+          <Fragment key={n}>
+            {n > 0 && <br />}
+            {inline(t, `${key}-${n}`)}
+          </Fragment>
+        ))}
+      </p>,
+    );
   }
   return out;
 }

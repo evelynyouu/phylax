@@ -46,7 +46,7 @@ We store:
 | Data | Why |
 |---|---|
 | The Gmail address you connected (it can differ from your Subwatch email) | To show which inbox is connected and to detect when you connect a different one |
-| Google access and refresh tokens, encrypted with AES-256-GCM before they are saved | So Subwatch can read new billing email when you sync, without asking you to sign in to Google every time |
+| Google access and refresh tokens (plus their expiry, scope and type), encrypted with AES-256-GCM before they are saved. Google's ID token is used once to read your Gmail address and is not saved | So Subwatch can read new billing email when you sync, without asking you to sign in to Google every time |
 | The time of the last successful scan, and whether Google has asked you to reconnect | To scan only new email next time and to show a "Reconnect Gmail" notice |
 
 ### 3. What Subwatch reads in your Gmail
@@ -128,7 +128,7 @@ Saved data is stored in a Supabase Postgres database in [SUPABASE REGION]. The a
 - Google tokens are encrypted with AES-256-GCM before they are stored, and the key is kept outside the database.
 - All traffic uses HTTPS. Supabase states it encrypts stored data with AES-256 ([Supabase security](https://supabase.com/security)).
 - Database row level security limits each account to its own rows.
-- Actions that change data accept only requests from Subwatch's own pages from a signed-in user.
+- Actions that change data accept only requests from Subwatch's own pages from a signed-in user (connecting Gmail is protected by a one-time state check instead).
 - Subwatch's pages tell browsers not to let other sites frame them, and to send only limited referrer information to other sites.
 
 No system is perfectly secure. If we learn of a breach that affects your personal information, we will notify you and others as the law requires.

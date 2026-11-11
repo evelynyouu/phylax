@@ -11,15 +11,15 @@ Risk means: **High** = likely to block Google verification, or a user-facing cla
 | # | Risk | Gap | Status |
 |---|---|---|---|
 | H1 | High | AI fallback sends email text to Anthropic with no disclosure or consent, while the UI says email text is not stored | Fixed in 16d93d4 (fallback off for users) |
-| H2 | High | No privacy policy, terms or Limited Use statement anywhere in the app | Open. Owner: frontend (pages, links), user (consent screen URLs, placeholders) |
-| H3 | High | No disclosure immediately before Gmail consent on the in-app Connect and Reconnect buttons; the sign-up disclosure is incomplete | Open. Owner: frontend |
+| H2 | High | No privacy policy, terms or Limited Use statement anywhere in the app | Pages live at `/privacy` and `/terms`. Still open, owner user: fill placeholders such as [CONTACT EMAIL], put the URLs on the consent screen, lawyer review |
+| H3 | High | No disclosure immediately before Gmail consent on the in-app Connect and Reconnect buttons; the sign-up disclosure is incomplete | Done in code: one `GmailDisclosure` on `/connect-gmail` and sign-up step 2, with a Privacy Policy link. Open, owner user: lawyer review of the wording |
 | H4 | High | A public launch with `gmail.readonly` needs restricted-scope verification and a CASA assessment; Testing mode only serves listed testers | Open. Owner: user |
 | H5 | High | The eval export script can pull any user's mail with the service role key and print it for a human to read | Fixed in 16d93d4 (owner guard) |
 | M1 | Medium | "Delete account removes everything" is not fully true | Server part fixed in 16d93d4. Rest: frontend |
-| M2 | Medium | Privacy copy overstates what is read and saved | Minimization fixed in 16d93d4. Copy: frontend |
+| M2 | Medium | Privacy copy overstates what is read and saved | Minimization fixed in 16d93d4. Disclosure copy now lists what is read and kept (`components/GmailDisclosure.tsx`). Landing page copy: recheck |
 | M3 | Medium | No security headers | Baseline fixed in dd25609. Full CSP: frontend |
 | M4 | Medium | Token key lives in an environment variable with no rotation support | Open. Owner: user |
-| M5 | Medium | No contact or support channel in the app | Open. Owner: user (address), frontend (links) |
+| M5 | Medium | No contact or support channel in the app | Open. Owner: user (pick the address and replace [CONTACT EMAIL] in both pages); the policy and terms have a Contact section |
 | M6 | Medium | Production sign-up depends on settings the README tells you to turn off for development (email confirmation, SMTP) | Open. Owner: user. The app's sign-up copy now handles both settings (cb81324) |
 | M7 | Medium | No breach response plan (Google, state law) | Open. Owner: user |
 | L1 to L10 | Low | See below | L1 server part and L2 fixed in 16d93d4; L3 moot; rest open |
@@ -53,7 +53,9 @@ Commits: cb81324 `fix(auth)` (redirect host, sign-up copy), 16d93d4 `fix(privacy
 
 ### H2. No privacy policy, terms or Limited Use statement in the app
 
-**Status: Open.** Owner: frontend (publish `/privacy` and `/terms`, link them), user (consent screen URLs, fill the placeholders).
+**Status: Pages published at `/privacy` and `/terms` (`app/privacy/page.tsx`, `app/terms/page.tsx`, rendered by `lib/markdown.tsx`), linked from the landing footer, sign-in, sign-up and the app sidebar.** Still open, owner user: fill placeholders such as [CONTACT EMAIL], delete the TERMS reviewer notes (the page already hides them, but the file keeps them), put the URLs on the OAuth consent screen, lawyer review.
+
+The Evidence below is from the original review and is historical.
 
 **Evidence**
 - "Privacy" in the header and footer jumps to a marketing section on the same page (`app/page.tsx:37-39`, `app/page.tsx:183`). There is no `/privacy` or `/terms` route under `app/`.
@@ -70,7 +72,7 @@ Commits: cb81324 `fix(auth)` (redirect host, sign-up copy), 16d93d4 `fix(privacy
 
 ### H3. No disclosure immediately before Gmail consent on in-app paths; sign-up disclosure is incomplete
 
-**Status: Open.** Owner: frontend. With the AI fallback off for users, the disclosure no longer needs to mention Anthropic.
+**Status: Done in code.** `/connect-gmail` and sign-up step 2 share `components/GmailDisclosure.tsx`; every in-app Connect and Reconnect button goes to `/connect-gmail` first (`CONNECT_HREF`). Owner user: lawyer review of the wording. The Evidence below is from the original review and is historical. With the AI fallback off for users, the disclosure no longer needs to mention Anthropic.
 
 **Evidence**
 - In-app buttons go straight to Google: Connect (`components/ConnectGmail.tsx:29-33`), Reconnect (`components/ConnectGmail.tsx:45`), Connect after disconnect (`components/ConnectGmail.tsx:57`), all to `CONNECT_HREF` (`components/ConnectGmail.tsx:6`), which redirects to Google at once (`app/api/auth/google/route.ts:16-32`). The only text nearby is one line that also omits Anthropic (`components/ConnectGmail.tsx:29`).
@@ -156,7 +158,7 @@ Commits: cb81324 `fix(auth)` (redirect host, sign-up copy), 16d93d4 `fix(privacy
 
 ### M5. No way to contact the developer
 
-**Status: Open.** Owner: user (pick the address), frontend (links).
+**Status: Open.** Owner: user (pick the address, replace [CONTACT EMAIL] in `docs/legal/PRIVACY_POLICY.md` and `TERMS.md`). The published pages have a Contact section but no real address yet.
 
 **Evidence:** No email, form or support link in `app/` or `components/` (searched for `mailto`, "contact", "support"). The footer has only Sign in, Privacy (anchor) and Style guide (`app/page.tsx:176-187`).
 
@@ -193,7 +195,7 @@ Commits: cb81324 `fix(auth)` (redirect host, sign-up copy), 16d93d4 `fix(privacy
 | L1 | **Server part fixed in 16d93d4** (Disconnect answers `revokeFailed`); UI copy open, owner frontend. Disconnect copy says access "is revoked", but revocation is best effort and failure is silent. Subwatch does delete its copy, so it loses access either way. | `app/page.tsx:147`, `components/DisconnectGmail.tsx:10`, `lib/gmail.ts:139-158`, `app/api/auth/disconnect/route.ts` | Accurate notices, [User Data Policy](https://developers.google.com/terms/api-services-user-data-policy) | Return `revokeFailed: true` (shipped) and tell the user to check myaccount.google.com/permissions |
 | L2 | **Fixed in 16d93d4.** Sync failures were logged with the full error object; now `logError` (`lib/log.ts`) writes message and code only, in the sync and account delete routes | `app/api/sync/route.ts:23` | Treat data securely in logs ([Workspace policy](https://developers.google.com/workspace/workspace-api-user-data-developer-policy)) | Log only `e.name`, a status code and a short message; confirm Google client errors do not include `Authorization` headers (unverified) |
 | L3 | **Moot** while the AI fallback is off for users (H1). Users are not told AI output can be wrong | Records with `method: "llm"` look the same as rule results (`lib/extract/llm.ts:142`) | Anthropic Commercial Terms D.3: customer "must notify its Users, that factual assertions in Outputs should not be relied upon without independently checking their accuracy" ([terms](https://www.anthropic.com/legal/commercial-terms)) | Keep Terms section 3; add a small "Read by AI, check the email" note on those rows (only matters if H1 option 2) |
-| L4 | Open, owner frontend. No age statement at sign-up | `components/AuthForm.tsx:132-159` | COPPA covers general-audience operators only with actual knowledge of under-13 users; operators may block children if they choose ([FTC COPPA FAQ](https://www.ftc.gov/business-guidance/resources/complying-coppa-frequently-asked-questions), [16 CFR 312.2](https://www.ecfr.gov/current/title-16/chapter-I/subchapter-C/part-312)) | Add "By creating an account you confirm you are 13 or older and agree to the Terms and Privacy Policy" with links |
+| L4 | Partly done. Sign-up and sign-in now say "By creating an account you agree to the Terms and Privacy Policy" (`components/AuthForm.tsx`); still no age statement, owner user to decide | `components/AuthForm.tsx` | COPPA covers general-audience operators only with actual knowledge of under-13 users; operators may block children if they choose ([FTC COPPA FAQ](https://www.ftc.gov/business-guidance/resources/complying-coppa-frequently-asked-questions), [16 CFR 312.2](https://www.ecfr.gov/current/title-16/chapter-I/subchapter-C/part-312)) | Add "By creating an account you confirm you are 13 or older and agree to the Terms and Privacy Policy" with links |
 | L5 | Open, owner user. Saved records are not app-encrypted | `records.data` jsonb (`supabase/migrations/20261110000000_init.sql:8`) | Encrypt user data "At rest on your systems" ([Workspace policy](https://developers.google.com/workspace/workspace-api-user-data-developer-policy)); Supabase encrypts all data at rest with AES-256 ([Supabase security](https://supabase.com/security)), which likely satisfies this (unverified for CASA) | Document reliance on Supabase encryption; restrict dashboard access to you |
 | L6 | Open, owner user; only matters if the AI fallback is ever on for users. Prompt-injection defenses exist but are not documented for reviewers | `lib/extract/llm.ts:8-13`, `:101-124` | Required: "Protecting against prompt injection techniques by either using Google Cloud Platform's Model Armor or other prompt injection protection" ([Workspace policy](https://developers.google.com/workspace/workspace-api-user-data-developer-policy)) | Describe the defenses (no tools, schema, source-checked fields) in the verification submission |
 | L7 | Open, owner user. Vercel Hobby has no DPA and is "non-commercial personal use only" | Hosting plan | Vercel DPA applies to Enterprise agreements ([Vercel DPA](https://vercel.com/legal/dpa)); Hobby limits ([Vercel Hobby](https://vercel.com/docs/plans/hobby), [fair use](https://vercel.com/docs/limits/fair-use-guidelines)); Supabase's terms incorporate its DPA for all customers ([Supabase terms](https://supabase.com/terms)) | Fine for a free student project; disclose Vercel under its privacy notice; upgrade before any monetization |
@@ -201,7 +203,7 @@ Commits: cb81324 `fix(auth)` (redirect host, sign-up copy), 16d93d4 `fix(privacy
 | L9 | Open, owner user. Leftover local data | `data/subwatch.db` (+ `-wal`, `-shm`, 45 records, unused), `data/.token-key` | Minimize stored data ([User Data Policy](https://developers.google.com/terms/api-services-user-data-policy)) | Delete when no longer needed; already gitignored (`.gitignore` `/data`) |
 | L10 | Open, owner frontend. Accessibility issues in current components | See `docs/legal/ACCESSIBILITY.md` (input border contrast 1.58:1, mouse-only chart details, auto-moving birds) | WCAG 2.1 AA as benchmark ([WCAG 2.1](https://www.w3.org/TR/WCAG21/), [ADA.gov](https://www.ada.gov/resources/web-guidance/)) | Fix in the new frontend |
 
-Checked and found fine: Gmail scope is the narrowest that provides message bodies (`lib/gmail.ts:10-11`); scopes are checked after consent (`lib/gmail.ts` `connectGmailWithCode`, `no_gmail`); tokens are encrypted with AES-256-GCM and a random IV (`lib/crypto.ts:27-33`); RLS on every table (`supabase/migrations/20261110000000_init.sql:47-87`); CSRF same-origin checks on state-changing routes (`lib/route-auth.ts`, `lib/csrf.ts`); OAuth `state` compared in constant time (`app/api/auth/callback/route.ts:9-13`, `:44`); open-redirect protection on callbacks (`lib/auth-copy.ts` `safeNext`, `app/api/auth/callback/route.ts:15-16`); cancel links require `https` and open with `noopener noreferrer` (`components/CancelAction.tsx:5-11`, `:37`); no analytics or ad trackers; sync error details are no longer sent to the browser (`lib/sync.ts:66`, `:137`).
+Checked and found fine: Gmail scope is the narrowest that provides message bodies (`lib/gmail.ts:10-11`); scopes are checked after consent (`lib/gmail.ts` `connectGmailWithCode`, `no_gmail`); tokens are encrypted with AES-256-GCM and a random IV (`lib/crypto.ts:27-33`); RLS on every table (`supabase/migrations/20261110000000_init.sql:47-87`); CSRF same-origin checks on state-changing routes (`lib/route-auth.ts`, `lib/csrf.ts`); OAuth `state` compared in constant time (`app/api/auth/callback/route.ts` `safeEqual`); open-redirect protection on callbacks (`lib/auth-copy.ts` `safeNext`; `googleConsentHref` only passes a known `next` label; `app/api/auth/callback/route.ts` `NEXT` map, and it checks `state` before honoring `error=`); cancel links require `https` and open with `noopener noreferrer` (`components/CancelAction.tsx:5-11`, `:37`); no analytics or ad trackers; sync error details are no longer sent to the browser (`lib/sync.ts:66`, `:137`).
 
 ---
 

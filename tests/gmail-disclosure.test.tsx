@@ -25,8 +25,13 @@ describe("Gmail disclosure before Google's consent screen", () => {
       "Subwatch will",
       "Subwatch can't",
       "Send, delete, label or archive mail",
-      "Subwatch keeps the merchant, amount, dates and cancel link it finds.",
-      "It never stores the text of your emails and never uses them for ads or AI training.",
+      "Subwatch won't",
+      "Store the text of your emails",
+      "When you sync, Subwatch reads the sender, subject, text and links of emails that look like billing, including some promotions, from about the last 13 months.",
+      "It keeps the merchant, amount, currency, billing cycle, dates and cancel link from billing emails, plus each checked email's Gmail ID, date and type so it is not read twice.",
+      "It also keeps your Gmail address and an encrypted Google access token until you disconnect.",
+      "Records stay until you delete your account. Disconnecting removes the Google token but keeps your records.",
+      "Subwatch never uses your emails for ads or AI training.",
       "Your emails are processed only on Subwatch's own server, hosted by Vercel.",
       "What Subwatch keeps is saved in its database, hosted by Supabase.",
       "You can disconnect or delete your account at any time.",
@@ -34,6 +39,8 @@ describe("Gmail disclosure before Google's consent screen", () => {
       expect(html).toContain(s);
     }
     expect(html).not.toMatch(/\u2014/);
+    expect(html).not.toContain("can't</h2><ul><li>Store");
+    expect(html).toMatch(/<a[^>]*href="\/privacy"[^>]*>Read the Privacy Policy<\/a>/);
   });
 
   it("sends Continue to Google to the OAuth route with only a known next label", () => {

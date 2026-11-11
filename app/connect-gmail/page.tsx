@@ -23,7 +23,7 @@ export default function ConnectGmailPage({ searchParams }: PageProps<"/connect-g
       <div className="su-body">
         <main className="su-main">
           <h1>Connect Gmail</h1>
-          <p className="lede">Google will ask you to allow read-only access. Here is exactly what that means.</p>
+          <p className="lede">Google will ask you to allow read-only access. Here is what that means.</p>
           <GmailDisclosure />
           <Suspense fallback={null}>
             <ConnectActions searchParams={searchParams} />
@@ -46,7 +46,6 @@ async function ConnectActions({ searchParams }: { searchParams: PageProps<"/conn
         <a href={googleConsentHref(next)} className="btn btn-primary" aria-disabled={unconfigured ? true : undefined}>
           Continue to Google
         </a>
-        <Link href="/privacy">Read the Privacy Policy</Link>
       </div>
     </>
   );
