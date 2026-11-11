@@ -42,15 +42,50 @@ const MARKETING_SUBJECT =
 
 const BILLING_SIGNAL = /(\$|€|£)\s?\d|invoice|receipt|subscription|renew|trial|billing|payment|charged/i;
 
+// Promotional mail: unsubscribe footers, shipping offers, shop calls to action, discounts.
+const MARKETING_BODY = /(unsubscribe|free (standard |express )?(shipping|delivery)|shop now|\bsale\b|\d+% off)/i;
+// Evidence that money actually moved. A bare "gift receipts" mention does not count.
+const TRANSACTIONAL =
+  /(order (number|no\.?|#)|order\s?#|(?<!gift )\breceipt\b(?!s)|your order|payment (received|successful|confirmation)|invoice|\bcharged\b|thanks? (you )?for your (purchase|order|payment))/i;
+
+// Renewal language about a plan the user already has.
+const EXISTING_PLAN_RENEWAL =
+  /(will (automatically |auto-?)?renew|auto-?renew|set to (automatically )?renew|scheduled to (automatically )?renew|renews (on|automatically|every)|will be charged|upcoming (charge|payment)|next (billing|payment|charge)( date)?|renewal (date|amount|price|charge)|your (current )?(subscription|membership|plan) (renews|is (expiring|renewing)|expires))/i;
+// Sales offers and option menus that use the word "renew" to sell something new.
+const RENEWAL_OFFER =
+  /(renew now|final day to renew|last (call|chance)|for just [$€£]|secure your (seat|spot)|\byour options\b|choose (a|your) (plan|option)|plan options|select (a|your) plan|don['’]t miss)/i;
+const SUBSCRIPTION_CONTEXT = /(subscription|membership|\bplan\b|billing)/i;
+const NON_SUBSCRIPTION_TOPIC = /(\bgrant\b|\blease\b|licen[cs]e|eligib|survey|scholarship|financial aid|passport|registration)/i;
+const MONEY = /[$€£]\s?\d|\d\s?(USD|EUR|GBP)\b/;
+
+/** "renew" alone is not a renewal notice: it must be about a plan the user already pays for. */
+function refineRenewal(subject: string, body: string): EmailKind {
+  const text = `${subject}\n${body}`;
+  if (EXISTING_PLAN_RENEWAL.test(text)) return "renewal_notice";
+  if (RENEWAL_OFFER.test(text)) return "marketing";
+  const money = MONEY.test(text);
+  if (!money && (NON_SUBSCRIPTION_TOPIC.test(text) || !SUBSCRIPTION_CONTEXT.test(text))) return "other";
+  const datedRenewal = findDates(text, new Date().toISOString()).some((d) => labelDate(d, text) === "renewal");
+  if (datedRenewal) return "renewal_notice";
+  return money ? "marketing" : "other";
+}
+
+function refine(kind: EmailKind, subject: string, body: string): EmailKind {
+  const text = `${subject}\n${body}`;
+  if (kind === "renewal_notice") return refineRenewal(subject, body);
+  if (kind === "receipt" && MARKETING_BODY.test(text) && !TRANSACTIONAL.test(text)) return "marketing";
+  return kind;
+}
+
 export function classify(subject: string, body: string): { kind: EmailKind; source: "subject" | "body" | "none" } {
   // Refunds look like order receipts but are money coming back, not something owed.
   if (/\brefund(ed|s)?\b/i.test(subject)) return { kind: "other", source: "subject" };
   for (const [kind, re] of SUBJECT_RULES) {
-    if (re.test(subject)) return { kind, source: "subject" };
+    if (re.test(subject)) return { kind: refine(kind, subject, body), source: "subject" };
   }
   if (MARKETING_SUBJECT.test(subject)) return { kind: "marketing", source: "subject" };
   for (const [kind, re] of BODY_RULES) {
-    if (re.test(body)) return { kind, source: "body" };
+    if (re.test(body)) return { kind: refine(kind, subject, body), source: "body" };
   }
   return { kind: "other", source: "none" };
 }
@@ -67,6 +102,9 @@ const AMOUNT_RE =
 const FINE_PRINT =
   /(limited to|liabilit|penalt|fine of|up to|maximum|coverage|insured|insurance|compensation|imprisonment)/;
 
+const PROMO_BEFORE =
+  /(spend|(orders?|purchases?) (over|of|above|at least|more than)|free (standard |express )?(shipping|delivery)( [\w-]+){0,4} (on|over)|minimum( order| purchase)?( of)?)\W*$/;
+
 export function pickAmount(text: string): { amount: number; currency: string } | null {
   let best: { amount: number; currency: string; score: number; index: number } | null = null;
 
@@ -81,10 +119,15 @@ export function pickAmount(text: string): { amount: number; currency: string } |
     // liability sentence is not penalized for it.
     const clause = before.split(/\.\s|\n/).pop() ?? "";
     let score = 0;
-    if (/(total|amount (due|charged|paid)|you['’]ll be charged|will be charged|charged|payment of|balance due|new price|billed)/.test(before))
+    const after = text.slice(i + m[0].length, i + m[0].length + 20).toLowerCase();
+    if (/(total|amount (due|charged|paid)|payment amount|you['’]ll be charged|will be charged|charged|payment of|balance due|new price|billed|(auto-?)?renews? for|(membership|subscription|plan|annual) (fee|price))/.test(before))
       score += 3;
-    if (/(subtotal|tax|fee|discount|save|off|credit|was|from|saving)\W*$/.test(near)) score -= 3;
+    if (/(subtotal|tax|(?<!(membership|subscription|plan|annual) )fee|discount|save|off|credit|was|from|saving)\W*$/.test(near)) score -= 3;
     if (FINE_PRINT.test(clause)) score -= 3;
+    // A price with a period ("$12.95/month", "$ 12.95 /month") is what the plan costs.
+    if (/^\s{0,2}(\/|per\b|a\b)\s{0,2}(month|mo|year|yr|week|wk|quarter)\b/.test(after)) score += 2;
+    // Promo thresholds: "spend $50 or more", "orders over $49", "$35+ orders", "minimum order $25".
+    if (PROMO_BEFORE.test(clause) || /^(\+|\s?or more|\s?and up)/.test(after)) score -= 5;
     const amount = parseFloat(whole.replace(/,/g, "") + (cents ? "." + cents : ""));
     if (!Number.isFinite(amount) || amount <= 0 || amount > 100000) continue;
     if (!best || score > best.score || (score === best.score && i > best.index)) {
@@ -150,6 +193,20 @@ export function assignDates(
   }
 }
 
+// ---------- charge date ----------
+
+const CHARGE_LABEL =
+  /(order date|order placed( on)?|(?<!be )charged on|transaction date|date of purchase|purchase date)\W{0,3}$/i;
+
+/** An explicitly labeled order/charge date ("Order date: Sep 3, 2026"), if the email states one. */
+export function statedChargeDate(text: string, emailDate: string): string | null {
+  for (const d of findDates(text, emailDate)) {
+    if (CHARGE_LABEL.test(text.slice(Math.max(0, d.index - 40), d.index))) return d.iso;
+  }
+  return null;
+}
+
+
 // ---------- cadence ----------
 
 // A generic "a/per/'/' <unit>" only counts right after a price ("$9.99 a month", "$15/mo",
@@ -162,7 +219,7 @@ const STRONG: [Cadence, RegExp][] = [
   [
     "yearly",
     new RegExp(
-      `(${perUnit("year|yr")}|billed (annually|yearly)|(annual|yearly) (plan|subscription|membership|charge|renewal)|every 12 months)`,
+      `(${perUnit("year|yr")}|billed (annually|yearly)|(annual|yearly|12-month)(?:\\s+[\\w+&'-]+){0,3}?\\s+(plan|subscription|membership|charge|renewal)|every 12 months|renews every year)`,
       "i"
     ),
   ],
@@ -290,9 +347,14 @@ export function extractWithRules(email: RawEmail): ExtractedRecord {
   const relevant = isRelevantKind(kind);
 
   const amountHit = relevant ? pickAmount(text) : null;
-  const { dueDate, renewalDate } = relevant
+  const assigned = relevant
     ? assignDates(text, findDates(text, email.date), kind)
     : { dueDate: null, renewalDate: null };
+  const stated = kind === "receipt" ? statedChargeDate(text, email.date) : null;
+  const chargeDate = kind === "receipt" ? stated ?? email.date.slice(0, 10) : undefined;
+  const { dueDate } = assigned;
+  // "Charged on <date>" on a receipt is when it was paid, not the next renewal.
+  const renewalDate = stated && assigned.renewalDate === stated ? null : assigned.renewalDate;
   const cadence = relevant ? detectCadence(text) : null;
   const cancel = relevant && kind !== "cancellation" ? pickCancelUrl(email, merchant.senderDomain) : { url: null, trusted: false };
 
@@ -319,6 +381,7 @@ export function extractWithRules(email: RawEmail): ExtractedRecord {
     cadence,
     dueDate,
     renewalDate,
+    ...(chargeDate ? { chargeDate } : {}),
     cancelUrl: cancel.url,
     cancelUrlTrusted: cancel.trusted,
     confidence,

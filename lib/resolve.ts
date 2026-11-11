@@ -52,6 +52,9 @@ function modeCadence(records: ExtractedRecord[]): Cadence | null {
 }
 
 const day = (iso: string) => iso.slice(0, 10);
+/** When a receipt's money moved. Records saved before chargeDate existed fall back to the email date. */
+const chargeDay = (r: ExtractedRecord) => r.chargeDate ?? day(r.emailDate);
+const STALE_GRACE_DAYS = 7;
 
 /** A receipt is recurring if it states a cadence or its amount appears on 2+ receipts of the merchant. */
 export function isRecurringReceipt(r: ExtractedRecord, sameMerchantReceipts: ExtractedRecord[]): boolean {
@@ -69,19 +72,28 @@ function buildSubscription(key: string, group: ExtractedRecord[], today: string,
   const cancellations = group.filter((r) => r.kind === "cancellation");
 
   const lastReceipt = mostRecent(receipts);
-  const lastChargeDate = lastReceipt ? day(lastReceipt.emailDate) : null;
+  const lastChargeDate = lastReceipt ? chargeDay(lastReceipt) : null;
 
   // A trial only counts while it is still running and nothing has been charged since.
   const liveTrial = mostRecent(
     trials.filter((t) => t.dueDate && t.dueDate >= today && (!lastChargeDate || day(t.emailDate) > lastChargeDate))
   );
 
-  const cadence = modeCadence(group) ?? inferCadence(receipts.map((r) => day(r.emailDate)));
+  const cadence = modeCadence(group) ?? inferCadence(receipts.map(chargeDay));
 
   // Decide whether this merchant is a subscription at all.
   const hasRecurringSignal = !!cadence || renewals.length > 0 || !!liveTrial;
   if (!hasRecurringSignal) return null;
   if (!receipts.length && !renewals.length && !liveTrial && !priceChanges.length) return null;
+
+  // Never charged, and the announced renewal or trial end came and went with no receipt: stale.
+  if (!group.some((r) => r.kind === "receipt")) {
+    const announced = [...renewals.map((r) => r.renewalDate), ...trials.map((t) => t.dueDate ?? t.renewalDate)].filter(
+      (d): d is string => !!d
+    );
+    const latest = announced.sort().pop();
+    if (latest && daysBetween(latest, today) > STALE_GRACE_DAYS) return null;
+  }
 
   // Status
   const lastCancel = mostRecent(cancellations);
@@ -110,8 +122,8 @@ function buildSubscription(key: string, group: ExtractedRecord[], today: string,
   if (sortedReceipts.length >= 2) {
     const prev = sortedReceipts[sortedReceipts.length - 2];
     const last = sortedReceipts[sortedReceipts.length - 1];
-    if (prev.amount !== last.amount && daysBetween(day(last.emailDate), today) <= 90) {
-      priceChange = { from: prev.amount, to: last.amount!, effective: day(last.emailDate) };
+    if (prev.amount !== last.amount && daysBetween(chargeDay(last), today) <= 90) {
+      priceChange = { from: prev.amount, to: last.amount!, effective: chargeDay(last) };
     }
   }
   const announced = mostRecent(priceChanges);
@@ -148,6 +160,10 @@ function buildSubscription(key: string, group: ExtractedRecord[], today: string,
   const pick = withLink.find((r) => r.cancelUrlTrusted) ?? withLink[0];
 
   const latestName = mostRecent(group.filter((r) => r.merchant))?.merchant ?? key;
+  // Nothing to show: no amount and no date of any kind.
+  const anyRenewalDate = group.some((r) => r.renewalDate);
+  if (effectiveAmount === null && !nextChargeDate && !lastChargeDate && !anyRenewalDate) return null;
+
   const annual = effectiveAmount !== null && cadence ? Math.round(effectiveAmount * PERIODS_PER_YEAR[cadence] * 100) / 100 : null;
 
   return {
@@ -323,7 +339,7 @@ export function buildDashboard(
       merchant: subscriptions.find((s) => s.merchantKey === r.merchantKey)!.merchant,
       amount: r.amount,
       currency: r.currency ?? "USD",
-      date: day(r.emailDate),
+      date: chargeDay(r),
     }))
     .sort((a, b) => a.date.localeCompare(b.date));
 

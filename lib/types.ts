@@ -36,6 +36,8 @@ export interface ExtractedRecord {
   cadence: Cadence | null;
   dueDate: string | null; // YYYY-MM-DD, a payment or trial deadline
   renewalDate: string | null; // YYYY-MM-DD, the next automatic charge
+  /** YYYY-MM-DD the money moved, for receipts: an explicit order/charge date, else the email date. Older records omit it. */
+  chargeDate?: string;
   cancelUrl: string | null;
   cancelUrlTrusted: boolean; // false when the link domain does not match the sender
   confidence: number; // 0..1
