@@ -25,7 +25,7 @@ vi.mock("googleapis", () => {
 });
 
 import { encrypt } from "../lib/crypto";
-import { connectGmailWithCode } from "../lib/gmail";
+import { connectGmailWithCode, disconnect } from "../lib/gmail";
 import { memoryStore } from "../lib/store/memory";
 
 const env = process.env as Record<string, string | undefined>;
@@ -77,5 +77,25 @@ describe("connecting a different Gmail", () => {
     await connectGmailWithCode("code", s);
     expect(google.revoked).toEqual([]);
     expect(await s.getGmail()).toMatchObject({ lastSyncEpoch: 50 });
+  });
+});
+
+describe("disconnect", () => {
+  it("revokes, drops the connection and reports success", async () => {
+    const s = await connectedTo("a@gmail.com", "rt-a");
+    expect(await disconnect(s)).toEqual({ revokeFailed: false });
+    expect(google.revoked).toEqual(["rt-a"]);
+    expect(await s.getGmail()).toBeNull();
+  });
+
+  it("still drops the connection when Google's revoke fails, and reports it", async () => {
+    google.revokeFails = true;
+    const s = await connectedTo("a@gmail.com", "rt-a");
+    expect(await disconnect(s)).toEqual({ revokeFailed: true });
+    expect(await s.getGmail()).toBeNull();
+  });
+
+  it("has nothing to revoke when no Gmail is connected", async () => {
+    expect(await disconnect(memoryStore("none"))).toEqual({ revokeFailed: false });
   });
 });

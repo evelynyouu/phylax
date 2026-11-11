@@ -136,23 +136,33 @@ export async function isConnected(store: Store): Promise<boolean> {
   return (await store.getGmail()) !== null;
 }
 
-/** Revokes the connection's grant at Google. Best effort: never throws, never blocks the caller's next step. */
-async function revokeBestEffort(c: GmailConnection | null): Promise<void> {
+/**
+ * Revokes the connection's grant at Google. Best effort: a failed revoke never throws or blocks
+ * the caller's next step, but it is reported (false) so the user can be told to remove the grant
+ * at https://myaccount.google.com/permissions. True when revoked or there was nothing to revoke.
+ */
+async function revokeBestEffort(c: GmailConnection | null): Promise<boolean> {
   // A missing TOKEN_ENC_KEY still throws here: that is a setup problem, not a failed revoke.
+  if (!c) return true;
   const t = readTokens(c);
-  if (!t?.refresh_token) return;
+  // Revoking either token removes the whole grant. Tokens that no longer decrypt cannot be revoked.
+  const token = t?.refresh_token ?? t?.access_token;
+  if (!token) return false;
   try {
-    await oauthClient().revokeToken(String(t.refresh_token));
+    await oauthClient().revokeToken(String(token));
+    return true;
   } catch {
-    // Revocation is best effort; the caller still replaces or drops the stored copy.
+    // The caller still replaces or drops the stored copy.
+    return false;
   }
 }
 
 /** Revokes Google's grant (best effort), then deletes the connection. Records stay. */
-export async function disconnect(store: Store): Promise<void> {
-  await revokeBestEffort(await store.getGmail());
+export async function disconnect(store: Store): Promise<{ revokeFailed: boolean }> {
+  const revoked = await revokeBestEffort(await store.getGmail());
   await store.setGmail(null);
   clients.delete(store);
+  return { revokeFailed: !revoked };
 }
 
 function gmailClient(store: Store): Promise<gmail_v1.Gmail> {

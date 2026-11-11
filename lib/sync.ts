@@ -5,7 +5,7 @@ import { processWide } from "./process-wide";
 import { buildDashboard } from "./resolve";
 import { isDemo } from "./session";
 import type { Store } from "./store/types";
-import type { Dashboard, RawEmail } from "./types";
+import type { Dashboard, ExtractedRecord, RawEmail } from "./types";
 
 export { GmailReconnectError } from "./gmail";
 
@@ -67,6 +67,32 @@ export const SYNC_FAILED_MESSAGE = "Sync failed. Please try again.";
 
 const CONCURRENCY = 5;
 
+/**
+ * What sync saves for an email. A non-billing record exists only so the next sync does not
+ * fetch that email again, so it keeps the id, date, kind, method and confidence and nothing
+ * the email said (no merchant, amount, dates or link). Billing records are kept whole.
+ */
+export function recordToSave(rec: ExtractedRecord): ExtractedRecord {
+  if (rec.relevant) return rec;
+  return {
+    emailId: rec.emailId,
+    emailDate: rec.emailDate,
+    kind: rec.kind,
+    relevant: false,
+    merchant: null,
+    merchantKey: null,
+    amount: null,
+    currency: null,
+    cadence: null,
+    dueDate: null,
+    renewalDate: null,
+    cancelUrl: null,
+    cancelUrlTrusted: false,
+    confidence: rec.confidence,
+    method: rec.method,
+  };
+}
+
 export async function inBatches<T, R>(items: T[], size: number, fn: (x: T) => Promise<R>): Promise<R[]> {
   const out: R[] = [];
   for (let i = 0; i < items.length; i += size) {
@@ -123,8 +149,9 @@ async function syncInner(
   const source = dataSource();
   const result: SyncResult = { source, listed: 0, processed: 0, relevant: 0, llmUsed: 0, errors: 0 };
   const keep = async (email: RawEmail) => {
+    // Rules only: the AI fallback is a local eval tool and is never on for users (lib/extract).
     const rec = await extractEmail(email);
-    await store.saveRecord(rec);
+    await store.saveRecord(recordToSave(rec));
     result.processed++;
     if (rec.relevant) result.relevant++;
     if (rec.method === "llm") result.llmUsed++;

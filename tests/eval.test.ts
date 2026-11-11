@@ -12,7 +12,7 @@ import {
   writeLabels,
   writeMeta,
 } from "../lib/eval/corpus";
-import { ALL_MAIL_QUERY, exportCorpus, type ExportDeps } from "../lib/eval/export";
+import { ALL_MAIL_QUERY, evalOwnerError, exportCorpus, type ExportDeps } from "../lib/eval/export";
 import { candidates, nextUnlabeled, parseAmount, parseDate, parseKind, parseLink } from "../lib/eval/label";
 import { formatRate, formatReport } from "../lib/eval/report";
 import { planExport, seededShuffle } from "../lib/eval/sample";
@@ -431,5 +431,21 @@ describe("final review fixes", () => {
     expect(() => writeCorpus(dir, [])).toThrow(/empty/);
     expect(readCorpus(dir)).toHaveLength(1);
     expect(fs.existsSync(path.join(dir, "corpus.jsonl.enc.tmp"))).toBe(false);
+  });
+});
+
+describe("eval export owner guard", () => {
+  const me = "11111111-2222-3333-4444-555555555555";
+  const other = "99999999-8888-7777-6666-555555555555";
+  it("allows only the developer's own account", () => {
+    expect(evalOwnerError(me, me)).toBeNull();
+    expect(evalOwnerError(me.toUpperCase(), me)).toBeNull();
+  });
+  it("refuses another user's account", () => {
+    expect(evalOwnerError(other, me)).toMatch(/EVAL_OWNER_USER_ID/);
+  });
+  it("refuses when EVAL_OWNER_USER_ID is unset or empty", () => {
+    expect(evalOwnerError(me, undefined)).toMatch(/Set EVAL_OWNER_USER_ID/);
+    expect(evalOwnerError(me, "  ")).toMatch(/Set EVAL_OWNER_USER_ID/);
   });
 });

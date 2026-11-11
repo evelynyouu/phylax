@@ -31,6 +31,20 @@ describe("POST /api/sync errors", () => {
     log.mockRestore();
   });
 
+  it("logs only the message and a code, never the error object (gaxios errors carry the Authorization header)", async () => {
+    sync.error = Object.assign(new Error("Request failed with status code 500"), {
+      code: "500",
+      config: { headers: { Authorization: "Bearer ya29.secret-token" } },
+      response: { status: 500 },
+    });
+    const log = vi.spyOn(console, "error").mockImplementation(() => {});
+    await post();
+    expect(log).toHaveBeenCalledWith("sync failed", "Request failed with status code 500", "500");
+    for (const call of log.mock.calls) for (const arg of call) expect(typeof arg).toBe("string");
+    expect(JSON.stringify(log.mock.calls)).not.toContain("ya29");
+    log.mockRestore();
+  });
+
   it("keeps the reconnect and already-running answers", async () => {
     sync.error = new GmailReconnectError();
     let res = await post();
