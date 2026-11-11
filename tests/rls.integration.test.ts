@@ -74,7 +74,9 @@ describe.skipIf(!configured)("supabase (live, RLS)", () => {
     expect(before).toHaveLength(1);
 
     expect((await clientB.from(t).select("*").eq("user_id", idA)).data).toEqual([]);
-    expect((await clientB.from(t).insert({ user_id: idA, ...seed[t], ...(t === "records" ? { email_id: "b1" } : t === "gmail_connections" ? {} : { key: "bk" }) })).error).not.toBeNull();
+    const ins = await clientB.from(t).insert({ user_id: idA, ...seed[t], ...(t === "records" ? { email_id: "b1" } : t === "gmail_connections" ? {} : { key: "bk" }) });
+    // 42501 = RLS violation. with check runs before the unique index, so a broken policy gives 23505 or null.
+    expect(ins.error?.code).toBe("42501");
     await clientB.from(t).update(patch[t]).eq("user_id", idA);
     await clientB.from(t).delete().eq("user_id", idA);
 
@@ -82,7 +84,8 @@ describe.skipIf(!configured)("supabase (live, RLS)", () => {
   });
 
   it.each(tables)("an anonymous client reads nothing from %s", async (t) => {
-    await clientA.from(t).insert({ user_id: idA, ...seed[t] });
+    const { error: seedErr } = await clientA.from(t).insert({ user_id: idA, ...seed[t] });
+    expect(seedErr).toBeNull();
     const anonClient = createClient(url!, anon!, { auth: { persistSession: false, autoRefreshToken: false } });
     const { data, error } = await anonClient.from(t).select("*");
     // With anon access revoked this is a permission error (data null); an empty array is also safe.
