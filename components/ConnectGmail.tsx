@@ -1,9 +1,10 @@
 // Server components for the Gmail connection states an /app page can be in (lib/views.ts gmailState).
-// Plain <a>, not <Link>: the target is a route handler that redirects to Google.
+// Every Connect or Reconnect button goes to /connect-gmail first, which shows what Subwatch does
+// with Gmail before Google's consent screen.
 
 import type { GmailState } from "@/lib/views";
 
-export const CONNECT_HREF = "/api/auth/google?next=app";
+export const CONNECT_HREF = "/connect-gmail?next=app";
 
 /**
  * A signed-in user with no Gmail connection and nothing found yet: shown instead of the page's

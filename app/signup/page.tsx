@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Suspense } from "react";
 import FirstScan from "@/components/FirstScan";
 import AuthForm from "@/components/AuthForm";
+import GmailDisclosure from "@/components/GmailDisclosure";
 import { AUTH_MESSAGES, GMAIL_MESSAGES } from "@/lib/auth-copy";
 import { getOptionalUser } from "@/lib/current-user";
 import { gmailConfigured } from "@/lib/gmail";
@@ -91,27 +92,7 @@ async function SignUpBody({ searchParams }: { searchParams: PageProps<"/signup">
           <>
             <h1>Connect Gmail</h1>
             <p className="lede">Google will ask you to allow read-only access. Here is exactly what that means.</p>
-            <div className="will">
-              <div className="yes">
-                <h2>Subwatch will</h2>
-                <ul>
-                  <li>Search for receipts, invoices, renewals and trial notices</li>
-                  <li>Save the merchant, amount, dates and cancel link</li>
-                  <li>Check for new billing email when you sync</li>
-                </ul>
-              </div>
-              <div className="no">
-                <h2>Subwatch can&apos;t</h2>
-                <ul>
-                  <li>Send, delete, label or archive mail</li>
-                  <li>Store the text of your emails</li>
-                  <li>Open a cancel link for you</li>
-                </ul>
-              </div>
-            </div>
-            <p className="muted" style={{ marginTop: 16 }}>
-              You can connect any Gmail account. It does not have to match the email you signed up with.
-            </p>
+            <GmailDisclosure />
             {!isDemo() && !gmailConfigured() && <p className="auth-msg">{GMAIL_MESSAGES.not_configured.text}</p>}
             <div className="su-actions">
               <a href={connectHref} className="btn btn-primary" aria-disabled={!isDemo() && !gmailConfigured() ? true : undefined}>

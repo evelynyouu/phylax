@@ -26,6 +26,14 @@ export const GMAIL_MESSAGES: Record<string, AuthMessage> = {
 };
 
 /**
+ * Where /connect-gmail's "Continue to Google" goes. Only the known next labels travel; anything
+ * else means the app (the OAuth routes map the label to a fixed path).
+ */
+export function googleConsentHref(next: unknown): string {
+  return `/api/auth/google?next=${next === "signup" ? "signup" : "app"}`;
+}
+
+/**
  * Where a signed-in user lands when connecting Gmail fails: back where they started, with the
  * reason. `next` is the oauth_next cookie label; anything but "signup" means the app.
  */
