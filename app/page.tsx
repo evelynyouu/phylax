@@ -180,7 +180,8 @@ export default function Home() {
           </span>
           <nav aria-label="Footer">
             <Link href="/signin">Sign in</Link>
-            <a href="#privacy">Privacy</a>
+            <Link href="/privacy">Privacy</Link>
+            <Link href="/terms">Terms</Link>
             <Link href="/style">Style guide</Link>
           </nav>
         </div>

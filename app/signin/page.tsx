@@ -32,6 +32,9 @@ export default function SignInPage({ searchParams }: PageProps<"/signin">) {
           <p className="auth-foot">
             New to Subwatch? <Link href="/signup">Create an account</Link>
           </p>
+          <p className="auth-foot">
+            <Link href="/privacy">Privacy</Link> · <Link href="/terms">Terms</Link>
+          </p>
         </div>
       </main>
     </div>

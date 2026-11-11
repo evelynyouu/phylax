@@ -157,6 +157,9 @@ export default function AuthForm({ mode, demo = false }: { mode: "signin" | "sig
           Continue with Google
         </button>
       </div>
+      <p className="fine" style={{ marginTop: 16 }}>
+        By creating an account you agree to the <Link href="/terms">Terms</Link> and <Link href="/privacy">Privacy Policy</Link>.
+      </p>
     </form>
   );
 }

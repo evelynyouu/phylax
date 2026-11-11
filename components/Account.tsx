@@ -1,3 +1,4 @@
+import Link from "next/link";
 import type { AppUser } from "@/lib/current-user";
 import DeleteAccount from "./DeleteAccount";
 import DisconnectGmail from "./DisconnectGmail";
@@ -7,7 +8,7 @@ function initials(name: string): string {
   return ((parts[0]?.[0] ?? "") + (parts.length > 1 ? parts[parts.length - 1][0] : "")).toUpperCase() || "?";
 }
 
-/** Sidebar footer: sync status, who is signed in, and sign out. */
+/** Sidebar footer: sync status, who is signed in, sign out, and the privacy and terms links. */
 export default function Account({ user, syncNote, demo, connected }: { user: AppUser; syncNote: string; demo: boolean; connected: boolean }) {
   return (
     <>
@@ -25,6 +26,9 @@ export default function Account({ user, syncNote, demo, connected }: { user: App
           </button>
         </form>
       </div>
+      <p className="fine">
+        <Link href="/privacy">Privacy</Link> · <Link href="/terms">Terms</Link>
+      </p>
       {!demo && connected && <DisconnectGmail />}
       {!demo && <DeleteAccount />}
     </>
