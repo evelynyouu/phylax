@@ -36,7 +36,7 @@ Commits: cb81324 `fix(auth)` (redirect host, sign-up copy), 16d93d4 `fix(privacy
 
 **Evidence**
 - What is sent: date, `From`, `Subject`, first 6,000 characters of body text and up to 3,000 characters of link text and URLs (`lib/extract/llm.ts:73-83`), to the Anthropic API (`lib/extract/llm.ts:88-93`).
-- When (before 16d93d4): automatically during every sync when `ANTHROPIC_API_KEY` is set and the rules score a billing email below 0.7, or an unclassified email has a billing signal (`lib/extract/index.ts:5-29`, called from `lib/sync.ts:152`). There is no per-user switch.
+- When (before 16d93d4): automatically during every sync when `ANTHROPIC_API_KEY` is set and the rules score a billing email below 0.7, or an unclassified email has a billing signal (`lib/extract/index.ts:5-29`, called from `lib/sync.ts:153`). There is no per-user switch.
 - UI copy: "Subwatch can't ... Store the text of your emails" (`app/signup/page.tsx:104-107`); "No email text stored" (`app/page.tsx:150-151`); "It never stores the text of your emails" (`components/ConnectGmail.tsx:29`); "built to read as little as it can and keep even less" (`app/page.tsx:142`). None of them mention Anthropic or AI. README mentions the fallback only in developer sections (`README.md:36`, `:71`).
 - Anthropic keeps API inputs and outputs for up to 30 days, and up to 2 years if flagged under its usage policy ([Anthropic retention](https://privacy.anthropic.com/en/articles/7996866-how-long-do-you-store-personal-data)). So "never stores" is literally about Subwatch's database, but a copy does leave and is kept elsewhere.
 
@@ -126,7 +126,7 @@ Commits: cb81324 `fix(auth)` (redirect host, sign-up copy), 16d93d4 `fix(privacy
 
 **Evidence**
 - "Only the merchant, amount, dates and cancel link from each billing email are saved" (`app/page.tsx:151`); "Save the merchant, amount, dates and cancel link" (`app/signup/page.tsx:99`); README the same (`README.md:73`). Actually saved per email: Gmail message ID, received date, kind, relevant flag, merchant, merchant key, amount, currency, cadence, due date, renewal date, cancel URL, link-trust flag, confidence and method (`lib/types.ts:27-43`, `lib/store/supabase.ts:26-31`).
-- A record is saved for every email the scan processes, including ones classified as marketing or other (`lib/sync.ts:152-155`; non-relevant rules output at `lib/extract/rules.ts:244-262` and `:265-291`).
+- A record is saved for every email the scan processes, including ones classified as marketing or other (`lib/sync.ts:153-155`; non-relevant rules output at `lib/extract/rules.ts:244-262` and `:265-291`).
 - "Subwatch only looks at billing emails" (`app/page.tsx:61`): the Gmail query matches subject keywords such as "your order" or "trial" (`lib/gmail.ts` `BILLING_QUERY`), so promotions are fetched in full too (`format: "full"`, body up to 20,000 characters).
 - "Sign in with Google and grant read-only access" (`app/page.tsx:61`) blends sign-in (which grants no Gmail access) with the separate Gmail consent.
 
@@ -168,7 +168,7 @@ Commits: cb81324 `fix(auth)` (redirect host, sign-up copy), 16d93d4 `fix(privacy
 
 **Status: Open.** Owner: user (Supabase settings, SMTP). The app side is ready for confirmation on: Supabase's rate limit gets its own message, and an existing email is spotted from the empty `identities` answer (cb81324). Open, for the user: the Supabase "existing email" response with email confirmation on (success with an empty `identities` array, which `signupAlreadyExists` relies on) was not observed live.
 
-**Evidence:** README tells you to turn off Confirm email for development (`README.md:24`); the code handles both cases (`components/AuthForm.tsx:77-78`). There is no forgot-password flow (`README.md:125`).
+**Evidence:** README tells you to turn off Confirm email for development (`README.md:24`); the code handles both cases (`components/AuthForm.tsx:75-78`). There is no forgot-password flow (`README.md:125`).
 
 **Rules and facts:** Supabase's built-in SMTP "is not meant for production use", only sends to project team addresses, and is rate limited ([Supabase SMTP](https://supabase.com/docs/guides/auth/auth-smtp)). With confirmation off, anyone can create an account under someone else's email address. Account emails are transactional, so CAN-SPAM's commercial-message rules mostly do not apply, but transactional messages still must not carry false routing information ([FTC CAN-SPAM guide](https://www.ftc.gov/business-guidance/resources/can-spam-act-compliance-guide-business)).
 
