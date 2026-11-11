@@ -33,7 +33,7 @@ Subwatch uses Supabase for accounts and storage, and Google for Gmail access.
 
 ### 3. Environment
 
-Copy `.env.example` to `.env.local` and fill it in. `TOKEN_ENC_KEY` is 64 hex characters: `openssl rand -hex 32`. `SUPABASE_SERVICE_ROLE_KEY` is used only to delete accounts and by the eval export script. `ANTHROPIC_API_KEY` is optional (LLM fallback for emails the rules cannot parse).
+Copy `.env.example` to `.env.local` and fill it in. `TOKEN_ENC_KEY` is 64 hex characters: `openssl rand -hex 32`. `SUPABASE_SERVICE_ROLE_KEY` is used only to delete accounts and by the eval export script. `ANTHROPIC_API_KEY` is optional and only for the local eval (`npm run eval:llm`, `npm run eval:real:llm`): the AI fallback is a developer tool and is off for every user, so sync and the demo never send email to Anthropic. Do not set it in production. `EVAL_OWNER_USER_ID` is your own Subwatch account id, for the eval export (see below).
 
 `APP_URL` must equal the exact host and port you open in the browser, for example `http://127.0.0.1:3000`. Use one host everywhere: either `127.0.0.1` or `localhost`, the same in `APP_URL`, every Google redirect URI, and the address you open in the browser. A mismatch breaks Google sign-in and Connect Gmail.
 
@@ -43,15 +43,17 @@ Copy `.env.example` to `.env.local` and fill it in. `TOKEN_ENC_KEY` is 64 hex ch
 
 ### Disconnect and delete
 
-- **Disconnect Gmail** revokes Subwatch's Gmail access but keeps the records it already found; the app keeps showing them with a notice to connect again. If you then connect a different Gmail address, its records are added alongside the old ones, and the old address's access is revoked.
-- **Delete account** removes everything: your account and all saved records. Your Gmail itself is never touched.
+- **Disconnect Gmail** asks Google to revoke Subwatch's Gmail access, deletes the stored tokens, and keeps the records it already found; the app keeps showing them with a notice to connect again. If you then connect a different Gmail address, its records are added alongside the old ones, and the old address's access is revoked.
+- **Delete account** deletes your Subwatch account, your Gmail connection and every saved record and choice. Your Gmail itself is never touched.
+- Revoking at Google is best effort. If Google does not confirm it, Disconnect and Delete still go ahead and the response says `revokeFailed: true`; remove Subwatch yourself at https://myaccount.google.com/permissions.
+- If the server has no `SUPABASE_SERVICE_ROLE_KEY`, Delete account answers "Account deletion is not available right now. Please try again later." and changes nothing.
 
 ### Deploy
 
 This is a manual checklist; nothing here is automated.
 
 1. Import the repo in Vercel. Pick the same region for Supabase and your host, so each database call stays short.
-2. Set every variable from `.env.example`, with `APP_URL` set to the Vercel URL.
+2. Set every variable from `.env.example`, with `APP_URL` set to the Vercel URL. Leave out the local-only ones: `EVAL_OWNER_USER_ID`, the `SUPABASE_TEST_*` values, and `ANTHROPIC_API_KEY`.
 3. Add `${APP_URL}/api/auth/callback` to the Google OAuth client's redirect URIs.
 4. Add `${APP_URL}/auth/callback` to Supabase Authentication > URL Configuration > Redirect URLs, and set the Supabase Site URL to `APP_URL`.
 5. Sign up on the live URL, connect Gmail, and confirm the first scan finishes. If it times out, note your plan's function duration limit under Known limits (sync resumes from stored records on the next run).
@@ -59,51 +61,51 @@ This is a manual checklist; nothing here is automated.
 ## How it works
 
 ```
-Gmail (read-only) -> sync -> rules extractor -> [low confidence] -> LLM fallback
-                                  |                                      |
-                                  +------------ records (Supabase) ------+
+Gmail (read-only) -> sync -> rules extractor -> records (Supabase)
                                                        |
                                   entity resolution + recurrence detection
                                                        |
                                                    dashboard
 ```
 
-- **Rules first.** Classification, amounts, dates, cadence, and cancel links come from patterns and a merchant table. The model only sees emails the rules score below 0.7, or that look billing-related but matched nothing.
+- **Rules only, for users.** Classification, amounts, dates, cadence, and cancel links come from patterns and a merchant table. The code also has an AI fallback (`lib/extract/llm.ts`) for emails the rules score below 0.7, or that look billing-related but matched nothing. It is a local developer tool: `extractEmail` leaves it off unless a caller passes `useLlm: true`, and only `scripts/eval.ts --llm` does. Sync and the demo never use it.
 - **Resolution.** Records are grouped by merchant. A merchant is a subscription when emails state a cadence, a renewal or trial notice exists, or charges repeat. One-off purchases are ignored. Cancelled subscriptions are detected from cancellation emails.
-- **Storage.** Only the merchant, amount, dates, and cancel link from each email are saved, in the signed-in user's rows in Supabase (row level security keeps each account to its own data). Email text is not stored. The optional eval corpus in `data/eval/` is the one exception: it stores sampled email bodies, encrypted with the token key, only when you run `npm run eval:export`.
+- **Storage.** For a billing email, only the billing facts (merchant, amount, currency, cadence, dates, cancel link and whether it is on the sender's domain) plus the Gmail message id, date, kind and confidence are saved, in the signed-in user's rows in Supabase (row level security keeps each account to its own data). For any other email only the id, date, kind and confidence are kept, so it is not fetched again. Email text, subject and sender are not stored. The optional eval corpus in `data/eval/` is the one exception: it stores sampled email bodies, encrypted with the token key, only when you run `npm run eval:export`.
 
 ## Security model
 
 Email is untrusted input.
 
 - Gmail scope is `gmail.readonly`. The app cannot send, label, or delete mail.
-- The LLM has no tools. Its output is one JSON object checked with a schema, and every date, amount, and URL it returns must appear in the source email or it is dropped.
+- The LLM (local eval only) has no tools. Its output is one JSON object checked with a schema, and every date, amount, and URL it returns must appear in the source email or it is dropped.
 - A sender whose display name is a known brand but whose domain is not (`Netflix <billing@netflix-account-support.co>`) is discarded as phishing.
 - Cancel links must be `https`. A link on the sender's own domain opens directly. Any other domain shows a warning with the real hostname first.
 - Sign-in is Supabase Auth. Row level security limits every table to the signed-in user's own rows.
 - Gmail refresh tokens are encrypted with AES-256-GCM using `TOKEN_ENC_KEY`.
 - The Supabase service role key bypasses row level security. It is used only to delete an account (and by the developer eval export script), never for request data.
 - State-changing routes accept only same-origin requests and check the session. OAuth uses a random `state` cookie.
+- Server logs carry only an error's message and code, never the error object (Google client errors include the request's `Authorization` header).
+- Every response sets `X-Content-Type-Options`, `Referrer-Policy`, `X-Frame-Options: DENY`, a `Content-Security-Policy` limited to `frame-ancestors`, `base-uri` and `form-action`, and a `Permissions-Policy`; production adds HSTS. `X-Powered-By` is off. A full CSP with script and style sources waits for the final frontend.
 
 ## Tests and eval
 
 ```bash
 npm test            # unit tests, including prompt-injection and phishing cases
 npm run eval        # extraction quality on the labeled fixtures
-npm run eval:llm    # same, with the LLM fallback (needs ANTHROPIC_API_KEY)
+npm run eval:llm    # same, with the LLM fallback (local only; needs ANTHROPIC_API_KEY)
 ```
 
 The fixtures in `fixtures/emails.ts` are synthetic and were labeled and tuned by the author, so the score on them is a regression check, not a measure of real-world accuracy.
 
 ### Eval on your own inbox
 
-Connect Gmail first (see above). The eval scripts need `TOKEN_ENC_KEY`; to read an existing `data/eval` corpus created before accounts were added, set `TOKEN_ENC_KEY` to the contents of `data/.token-key`. Exporting from a real account also needs `SUPABASE_SERVICE_ROLE_KEY` and `--user <uuid>`. Then:
+Connect Gmail first (see above). The eval scripts need `TOKEN_ENC_KEY`; to read an existing `data/eval` corpus created before accounts were added, set `TOKEN_ENC_KEY` to the contents of `data/.token-key`. Exporting from a real account also needs `SUPABASE_SERVICE_ROLE_KEY`, `--user <uuid>`, and `EVAL_OWNER_USER_ID` set to that same id in `.env.local`. The export reads a whole mailbox and the labeler shows it to you, so it refuses any `--user` other than `EVAL_OWNER_USER_ID`: use it on your own account only, never another user's. Then:
 
 ```bash
 npm run eval:export -- --user <your Supabase user id>   # samples about 220 emails into data/eval, encrypted (needs SUPABASE_SERVICE_ROLE_KEY and TOKEN_ENC_KEY)
 npm run eval:label    # label them in the terminal; resumable, type q to stop
 npm run eval:real     # precision and recall per field, rules only
-npm run eval:real:llm # same, plus a column with the LLM fallback
+npm run eval:real:llm # same, plus a column with the LLM fallback (sends your corpus emails to Anthropic)
 npm run eval:real -- --report docs/eval-results.md   # aggregate-only report, safe to commit
 rm -rf data/eval      # delete the corpus when you are done
 ```
