@@ -1,34 +1,15 @@
 "use client";
 
 import { useSyncExternalStore } from "react";
+import { applyTheme, readTheme, subscribeTheme } from "@/lib/theme";
 
-// Shared with the inline script in app/layout.tsx, which applies the saved theme before first paint.
-export const THEME_KEY = "phylax-theme";
-
-// The theme lives on <html data-theme>, so the switch reads it from there.
-function subscribe(onChange: () => void) {
-  const mo = new MutationObserver(onChange);
-  mo.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
-  return () => mo.disconnect();
-}
-const isDark = () => document.documentElement.getAttribute("data-theme") === "dark";
 
 /** Sidebar "Dark mode" switch, from the final screen designs. Remembered in this browser only. */
 export default function ThemeToggle() {
-  const dark = useSyncExternalStore(subscribe, isDark, () => false);
+  const dark = useSyncExternalStore(subscribeTheme, () => readTheme() === "dark", () => false);
 
   function toggle() {
-    const next = !dark;
-    const root = document.documentElement;
-    root.classList.add("theming");
-    if (next) root.setAttribute("data-theme", "dark");
-    else root.removeAttribute("data-theme");
-    window.setTimeout(() => root.classList.remove("theming"), 400);
-    try {
-      localStorage.setItem(THEME_KEY, next ? "dark" : "light");
-    } catch {
-      // Storage blocked: the switch still works for this page view.
-    }
+    applyTheme(dark ? "light" : "dark");
   }
 
   return (

@@ -70,7 +70,7 @@ describe("markdown line breaks and links", () => {
 
 describe("links to the privacy and terms pages", () => {
   it("sit under Sign out in the app sidebar", () => {
-    const out = html(<Account user={{ id: "u", email: "u@x.co", name: "U", avatarPath: null, providers: [] }} syncNote="" connected={false} />);
+    const out = html(<Account user={{ id: "u", email: "u@x.co", name: "U", avatarPath: null, providers: [] }} syncNote="" />);
     expect(out.indexOf('href="/privacy"')).toBeGreaterThan(out.indexOf("Sign out"));
     expect(out).toContain('href="/terms"');
   });

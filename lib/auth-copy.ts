@@ -92,7 +92,7 @@ export function signupAlreadyExists(data: { user: { identities?: unknown[] | nul
   return Array.isArray(data.user?.identities) && data.user.identities.length === 0;
 }
 
-const NEXT_PATHS = new Set(["/app", "/signup?step=2"]);
+const NEXT_PATHS = new Set(["/app", "/app/settings", "/signup?step=2"]);
 
 /** Where to land after the auth callback. Only known internal paths, never a raw URL. */
 export function safeNext(next: string | null | undefined): string {

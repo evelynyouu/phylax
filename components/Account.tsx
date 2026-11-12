@@ -1,7 +1,5 @@
 import Link from "next/link";
 import type { AppUser } from "@/lib/current-user";
-import DeleteAccount from "./DeleteAccount";
-import DisconnectGmail from "./DisconnectGmail";
 import ThemeToggle from "./ThemeToggle";
 
 function initials(name: string): string {
@@ -10,7 +8,7 @@ function initials(name: string): string {
 }
 
 /** Sidebar footer: dark mode switch, sync status, who is signed in, sign out, and the privacy and terms links. */
-export default function Account({ user, syncNote, connected, avatarUrl = null }: { user: AppUser; syncNote: string; connected: boolean; avatarUrl?: string | null }) {
+export default function Account({ user, syncNote, avatarUrl = null }: { user: AppUser; syncNote: string; avatarUrl?: string | null }) {
   return (
     <>
       <ThemeToggle />
@@ -25,9 +23,9 @@ export default function Account({ user, syncNote, connected, avatarUrl = null }:
             {initials(user.name)}
           </span>
         )}
-        <span className="account-name" title={user.email}>
+        <Link href="/app/settings" className="account-name" title={user.email}>
           {user.name}
-        </span>
+        </Link>
         <form action="/api/auth/signout" method="post">
           <button type="submit" className="linkish">
             Sign out
@@ -37,8 +35,6 @@ export default function Account({ user, syncNote, connected, avatarUrl = null }:
       <p className="fine">
         <Link href="/privacy">Privacy</Link> · <Link href="/terms">Terms</Link>
       </p>
-      {connected && <DisconnectGmail />}
-      <DeleteAccount />
     </>
   );
 }
