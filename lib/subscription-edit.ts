@@ -7,7 +7,7 @@ import type { SubscriptionEdit } from "./store/types";
 export const EDIT_MESSAGES = {
   name: "Enter a name of 1 to 80 characters.",
   amount: "Enter an amount above 0 and up to 100,000, with at most 2 decimals.",
-  cycle: "Choose a billing cycle: weekly, monthly, quarterly or yearly.",
+  cycle: "Choose a billing cycle: weekly, monthly, every 3 months, every 6 months or yearly.",
   date: "Enter the next charge date as a real date (YYYY-MM-DD).",
   currency: "Choose a currency: USD, EUR or GBP.",
   amountOrDate: "Enter an amount or a next charge date so the payment can be tracked.",
@@ -31,7 +31,7 @@ const Body = z.object({
     .nullable()
     .optional(),
   currency: z.enum(["USD", "EUR", "GBP"], { message: EDIT_MESSAGES.currency }).nullable().optional(),
-  cadence: z.enum(["weekly", "monthly", "quarterly", "yearly"], { message: EDIT_MESSAGES.cycle }).nullable().optional(),
+  cadence: z.enum(["weekly", "monthly", "quarterly", "semiannual", "yearly"], { message: EDIT_MESSAGES.cycle }).nullable().optional(),
   nextChargeDate: z.string().refine(realDate, EDIT_MESSAGES.date).nullable().optional(),
   manual: z.boolean().optional(),
 });

@@ -16,7 +16,7 @@ export interface CalendarEntry {
   paid?: boolean;
 }
 
-const MONTHS_PER: Record<Exclude<Cadence, "weekly">, number> = { monthly: 1, quarterly: 3, yearly: 12 };
+const MONTHS_PER: Record<Exclude<Cadence, "weekly">, number> = { monthly: 1, quarterly: 3, semiannual: 6, yearly: 12 };
 
 const pad = (n: number) => String(n).padStart(2, "0");
 

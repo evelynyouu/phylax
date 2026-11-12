@@ -3,7 +3,7 @@ import { billKey } from "./calendar";
 import type { SubscriptionEdit } from "./store/types";
 import type { BillItem, Cadence, Dashboard, DueItem, ExtractedRecord, PastCharge, Subscription, UpcomingPayment } from "./types";
 
-const PERIODS_PER_YEAR: Record<Cadence, number> = { weekly: 52, monthly: 12, quarterly: 4, yearly: 1 };
+const PERIODS_PER_YEAR: Record<Cadence, number> = { weekly: 52, monthly: 12, quarterly: 4, semiannual: 2, yearly: 1 };
 const UPCOMING_WINDOW_DAYS = 60;
 const OVERDUE_GRACE_DAYS = 14;
 
@@ -12,6 +12,7 @@ export function advance(iso: string, cadence: Cadence): string {
     case "weekly": return addDays(iso, 7);
     case "monthly": return addMonths(iso, 1);
     case "quarterly": return addMonths(iso, 3);
+    case "semiannual": return addMonths(iso, 6);
     case "yearly": return addMonths(iso, 12);
   }
 }
@@ -33,6 +34,7 @@ function inferCadence(dates: string[]): Cadence | null {
   if (median >= 5 && median <= 9) return "weekly";
   if (median >= 25 && median <= 35) return "monthly";
   if (median >= 80 && median <= 100) return "quarterly";
+  if (median >= 170 && median <= 195) return "semiannual";
   if (median >= 350 && median <= 380) return "yearly";
   return null;
 }

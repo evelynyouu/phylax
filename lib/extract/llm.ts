@@ -30,7 +30,7 @@ const OutputSchema = z.object({
   merchant: z.string().max(80).nullable(),
   amount: z.number().positive().max(100000).nullable(),
   currency: z.enum(["USD", "EUR", "GBP"]).nullable(),
-  cadence: z.enum(["weekly", "monthly", "quarterly", "yearly"]).nullable(),
+  cadence: z.enum(["weekly", "monthly", "quarterly", "semiannual", "yearly"]).nullable(),
   due_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).nullable(),
   renewal_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).nullable(),
   cancel_url: z.string().url().max(2048).nullable(),
@@ -44,7 +44,7 @@ Fields:
 - merchant: the company being paid, or null.
 - amount: the amount charged or due as a number, or null.
 - currency: USD, EUR, GBP, or null.
-- cadence: weekly, monthly, quarterly, yearly, or null if not stated.
+- cadence: weekly, monthly, quarterly, semiannual (every 6 months), yearly, or null if not stated.
 - due_date: YYYY-MM-DD for a payment deadline or trial end, or null.
 - renewal_date: YYYY-MM-DD for the next automatic charge, or null.
 - cancel_url: a URL from the email for cancelling or managing the subscription, or null.

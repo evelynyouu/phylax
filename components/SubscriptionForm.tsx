@@ -10,7 +10,8 @@ const CYCLES = [
   ["weekly", "Weekly"],
   ["monthly", "Monthly"],
   ["quarterly", "Every 3 months"],
-  ["yearly", "Yearly"],
+  ["semiannual", "Every 6 months"],
+  ["yearly", "Every year"],
 ] as const;
 
 /**

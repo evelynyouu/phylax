@@ -330,9 +330,6 @@ export default function RecurringView({ rows }: { rows: SubRow[] }) {
                 <p>Cancel from the company&apos;s account settings, then mark it here.</p>
               </div>
             )}
-            <button type="button" className="btn btn-ghost btn-block" disabled={busy} onClick={() => openForm({ mode: "edit", row: open })}>
-              Edit details
-            </button>
             <button type="button" className="btn btn-ghost btn-block" disabled={busy} onClick={() => mark(open.merchantKey, false)}>
               {busy ? "Saving" : "I've cancelled it"}
             </button>

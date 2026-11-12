@@ -224,6 +224,7 @@ const STRONG: [Cadence, RegExp][] = [
     ),
   ],
   ["quarterly", new RegExp(`(${perUnit("quarter")}|quarterly|every 3 months)`, "i")],
+  ["semiannual", new RegExp(`(${perUnit("6 months|six months|half[- ]year")}|semi-?annual(ly)?|every (6|six) months)`, "i")],
   ["weekly", new RegExp(`(${perUnit("week|wk")}|billed weekly|weekly (plan|subscription|charge))`, "i")],
 ];
 

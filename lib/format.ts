@@ -27,6 +27,7 @@ export function cadenceLabel(c: Cadence | null): string {
     case "weekly": return "weekly";
     case "monthly": return "monthly";
     case "quarterly": return "quarterly";
+    case "semiannual": return "every 6 months";
     case "yearly": return "yearly";
     default: return "";
   }

@@ -7,7 +7,7 @@ import type { Cadence, Dashboard, Subscription } from "./types";
 
 const MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 
-export const PER: Record<Cadence, string> = { weekly: "a week", monthly: "a month", quarterly: "a quarter", yearly: "a year" };
+export const PER: Record<Cadence, string> = { weekly: "a week", monthly: "a month", quarterly: "a quarter", semiannual: "every 6 months", yearly: "a year" };
 
 export interface AttentionItem {
   key: string;
@@ -277,7 +277,7 @@ export function deadlineRows(d: Dashboard, today: string): DeadlineRow[] {
   return rows.sort((a, b) => a.date.localeCompare(b.date) || a.merchant.localeCompare(b.merchant));
 }
 
-const cadenceWord = (c: Cadence) => ({ weekly: "weekly", monthly: "monthly", quarterly: "every 3 months", yearly: "yearly" })[c];
+const cadenceWord = (c: Cadence) => ({ weekly: "weekly", monthly: "monthly", quarterly: "every 3 months", semiannual: "every 6 months", yearly: "yearly" })[c];
 
 /** The design's buckets on Bills and deadlines, plus Overdue for bills still unpaid. */
 export function deadlineGroup(daysAway: number): "Overdue" | "This week" | "Next two weeks" | "Later" {

@@ -8,7 +8,7 @@ export type EmailKind =
   | "marketing"
   | "other";
 
-export type Cadence = "weekly" | "monthly" | "quarterly" | "yearly";
+export type Cadence = "weekly" | "monthly" | "quarterly" | "semiannual" | "yearly";
 
 export interface EmailLink {
   href: string;
