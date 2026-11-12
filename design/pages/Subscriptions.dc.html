@@ -9,45 +9,82 @@
 <x-dc>
 <helmet>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gloock&amp;family=Hanken+Grotesk:wght@400;500;600;700&amp;display=swap">
-<style>
-body{margin:0;background:#F7F3F5;color:#1E2B22;font-family:'Hanken Grotesk',system-ui,sans-serif;-webkit-font-smoothing:antialiased;font-variant-numeric:tabular-nums}
-a{color:#344C3D}a:hover{color:#1E2B22}
+<style>:root{--bg:#F7F3F5;--surface:#FFFFFF;--tile:#F7F3F5;--tile2:#FBF9FA;--ink:#1E2B22;--ink2:#3F4D44;--muted:#5E6B62;--line:#ECE4E8;--line2:#D6CBD0;--hover:#EDE6EA;--accent:#344C3D;--accent-hover:#26392D;--on-accent:#FFFFFF;--red:#93434C;--pink-bg:#F3DCDF;--pink-bg2:#F6E3E5;--green-bg:#DDE6D5;--blue-bg:#D0DBE7;--mauve-bg:#E3DADE;--shadow:rgba(30,43,34,0.14);--blue-ink:#2E3E48;--green-ink:#3D4F33;--on-accent2:#E3DADE}
+:root[data-theme="dark"]{--bg:#0F1612;--surface:#18221C;--tile:#212C25;--tile2:#1D2721;--ink:#E7ECE5;--ink2:#B5C1B8;--muted:#8E9C92;--line:#27342C;--line2:#3A4A40;--hover:#233029;--accent:#A9C59A;--accent-hover:#BED6B1;--on-accent:#10190F;--red:#EE9EA6;--pink-bg:#3B2429;--pink-bg2:#33232A;--green-bg:#233322;--blue-bg:#1F2D3B;--mauve-bg:#2E2529;--shadow:rgba(0,0,0,0.5);--blue-ink:#A9C1D8;--green-ink:#B7D0A6;--on-accent2:#2D3D2C;color-scheme:dark}
+[data-theme="dark"] [stroke="#344C3D"]{stroke:var(--accent)}
+[data-theme="dark"] [fill="#344C3D"]{fill:var(--accent)}
+[data-theme="dark"] [stroke="#1E2B22"]{stroke:var(--ink)}
+[data-theme="dark"] [fill="#1E2B22"]{fill:var(--ink)}
+[data-theme="dark"] [stroke="#3F4D44"]{stroke:var(--ink2)}
+[data-theme="dark"] [fill="#3F4D44"]{fill:var(--ink2)}
+[data-theme="dark"] [stroke="#5E6B62"]{stroke:var(--muted)}
+[data-theme="dark"] [fill="#5E6B62"]{fill:var(--muted)}
+[data-theme="dark"] [stroke="#ECE4E8"]{stroke:var(--line)}
+[data-theme="dark"] [fill="#ECE4E8"]{fill:var(--line)}
+[data-theme="dark"] [stroke="#D6CBD0"]{stroke:var(--line2)}
+[data-theme="dark"] [fill="#D6CBD0"]{fill:var(--line2)}
+[data-theme="dark"] [stroke="#93434C"]{stroke:var(--red)}
+[data-theme="dark"] [fill="#93434C"]{fill:var(--red)}
+[data-theme="dark"] [stroke="#3D4F33"]{stroke:var(--green-ink)}
+[data-theme="dark"] [fill="#3D4F33"]{fill:var(--green-ink)}
+[data-theme="dark"] [stroke="#2E3E48"]{stroke:var(--blue-ink)}
+[data-theme="dark"] [fill="#2E3E48"]{fill:var(--blue-ink)}
+.theming,.theming *{transition:background-color .35s ease,color .35s ease,border-color .35s ease,fill .35s ease,stroke .35s ease !important}
+.tswitch{display:flex;align-items:center;gap:12px;width:100%;min-height:44px;padding:0 10px;border:0;border-radius:12px;background:transparent;color:var(--ink);font:inherit;font-size:14px;font-weight:600;cursor:pointer;text-align:left}
+.tswitch:hover{background:var(--hover)}
+.tswitch .trk{margin-left:auto;position:relative;width:40px;height:24px;border-radius:12px;background:var(--line2);transition:background .25s ease;flex:none}
+.tswitch .knb{position:absolute;left:3px;top:3px;width:18px;height:18px;border-radius:50%;background:#FFFFFF;box-shadow:0 1px 3px rgba(0,0,0,.25);transition:transform .25s cubic-bezier(.3,1.4,.5,1)}
+[data-theme="dark"] .tswitch .trk{background:var(--accent)}
+[data-theme="dark"] .tswitch .knb{transform:translateX(16px);background:#10190F}
+.tswitch .sun{display:block}.tswitch .moon{display:none}
+[data-theme="dark"] .tswitch .sun{display:none}[data-theme="dark"] .tswitch .moon{display:block}
+@media (prefers-reduced-motion: reduce){.theming,.theming *{transition:none !important}.tswitch .knb,.tswitch .trk{transition:none}}
+
+body{margin:0;background:var(--bg);color:var(--ink);font-family:'Hanken Grotesk',system-ui,sans-serif;-webkit-font-smoothing:antialiased;font-variant-numeric:tabular-nums}
+a{color:var(--accent)}a:hover{color:var(--ink)}
 .side a.nav{text-decoration:none}
-.side a.nav:hover{background:#EDE6EA}
-.side a.nav.on:hover{background:#344C3D}
-.b-primary:hover{background:#26392D !important;color:#FFFFFF !important}
-.b-ghost:hover{background:#EDE6EA !important}
-.b-danger:hover{background:#F6E3E5 !important}
-.chip:hover{border-color:#344C3D !important}
-.row:hover{background:#FBF9FA}
-input:focus,select:focus{outline:none;border-color:#344C3D !important;box-shadow:0 0 0 3px #D0DBE7}
-:focus-visible{outline:3px solid #344C3D;outline-offset:3px}
+.side a.nav:hover{background:var(--hover)}
+.side a.nav.on:hover{background:var(--accent)}
+.b-primary:hover{background:var(--accent-hover) !important;color:var(--on-accent) !important}
+.b-ghost:hover{background:var(--hover) !important}
+.b-danger:hover{background:var(--pink-bg2) !important}
+.chip:hover{border-color:var(--accent) !important}
+.row:hover{background:var(--tile2)}
+input:focus,select:focus{outline:none;border-color:var(--accent) !important;box-shadow:0 0 0 3px #D0DBE7}
+:focus-visible{outline:3px solid var(--accent);outline-offset:3px}
+.b-edit{transition:background 160ms ease,border-color 160ms ease}.b-edit:hover{background:var(--tile) !important;border-color:var(--accent) !important}
 </style>
 </helmet>
 <div style="box-sizing: border-box; width: 100%; min-height: 1500px; display: flex; flex-wrap: wrap; align-items: stretch;">
 
-  <aside class="side" style="flex: 1 1 240px; min-width: 0; background: #FFFFFF; padding: 26px 18px; box-sizing: border-box; display: flex; flex-direction: column; gap: 28px; border-right: 1px solid #ECE4E8;">
-    <a href="Main.dc.html" style="font-family: Gloock, Georgia, serif; font-size: 26px; color: #1E2B22; text-decoration: none; padding: 0 10px;">Phylax</a>
+  <aside class="side" style="flex: 1 1 240px; min-width: 0; background: var(--surface); padding: 26px 18px; box-sizing: border-box; display: flex; flex-direction: column; gap: 28px; border-right: 1px solid var(--line);">
+    <a href="Main.dc.html" style="font-family: Gloock, Georgia, serif; font-size: 26px; color: var(--ink); text-decoration: none; padding: 0 10px;">Phylax</a>
     <nav aria-label="App" style="display: flex; flex-direction: column; gap: 4px;">
-      <a class="nav" href="Dashboard.dc.html" style="display: flex; align-items: center; gap: 12px; min-height: 46px; padding: 0 14px; border-radius: 14px; color: #1E2B22; font-weight: 500;">
+      <a class="nav" href="Dashboard.dc.html" style="display: flex; align-items: center; gap: 12px; min-height: 46px; padding: 0 14px; border-radius: 14px; color: var(--ink); font-weight: 500;">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="3" y="3" width="7" height="9" rx="2"></rect><rect x="14" y="3" width="7" height="5" rx="2"></rect><rect x="14" y="12" width="7" height="9" rx="2"></rect><rect x="3" y="16" width="7" height="5" rx="2"></rect></svg>
         Dashboard
       </a>
-      <a class="nav on" href="Subscriptions.dc.html" aria-current="page" style="display: flex; align-items: center; gap: 12px; min-height: 46px; padding: 0 14px; border-radius: 14px; background: #344C3D; color: #FFFFFF; font-weight: 600;">
+      <a class="nav on" href="Subscriptions.dc.html" aria-current="page" style="display: flex; align-items: center; gap: 12px; min-height: 46px; padding: 0 14px; border-radius: 14px; background: var(--accent); color: var(--on-accent); font-weight: 600;">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.3-5.7"></path><path d="M20 4v5h-5"></path></svg>
         Recurring
       </a>
-      <a class="nav" href="Calendar.dc.html" style="display: flex; align-items: center; gap: 12px; min-height: 46px; padding: 0 14px; border-radius: 14px; color: #1E2B22; font-weight: 500;">
+      <a class="nav" href="Calendar.dc.html" style="display: flex; align-items: center; gap: 12px; min-height: 46px; padding: 0 14px; border-radius: 14px; color: var(--ink); font-weight: 500;">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="3"></rect><path d="M3 10h18M8 3v4M16 3v4"></path></svg>
         Calendar
       </a>
-      <a class="nav" href="Bills.dc.html" style="display: flex; align-items: center; gap: 12px; min-height: 46px; padding: 0 14px; border-radius: 14px; color: #1E2B22; font-weight: 500;">
+      <a class="nav" href="Bills.dc.html" style="display: flex; align-items: center; gap: 12px; min-height: 46px; padding: 0 14px; border-radius: 14px; color: var(--ink); font-weight: 500;">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"></path><path d="M9 8h6M9 12h6"></path></svg>
         Bills and deadlines
       </a>
     </nav>
     <div style="margin-top: auto; display: flex; flex-direction: column; gap: 12px; padding: 0 10px;">
-      <p style="margin: 0; font-size: 14px; color: #5E6B62;">Gmail synced 4 minutes ago</p>
+      <button type="button" class="tswitch" data-theme-toggle="" role="switch" aria-checked="false" aria-label="Dark mode">
+        <svg class="sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"></path></svg>
+        <svg class="moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"></path></svg>
+        Dark mode
+        <span class="trk" aria-hidden="true"><span class="knb"></span></span>
+      </button>
+      <p style="margin: 0; font-size: 14px; color: var(--muted);">Gmail synced 4 minutes ago</p>
       <div style="display: flex; align-items: center; gap: 10px;">
         <span aria-hidden="true" style="width: 36px; height: 36px; border-radius: 50%; background: #D8959B; display: grid; place-items: center; font-weight: 700; font-size: 14px;">EY</span>
         <span style="flex: 1; min-width: 0; font-size: 14px; font-weight: 600;">Evelyn You</span>
@@ -60,10 +97,10 @@ input:focus,select:focus{outline:none;border-color:#344C3D !important;box-shadow
     <div style="display: flex; justify-content: space-between; align-items: flex-end; gap: 16px; flex-wrap: wrap;">
       <div>
         <h1 style="margin: 0; font-family: Gloock, Georgia, serif; font-weight: 400; font-size: 44px; line-height: 1;">Recurring</h1>
-        <p style="margin: 10px 0 0; font-size: 16px; color: #3F4D44;">{{headline}}</p>
+        <p style="margin: 10px 0 0; font-size: 16px; color: var(--ink2);">{{headline}}</p>
       </div>
       <sc-if value="{{hasSaved}}" hint-placeholder-val="{{false}}">
-        <p aria-live="polite" style="margin: 0; padding: 12px 18px; border-radius: 18px; background: #DDE6D5; color: #1E2B22; font-weight: 600;">Cancelled here: {{savedYear}} a year</p>
+        <p aria-live="polite" style="margin: 0; padding: 12px 18px; border-radius: 18px; background: var(--green-bg); color: var(--ink); font-weight: 600;">Cancelled here: {{savedYear}} a year</p>
       </sc-if>
     </div>
 
@@ -75,9 +112,9 @@ input:focus,select:focus{outline:none;border-color:#344C3D !important;box-shadow
       </div>
       <div style="display: flex; gap: 10px; flex-wrap: wrap;">
         <label for="sub-q" style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0);">Search subscriptions</label>
-        <input id="sub-q" type="search" placeholder="Search" value="{{q}}" onInput="{{onQ}}" style="min-height: 42px; width: 200px; padding: 0 14px; border-radius: 999px; border: 1.5px solid #D6CBD0; background: #FFFFFF; font: inherit; font-size: 14px; color: #1E2B22;">
+        <input id="sub-q" type="search" placeholder="Search" value="{{q}}" onInput="{{onQ}}" style="min-height: 42px; width: 200px; padding: 0 14px; border-radius: 999px; border: 1.5px solid var(--line2); background: var(--surface); font: inherit; font-size: 14px; color: var(--ink);">
         <label for="sub-sort" style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0);">Sort by</label>
-        <select id="sub-sort" onChange="{{onSort}}" style="min-height: 42px; padding: 0 14px; border-radius: 999px; border: 1.5px solid #D6CBD0; background: #FFFFFF; font: inherit; font-size: 14px; color: #1E2B22;">
+        <select id="sub-sort" onChange="{{onSort}}" style="min-height: 42px; padding: 0 14px; border-radius: 999px; border: 1.5px solid var(--line2); background: var(--surface); font: inherit; font-size: 14px; color: var(--ink);">
           <option value="next">Sort: next charge</option>
           <option value="cost">Sort: yearly cost</option>
           <option value="name">Sort: name</option>
@@ -89,15 +126,15 @@ input:focus,select:focus{outline:none;border-color:#344C3D !important;box-shadow
       <section style="margin-top: 26px;">
         <div style="display: flex; justify-content: space-between; align-items: baseline; gap: 12px; padding: 0 6px;">
           <h2 style="margin: 0; font-family: Gloock, Georgia, serif; font-weight: 400; font-size: 26px;">{{g.name}}</h2>
-          <span style="font-size: 14px; color: #3F4D44;">{{g.total}} a month</span>
+          <span style="font-size: 14px; color: var(--ink2);">{{g.total}} a month</span>
         </div>
-        <ul style="list-style: none; margin: 10px 0 0; padding: 4px 0; background: #FFFFFF; border-radius: 24px;">
+        <ul style="list-style: none; margin: 10px 0 0; padding: 4px 0; background: var(--surface); border-radius: 24px;">
           <sc-for list="{{g.items}}" as="s" hint-placeholder-count="3">
             <li class="row" style="display: flex; flex-wrap: wrap; align-items: center; gap: 12px 18px; padding: 14px 20px; border-top: {{s.sep}};">
               <span aria-hidden="true" style="width: 42px; height: 42px; flex: none; border-radius: 14px 14px 14px 3px; background: {{s.markBg}}; color: {{s.markFg}}; display: grid; place-items: center; font-weight: 700; font-size: 17px;">{{s.initial}}</span>
               <div style="flex: 1 1 200px; min-width: 0;">
-                <p style="margin: 0; font-weight: 600; font-size: 16px;">{{s.name}} <sc-if value="{{s.trial}}" hint-placeholder-val="{{false}}"><span style="margin-left: 6px; padding: 2px 9px; border-radius: 999px; background: #D0DBE7; color: #2E3E48; font-size: 12px; font-weight: 600; vertical-align: 2px;">Free trial</span></sc-if><sc-if value="{{s.priceUp}}" hint-placeholder-val="{{false}}"><span style="margin-left: 6px; padding: 2px 9px; border-radius: 999px; background: #F3DCDF; color: #93434C; font-size: 12px; font-weight: 600; vertical-align: 2px;">{{s.priceTag}}</span></sc-if></p>
-                <p style="margin: 3px 0 0; font-size: 14px; color: #3F4D44;">{{s.plan}}</p>
+                <p style="margin: 0; font-weight: 600; font-size: 16px;">{{s.name}} <sc-if value="{{s.trial}}" hint-placeholder-val="{{false}}"><span style="margin-left: 6px; padding: 2px 9px; border-radius: 999px; background: var(--blue-bg); color: var(--blue-ink); font-size: 12px; font-weight: 600; vertical-align: 2px;">Free trial</span></sc-if><sc-if value="{{s.edited}}" hint-placeholder-val="{{false}}"><span style="margin-left: 6px; padding: 2px 9px; border-radius: 999px; background: var(--tile); color: var(--ink2); font-size: 12px; font-weight: 600; vertical-align: 2px;">Edited</span></sc-if><sc-if value="{{s.priceUp}}" hint-placeholder-val="{{false}}"><span style="margin-left: 6px; padding: 2px 9px; border-radius: 999px; background: var(--pink-bg); color: var(--red); font-size: 12px; font-weight: 600; vertical-align: 2px;">{{s.priceTag}}</span></sc-if></p>
+                <p style="margin: 3px 0 0; font-size: 14px; color: var(--ink2);">{{s.plan}}</p>
               </div>
               <div style="flex: 0 1 150px; min-width: 120px;">
                 <p style="margin: 0; font-size: 15px;">{{s.nextLabel}}</p>
@@ -105,9 +142,15 @@ input:focus,select:focus{outline:none;border-color:#344C3D !important;box-shadow
               </div>
               <div style="flex: 0 1 120px; min-width: 100px; text-align: right;">
                 <p style="margin: 0; font-weight: 600; font-size: 16px;">{{s.amt}}</p>
-                <p style="margin: 2px 0 0; font-size: 13px; color: #3F4D44;">{{s.per}}</p>
+                <p style="margin: 2px 0 0; font-size: 13px; color: var(--ink2);">{{s.per}}</p>
               </div>
-              <button type="button" class="b-danger" onClick="{{s.open}}" style="min-height: 40px; padding: 0 16px; border-radius: 999px; border: 1.5px solid #C98A91; background: #FFFFFF; color: #93434C; font: inherit; font-size: 14px; font-weight: 600; cursor: pointer;">{{s.cta}}</button>
+              <div style="display: flex; gap: 8px; flex: none;">
+                <button type="button" class="b-edit" onClick="{{s.edit}}" aria-label="{{s.editAria}}" style="display: inline-flex; align-items: center; gap: 6px; min-height: 40px; padding: 0 14px; border-radius: 999px; border: 1.5px solid var(--line2); background: var(--surface); color: var(--ink); font: inherit; font-size: 14px; font-weight: 600; cursor: pointer;">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16v4z"></path><path d="M14 6l4 4"></path></svg>
+                  Edit
+                </button>
+                <button type="button" class="b-danger" onClick="{{s.open}}" aria-label="{{s.cancelAria}}" style="min-height: 40px; padding: 0 16px; border-radius: 999px; border: 1.5px solid #C98A91; background: var(--surface); color: var(--red); font: inherit; font-size: 14px; font-weight: 600; cursor: pointer;">{{s.cta}}</button>
+              </div>
             </li>
           </sc-for>
         </ul>
@@ -115,23 +158,23 @@ input:focus,select:focus{outline:none;border-color:#344C3D !important;box-shadow
     </sc-for>
 
     <sc-if value="{{noResults}}" hint-placeholder-val="{{false}}">
-      <p style="margin: 32px 0 0; font-size: 16px; color: #3F4D44;">No subscriptions match. <button type="button" onClick="{{clearFilters}}" style="padding: 0; border: 0; background: none; font: inherit; font-weight: 600; color: #344C3D; text-decoration: underline; cursor: pointer;">Clear filters</button></p>
+      <p style="margin: 32px 0 0; font-size: 16px; color: var(--ink2);">No subscriptions match. <button type="button" onClick="{{clearFilters}}" style="padding: 0; border: 0; background: none; font: inherit; font-weight: 600; color: var(--accent); text-decoration: underline; cursor: pointer;">Clear filters</button></p>
     </sc-if>
 
     <sc-if value="{{hasCancelled}}" hint-placeholder-val="{{true}}">
       <section style="margin-top: 32px;">
         <h2 style="margin: 0; padding: 0 6px; font-family: Gloock, Georgia, serif; font-weight: 400; font-size: 26px;">Cancelled</h2>
-        <ul style="list-style: none; margin: 10px 0 0; padding: 4px 0; background: #ECE4E8; border-radius: 24px;">
+        <ul style="list-style: none; margin: 10px 0 0; padding: 4px 0; background: var(--line); border-radius: 24px;">
           <sc-for list="{{cancelled}}" as="c" hint-placeholder-count="1">
             <li style="display: flex; flex-wrap: wrap; align-items: center; gap: 12px 18px; padding: 14px 20px;">
-              <span aria-hidden="true" style="width: 42px; height: 42px; flex: none; border-radius: 14px 14px 14px 3px; background: #FFFFFF; color: #3F4D44; display: grid; place-items: center; font-weight: 700; font-size: 17px;">{{c.initial}}</span>
+              <span aria-hidden="true" style="width: 42px; height: 42px; flex: none; border-radius: 14px 14px 14px 3px; background: var(--surface); color: var(--ink2); display: grid; place-items: center; font-weight: 700; font-size: 17px;">{{c.initial}}</span>
               <div style="flex: 1 1 200px; min-width: 0;">
                 <p style="margin: 0; font-weight: 600;">{{c.name}}</p>
-                <p style="margin: 3px 0 0; font-size: 14px; color: #3F4D44;">{{c.note}}</p>
+                <p style="margin: 3px 0 0; font-size: 14px; color: var(--ink2);">{{c.note}}</p>
               </div>
-              <span style="font-weight: 600; color: #3F4D44;">{{c.amt}}</span>
+              <span style="font-weight: 600; color: var(--ink2);">{{c.amt}}</span>
               <sc-if value="{{c.undoable}}" hint-placeholder-val="{{false}}">
-                <button type="button" onClick="{{c.undo}}" style="min-height: 40px; padding: 0 14px; border: 0; background: none; font: inherit; font-size: 14px; font-weight: 600; color: #344C3D; text-decoration: underline; cursor: pointer;">Undo</button>
+                <button type="button" onClick="{{c.undo}}" style="min-height: 40px; padding: 0 14px; border: 0; background: none; font: inherit; font-size: 14px; font-weight: 600; color: var(--accent); text-decoration: underline; cursor: pointer;">Undo</button>
               </sc-if>
             </li>
           </sc-for>
@@ -140,59 +183,145 @@ input:focus,select:focus{outline:none;border-color:#344C3D !important;box-shadow
     </sc-if>
   </main>
 
+  <sc-if value="{{editOpen}}" hint-placeholder-val="{{false}}">
+    <div style="position: fixed; inset: 0; z-index: 20; display: flex; justify-content: flex-end;">
+      <button type="button" aria-label="Close" onClick="{{close}}" style="position: absolute; inset: 0; border: 0; padding: 0; background: rgba(30,43,34,0.42); cursor: pointer;"></button>
+      <form role="dialog" aria-modal="true" aria-labelledby="edit-h" onSubmit="{{e.save}}" style="position: relative; width: min(460px, 100%); height: 100%; overflow-y: auto; background: var(--surface); padding: 28px; box-sizing: border-box; display: flex; flex-direction: column; gap: 16px;">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 12px;">
+          <div style="display: flex; gap: 14px; align-items: center;">
+            <span aria-hidden="true" style="width: 52px; height: 52px; border-radius: 16px 16px 16px 4px; background: {{e.markBg}}; color: {{e.markFg}}; display: grid; place-items: center; font-weight: 700; font-size: 21px;">{{e.initial}}</span>
+            <div>
+              <h2 id="edit-h" style="margin: 0; font-family: Gloock, Georgia, serif; font-weight: 400; font-size: 32px; line-height: 1;">Edit {{e.title}}</h2>
+              <p style="margin: 6px 0 0; font-size: 14px; color: var(--ink2);">Fix anything Phylax read wrong from your emails.</p>
+            </div>
+          </div>
+          <button type="button" onClick="{{close}}" aria-label="Close" style="width: 44px; height: 44px; flex: none; border-radius: 50%; border: 0; background: var(--tile); cursor: pointer; display: grid; place-items: center;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1E2B22" stroke-width="2" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg>
+          </button>
+        </div>
+
+        <label style="display: flex; flex-direction: column; gap: 7px; font-size: 14px; font-weight: 600;">Name
+          <input type="text" value="{{e.name}}" onInput="{{e.setName}}" style="min-height: 48px; padding: 0 14px; border-radius: 14px; border: 1.5px solid var(--line2); background: var(--surface); font: inherit; font-weight: 400; color: var(--ink);">
+        </label>
+        <div style="display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 12px;">
+          <label style="display: flex; flex-direction: column; gap: 7px; font-size: 14px; font-weight: 600;">Amount
+            <span style="position: relative; display: block;">
+              <span aria-hidden="true" style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--muted); font-weight: 400;">$</span>
+              <input type="text" inputmode="decimal" value="{{e.amt}}" onInput="{{e.setAmt}}" aria-invalid="{{e.amtBad}}" style="box-sizing: border-box; width: 100%; min-height: 48px; padding: 0 14px 0 28px; border-radius: 14px; border: 1.5px solid {{e.amtBorder}}; background: var(--surface); font: inherit; font-weight: 400; color: var(--ink);">
+            </span>
+          </label>
+          <label style="display: flex; flex-direction: column; gap: 7px; font-size: 14px; font-weight: 600;">Billed
+            <select value="{{e.per}}" onChange="{{e.setPer}}" style="min-height: 48px; padding: 0 12px; border-radius: 14px; border: 1.5px solid var(--line2); background: var(--surface); font: inherit; font-weight: 400; color: var(--ink);">
+              <option value="month">Monthly</option>
+              <option value="year">Yearly</option>
+            </select>
+          </label>
+        </div>
+        <sc-if value="{{e.amtBad}}" hint-placeholder-val="{{false}}"><p style="margin: -8px 0 0; font-size: 13px; color: var(--red);">Enter an amount like 12.99.</p></sc-if>
+        <div style="display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 12px;">
+          <label style="display: flex; flex-direction: column; gap: 7px; font-size: 14px; font-weight: 600;">Next charge
+            <input type="date" value="{{e.next}}" onInput="{{e.setNext}}" style="min-height: 48px; padding: 0 12px; border-radius: 14px; border: 1.5px solid var(--line2); background: var(--surface); font: inherit; font-weight: 400; color: var(--ink);">
+          </label>
+          <label style="display: flex; flex-direction: column; gap: 7px; font-size: 14px; font-weight: 600;">Category
+            <select value="{{e.cat}}" onChange="{{e.setCat}}" style="min-height: 48px; padding: 0 12px; border-radius: 14px; border: 1.5px solid var(--line2); background: var(--surface); font: inherit; font-weight: 400; color: var(--ink);">
+              <sc-for list="{{e.cats}}" as="o" hint-placeholder-count="5"><option value="{{o.v}}">{{o.v}}</option></sc-for>
+            </select>
+          </label>
+        </div>
+        <label style="display: flex; align-items: center; gap: 10px; min-height: 44px; font-size: 15px;">
+          <input type="checkbox" checked="{{e.trial}}" onChange="{{e.setTrial}}" style="width: 20px; height: 20px; accent-color: #344C3D;">
+          This is a free trial
+        </label>
+
+        <div style="margin-top: auto; display: flex; flex-direction: column; gap: 10px;">
+          <button type="submit" class="b-primary" style="min-height: 52px; border-radius: 999px; border: 0; background: var(--accent); color: var(--on-accent); font: inherit; font-weight: 600; cursor: pointer;">Save changes</button>
+          <sc-if value="{{e.edited}}" hint-placeholder-val="{{false}}">
+            <button type="button" onClick="{{e.reset}}" style="min-height: 44px; border: 0; background: none; font: inherit; font-size: 14px; font-weight: 600; color: var(--accent); text-decoration: underline; cursor: pointer;">Reset to what the emails say</button>
+          </sc-if>
+          <button type="button" onClick="{{close}}" style="min-height: 44px; border: 0; background: none; font: inherit; font-size: 14px; font-weight: 600; color: var(--muted); cursor: pointer;">Discard</button>
+        </div>
+      </form>
+    </div>
+  </sc-if>
+
   <sc-if value="{{panelOpen}}" hint-placeholder-val="{{false}}">
     <div style="position: fixed; inset: 0; z-index: 20; display: flex; justify-content: flex-end;">
       <button type="button" aria-label="Close" onClick="{{close}}" style="position: absolute; inset: 0; border: 0; padding: 0; background: rgba(30,43,34,0.42); cursor: pointer;"></button>
-      <div role="dialog" aria-modal="true" aria-labelledby="panel-h" style="position: relative; width: min(460px, 100%); height: 100%; overflow-y: auto; background: #FFFFFF; padding: 28px; box-sizing: border-box; display: flex; flex-direction: column; gap: 18px;">
+      <div role="dialog" aria-modal="true" aria-labelledby="panel-h" style="position: relative; width: min(460px, 100%); height: 100%; overflow-y: auto; background: var(--surface); padding: 28px; box-sizing: border-box; display: flex; flex-direction: column; gap: 18px;">
         <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 12px;">
           <div style="display: flex; gap: 14px; align-items: center;">
             <span aria-hidden="true" style="width: 52px; height: 52px; border-radius: 16px 16px 16px 4px; background: {{p.markBg}}; color: {{p.markFg}}; display: grid; place-items: center; font-weight: 700; font-size: 21px;">{{p.initial}}</span>
             <div>
               <h2 id="panel-h" style="margin: 0; font-family: Gloock, Georgia, serif; font-weight: 400; font-size: 32px; line-height: 1;">{{p.name}}</h2>
-              <p style="margin: 6px 0 0; font-size: 14px; color: #3F4D44;">{{p.plan}}</p>
+              <p style="margin: 6px 0 0; font-size: 14px; color: var(--ink2);">{{p.plan}}</p>
             </div>
           </div>
-          <button type="button" onClick="{{close}}" aria-label="Close" style="width: 44px; height: 44px; border-radius: 50%; border: 0; background: #F7F3F5; cursor: pointer; display: grid; place-items: center;">
+          <button type="button" onClick="{{close}}" aria-label="Close" style="width: 44px; height: 44px; border-radius: 50%; border: 0; background: var(--tile); cursor: pointer; display: grid; place-items: center;">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1E2B22" stroke-width="2" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg>
           </button>
         </div>
 
-        <dl style="margin: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; background: #F7F3F5; border-radius: 18px; padding: 18px;">
-          <div><dt style="font-size: 13px; color: #3F4D44;">Costs</dt><dd style="margin: 2px 0 0; font-weight: 600;">{{p.amt}} {{p.per}}</dd></div>
-          <div><dt style="font-size: 13px; color: #3F4D44;">A year</dt><dd style="margin: 2px 0 0; font-weight: 600;">{{p.yearly}}</dd></div>
-          <div><dt style="font-size: 13px; color: #3F4D44;">Next charge</dt><dd style="margin: 2px 0 0; font-weight: 600;">{{p.nextLabel}}</dd></div>
-          <div><dt style="font-size: 13px; color: #3F4D44;">Found in</dt><dd style="margin: 2px 0 0; font-weight: 600;">{{p.emails}} emails</dd></div>
+        <dl style="margin: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; background: var(--tile); border-radius: 18px; padding: 18px;">
+          <div><dt style="font-size: 13px; color: var(--ink2);">Costs</dt><dd style="margin: 2px 0 0; font-weight: 600;">{{p.amt}} {{p.per}}</dd></div>
+          <div><dt style="font-size: 13px; color: var(--ink2);">A year</dt><dd style="margin: 2px 0 0; font-weight: 600;">{{p.yearly}}</dd></div>
+          <div><dt style="font-size: 13px; color: var(--ink2);">Next charge</dt><dd style="margin: 2px 0 0; font-weight: 600;">{{p.nextLabel}}</dd></div>
+          <div><dt style="font-size: 13px; color: var(--ink2);">Found in</dt><dd style="margin: 2px 0 0; font-weight: 600;">{{p.emails}} emails</dd></div>
         </dl>
 
         <sc-if value="{{p.hasLink}}" hint-placeholder-val="{{true}}">
           <div style="border-radius: 18px; padding: 18px; background: {{p.linkBg}};">
             <p style="margin: 0; font-weight: 600;">{{p.linkTitle}}</p>
-            <p style="margin: 6px 0 0; font-size: 15px; line-height: 1.5; color: #1E2B22;">{{p.linkBody}}</p>
-            <p style="margin: 10px 0 0; font-size: 15px; font-weight: 700; word-break: break-all; color: #1E2B22;">{{p.host}}</p>
+            <p style="margin: 6px 0 0; font-size: 15px; line-height: 1.5; color: var(--ink);">{{p.linkBody}}</p>
+            <p style="margin: 10px 0 0; font-size: 15px; font-weight: 700; word-break: break-all; color: var(--ink);">{{p.host}}</p>
           </div>
-          <a class="b-primary" href="{{p.url}}" target="_blank" rel="noopener noreferrer" style="display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 52px; border-radius: 999px; background: #344C3D; color: #FFFFFF; font-weight: 600; text-decoration: none;">
+          <a class="b-primary" href="{{p.url}}" target="_blank" rel="noopener noreferrer" style="display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 52px; border-radius: 999px; background: var(--accent); color: var(--on-accent); font-weight: 600; text-decoration: none;">
             Open the cancel page
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M14 4h6v6M20 4l-9 9M19 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h5"></path></svg>
           </a>
         </sc-if>
         <sc-if value="{{p.noLink}}" hint-placeholder-val="{{false}}">
-          <div style="border-radius: 18px; padding: 18px; background: #F7F3F5;">
+          <div style="border-radius: 18px; padding: 18px; background: var(--tile);">
             <p style="margin: 0; font-weight: 600;">No cancel link in your emails</p>
             <p style="margin: 6px 0 0; font-size: 15px; line-height: 1.5;">Cancel from the company's account settings, then mark it here.</p>
           </div>
         </sc-if>
-        <button type="button" class="b-ghost" onClick="{{p.markCancelled}}" style="min-height: 52px; border-radius: 999px; border: 1.5px solid #344C3D; background: transparent; color: #344C3D; font: inherit; font-weight: 600; cursor: pointer;">I've cancelled it</button>
-        <p style="margin: 0; font-size: 14px; color: #5E6B62;">Phylax never cancels for you. Marking it here hides future charges from your totals until a new receipt arrives.</p>
+        <button type="button" class="b-ghost" onClick="{{p.markCancelled}}" style="min-height: 52px; border-radius: 999px; border: 1.5px solid var(--accent); background: transparent; color: var(--accent); font: inherit; font-weight: 600; cursor: pointer;">I've cancelled it</button>
+        <p style="margin: 0; font-size: 14px; color: var(--muted);">Phylax never cancels for you. Marking it here hides future charges from your totals until a new receipt arrives.</p>
       </div>
     </div>
   </sc-if>
 </div>
 </x-dc>
 <script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1500}}'>
+// ---- theme: light or dark, remembered in this browser and shared across the app pages ----
+(function () {
+  var KEY = 'phylax-theme';
+  function read() { try { return localStorage.getItem(KEY) === 'dark' ? 'dark' : 'light'; } catch (e) { return 'light'; } }
+  function apply(t) {
+    document.documentElement.setAttribute('data-theme', t);
+    var bs = document.querySelectorAll('[data-theme-toggle]');
+    for (var i = 0; i < bs.length; i++) bs[i].setAttribute('aria-checked', t === 'dark' ? 'true' : 'false');
+  }
+  apply(read());
+  var n = 0;
+  (function sync() { apply(document.documentElement.getAttribute('data-theme') || read()); if (n++ < 60) requestAnimationFrame(sync); })();
+  document.addEventListener('click', function (e) {
+    var b = e.target.closest && e.target.closest('[data-theme-toggle]');
+    if (!b) return;
+    var t = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+    try { localStorage.setItem(KEY, t); } catch (err) {}
+    var root = document.documentElement;
+    root.classList.add('theming');
+    apply(t);
+    setTimeout(function () { root.classList.remove('theming'); }, 420);
+  });
+  window.addEventListener('storage', function (e) { if (e.key === KEY) apply(e.newValue === 'dark' ? 'dark' : 'light'); });
+})();
+
 var TODAY = '2026-11-09';
 var CATS = {
   'Streaming': ['#D8959B', '#1E2B22'],
-  'Software and AI': ['#344C3D', '#FFFFFF'],
+  'Software and AI': ['var(--accent)', 'var(--on-accent)'],
   'Storage': ['#D0DBE7', '#1E2B22'],
   'Shopping': ['#E3DADE', '#1E2B22'],
   'Learning': ['#829672', '#1E2B22']
@@ -225,16 +354,17 @@ function yearly(s) { return s.per === 'month' ? s.amt * 12 : s.amt; }
 function hostOf(u) { try { return new URL(u).hostname.replace(/^www\./, ''); } catch (e) { return u; } }
 
 class Component extends DCLogic {
-  state = { cat: 'All', q: '', sort: 'next', open: null, cancelled: {} };
+  state = { cat: 'All', q: '', sort: 'next', open: null, editing: null, draft: null, edits: {}, cancelled: {} };
 
   renderVals() {
     var self = this;
     var s = this.state;
     var q = s.q.trim().toLowerCase();
+    var ALL = SUBS.map(function (x) { return s.edits[x.id] ? Object.assign({}, x, s.edits[x.id]) : x; });
 
-    var active = SUBS.filter(function (x) { return !s.cancelled[x.id]; });
+    var active = ALL.filter(function (x) { return !s.cancelled[x.id]; });
     var monthly = active.filter(function (x) { return !x.trial; }).reduce(function (a, x) { return a + yearly(x) / 12; }, 0);
-    var savedYear = SUBS.filter(function (x) { return s.cancelled[x.id]; }).reduce(function (a, x) { return a + yearly(x); }, 0);
+    var savedYear = ALL.filter(function (x) { return s.cancelled[x.id]; }).reduce(function (a, x) { return a + yearly(x); }, 0);
 
     function view(x, idx) {
       var c = CATS[x.cat];
@@ -244,10 +374,13 @@ class Component extends DCLogic {
         markBg: c[0], markFg: c[1],
         trial: !!x.trial, priceUp: !!x.priceTag, priceTag: x.priceTag || '',
         nextLabel: (x.trial ? 'Trial ends ' : '') + nice(x.next),
-        rel: rel(d), relColor: d <= 3 ? '#93434C' : '#3F4D44',
+        rel: rel(d), relColor: d <= 3 ? 'var(--red)' : 'var(--ink2)',
         amt: usd(x.amt), per: 'a ' + x.per,
         cta: x.trial ? 'Cancel trial' : 'Cancel',
-        sep: idx === 0 ? '0' : '1px solid #ECE4E8',
+        edited: !!s.edits[x.id],
+        editAria: 'Edit ' + x.name, cancelAria: (x.trial ? 'Cancel the ' : 'Cancel ') + x.name + (x.trial ? ' trial' : ''),
+        edit: function () { self.setState({ editing: x.id, open: null, draft: { name: x.name, amt: String(x.amt), per: x.per, next: x.next, cat: x.cat, trial: !!x.trial } }); },
+        sep: idx === 0 ? '0' : '1px solid var(--line)',
         open: function () { self.setState({ open: x.id }); }
       };
     }
@@ -271,16 +404,16 @@ class Component extends DCLogic {
     var chips = ['All'].concat(order).map(function (label) {
       var on = label === s.cat;
       var n = label === 'All' ? active.length : active.filter(function (x) { return x.cat === label; }).length;
-      return { label: label + ' ' + n, on: on, bg: on ? '#344C3D' : '#FFFFFF', fg: on ? '#FFFFFF' : '#1E2B22', border: on ? '#344C3D' : '#D6CBD0', pick: function () { self.setState({ cat: label }); } };
+      return { label: label + ' ' + n, on: on, bg: on ? 'var(--accent)' : 'var(--surface)', fg: on ? 'var(--on-accent)' : 'var(--ink)', border: on ? 'var(--accent)' : 'var(--line2)', pick: function () { self.setState({ cat: label }); } };
     });
 
-    var cancelled = SUBS.filter(function (x) { return s.cancelled[x.id]; }).map(function (x) {
+    var cancelled = ALL.filter(function (x) { return s.cancelled[x.id]; }).map(function (x) {
       return { name: x.name, initial: x.name.charAt(0), note: 'Marked cancelled today. Saves ' + usd(yearly(x)) + ' a year.', amt: usd(x.amt), undoable: true, undo: function () { var c = Object.assign({}, self.state.cancelled); delete c[x.id]; self.setState({ cancelled: c }); } };
     });
     cancelled.push({ name: 'Cal Fitness', initial: 'C', note: 'Membership ended Sep 30. Cancellation email received.', amt: '$29.99', undoable: false, undo: null });
 
-    var sel = SUBS.find(function (x) { return x.id === s.open; });
-    var p = { markBg: '#FFFFFF', markFg: '#1E2B22' };
+    var sel = ALL.find(function (x) { return x.id === s.open; });
+    var p = { markBg: 'var(--surface)', markFg: 'var(--ink)' };
     if (sel) {
       var c = CATS[sel.cat];
       var host = hostOf(sel.url);
@@ -289,10 +422,36 @@ class Component extends DCLogic {
         amt: usd(sel.amt), per: 'a ' + sel.per, yearly: usd(yearly(sel)),
         nextLabel: nice(sel.next), emails: sel.emails,
         hasLink: !!sel.url, noLink: !sel.url, url: sel.url, host: host,
-        linkBg: sel.trusted ? '#DDE6D5' : '#F3DCDF',
+        linkBg: sel.trusted ? 'var(--green-bg)' : 'var(--pink-bg)',
         linkTitle: sel.trusted ? 'Cancel link from ' + sel.name + "'s own email" : 'This link is not on ' + sel.name + "'s website",
         linkBody: sel.trusted ? 'It opens on the same website the email came from.' : 'The receipt came from PayPal, so the link goes to PayPal rather than ' + sel.name + '. Open it only if you recognize the address.',
         markCancelled: function () { var cc = Object.assign({}, self.state.cancelled); cc[sel.id] = true; self.setState({ cancelled: cc, open: null }); }
+      };
+    }
+
+    function editVals() {
+      var d = s.draft, base = SUBS.find(function (x) { return x.id === s.editing; });
+      if (!d || !base) return { markBg: 'var(--surface)', markFg: 'var(--ink)', cats: [] };
+      var c = CATS[d.cat] || CATS[base.cat];
+      var amtNum = parseFloat(String(d.amt).replace(/[$,\s]/g, ''));
+      var amtBad = !(amtNum > 0);
+      function setD(k) { return function (ev) { var n = Object.assign({}, self.state.draft); n[k] = ev.target.type === 'checkbox' ? ev.target.checked : ev.target.value; self.setState({ draft: n }); }; }
+      return {
+        title: base.name, initial: (d.name || base.name).charAt(0), markBg: c[0], markFg: c[1],
+        name: d.name, amt: d.amt, next: d.next, trial: d.trial, per: d.per, cat: d.cat,
+        isMonth: d.per === 'month', isYear: d.per === 'year',
+        amtBad: amtBad, amtBorder: amtBad ? '#C98A91' : 'var(--line2)',
+        cats: Object.keys(CATS).map(function (k) { return { v: k, on: k === d.cat }; }),
+        setName: setD('name'), setAmt: setD('amt'), setPer: setD('per'), setNext: setD('next'), setCat: setD('cat'), setTrial: setD('trial'),
+        edited: !!s.edits[base.id],
+        reset: function () { var ed = Object.assign({}, self.state.edits); delete ed[base.id]; self.setState({ edits: ed, editing: null, draft: null }); },
+        save: function (ev) {
+          if (ev && ev.preventDefault) ev.preventDefault();
+          if (amtBad) return;
+          var ed = Object.assign({}, self.state.edits);
+          ed[base.id] = { name: (d.name || '').trim() || base.name, amt: Math.round(amtNum * 100) / 100, per: d.per, next: d.next || base.next, cat: d.cat, trial: d.trial };
+          self.setState({ edits: ed, editing: null, draft: null });
+        }
       };
     }
 
@@ -310,7 +469,9 @@ class Component extends DCLogic {
       hasCancelled: cancelled.length > 0,
       cancelled: cancelled,
       panelOpen: !!sel,
-      close: function () { self.setState({ open: null }); },
+      close: function () { self.setState({ open: null, editing: null, draft: null }); },
+      editOpen: !!(s.editing && s.draft),
+      e: editVals(),
       p: p
     };
   }

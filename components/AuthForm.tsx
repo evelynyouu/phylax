@@ -2,10 +2,20 @@
 
 import Link from "next/link";
 import { useState, type FormEvent } from "react";
-import { ACCOUNT_EXISTS_MESSAGE, AUTH_MESSAGES, authErrorMessage, PASSWORD_HINT, signupAlreadyExists, validateSignup, type SignupErrors } from "@/lib/auth-copy";
+import {
+  ACCOUNT_EXISTS_MESSAGE,
+  AUTH_MESSAGES,
+  authErrorMessage,
+  fullName,
+  passwordStrength,
+  signupAlreadyExists,
+  validateSignup,
+  type SignupErrors,
+} from "@/lib/auth-copy";
 import { supabaseEnv } from "@/lib/supabase/config";
 import { supabaseBrowser } from "@/lib/supabase/browser";
 import GoogleIcon from "./GoogleIcon";
+import PasswordField from "./PasswordField";
 import { Field } from "./ui";
 
 const NEXT = { signin: "/app", signup: "/signup?step=2" } as const;
@@ -26,6 +36,7 @@ export default function AuthForm({ mode, demo = false }: { mode: "signin" | "sig
   const [error, setError] = useState("");
   const [info, setInfo] = useState("");
   const [fieldErrors, setFieldErrors] = useState<SignupErrors>({});
+  const [pw, setPw] = useState("");
 
   async function google() {
     setError("");
@@ -49,7 +60,7 @@ export default function AuthForm({ mode, demo = false }: { mode: "signin" | "sig
     const form = new FormData(e.currentTarget);
     const email = String(form.get("email") ?? "").trim();
     const password = String(form.get("password") ?? "");
-    const name = String(form.get("name") ?? "").trim();
+    const name = fullName(String(form.get("first") ?? ""), String(form.get("last") ?? ""));
 
     if (mode === "signup") {
       const errors = validateSignup({ name, email, password });
@@ -101,66 +112,89 @@ export default function AuthForm({ mode, demo = false }: { mode: "signin" | "sig
     </>
   );
 
+  const google_ = demo ? (
+    <Link href={next} className="btn btn-google">
+      {mode === "signin" ? "Open the demo" : "Continue with the sample inbox"}
+    </Link>
+  ) : (
+    <button type="button" className="btn btn-google" onClick={google} disabled={disabled}>
+      <GoogleIcon />
+      Continue with Google
+    </button>
+  );
+
   if (mode === "signin") {
     return (
       <>
         {messages}
-        {demo ? (
-          <Link href="/app" className="btn btn-primary btn-google" style={{ background: "var(--evergreen)", color: "#fff", borderColor: "var(--evergreen)" }}>
-            Open the demo
-          </Link>
-        ) : (
-          <button type="button" className="btn btn-google" onClick={google} disabled={disabled}>
-            <GoogleIcon />
-            Continue with Google
-          </button>
-        )}
-        <p className="fine" style={{ marginTop: 12 }}>
-          By creating an account you agree to the <Link href="/terms">Terms</Link> and <Link href="/privacy">Privacy Policy</Link>.
-        </p>
+        {google_}
         <p className="or">or use email</p>
-        <form onSubmit={submit}>
-          <div className="stack-16">
-            <Field id="si-email" name="email" label="Email" type="email" autoComplete="email" placeholder="you@berkeley.edu" required disabled={!configured} />
-            <Field id="si-pw" name="password" label="Password" type="password" autoComplete="current-password" required disabled={!configured} />
-          </div>
-          <button type="submit" className="btn btn-primary btn-block" style={{ marginTop: 26 }} disabled={disabled}>
+        <form onSubmit={submit} className="auth-form">
+          <Field id="si-email" name="email" label="Email" type="email" autoComplete="email" placeholder="example@gmail.com" required disabled={!configured} />
+          <PasswordField
+            id="si-pw"
+            label="Password"
+            autoComplete="current-password"
+            disabled={!configured}
+            labelAside={<Link href="/forgot-password">Forgot password?</Link>}
+          />
+          <button type="submit" className="btn btn-primary btn-block" disabled={disabled}>
             {busy ? "Signing in" : "Sign in"}
           </button>
         </form>
+        <p className="fine agree">
+          By creating an account you agree to the <Link href="/terms">Terms</Link> and <Link href="/privacy">Privacy Policy</Link>.
+        </p>
       </>
     );
   }
 
+  const strength = passwordStrength(pw);
+  const pwMessage = fieldErrors.password ?? strength.text;
+  const pwWarn = Boolean(fieldErrors.password) || strength.tone === "weak";
   return (
-    <form onSubmit={submit} noValidate>
+    <form onSubmit={submit} noValidate className="auth-form">
       {messages}
-      <div className="su-fields">
-        <Field id="su-name" name="name" label="Name" autoComplete="name" placeholder="Evelyn You" error={fieldErrors.name} disabled={!configured} />
-        <Field id="su-email" name="email" label="Email" type="email" autoComplete="email" placeholder="you@berkeley.edu" error={fieldErrors.email} disabled={!configured} />
+      {google_}
+      <p className="or">or with email</p>
+      <div className="form-pair">
+        <Field id="su-first" name="first" label="First name" autoComplete="given-name" placeholder="First" error={fieldErrors.name} disabled={!configured} />
+        <Field id="su-last" name="last" label="Last name" autoComplete="family-name" placeholder="Last" disabled={!configured} />
       </div>
-      <div style={{ marginTop: 18 }}>
-        <Field
+      <Field
+        id="su-email"
+        name="email"
+        label="Email"
+        type="email"
+        autoComplete="email"
+        placeholder="example@gmail.com"
+        error={fieldErrors.email}
+        disabled={!configured}
+      />
+      <div>
+        <PasswordField
           id="su-pw"
-          name="password"
           label="Password"
-          type="password"
           autoComplete="new-password"
-          hint={PASSWORD_HINT}
-          error={fieldErrors.password}
+          value={pw}
+          onChange={setPw}
+          describedBy="su-pw-help"
+          invalid={Boolean(fieldErrors.password)}
           disabled={!configured}
         />
+        <div aria-hidden="true" className={`meter tone-${strength.tone}`}>
+          {[0, 1, 2, 3].map((i) => (
+            <span key={i} className={i < strength.score ? "on" : undefined} />
+          ))}
+        </div>
+        <p id="su-pw-help" className={pwWarn ? "field-error" : "field-hint"} aria-live="polite">
+          {pwMessage || "At least 8 characters."}
+        </p>
       </div>
-      <div className="su-actions">
-        <button type="submit" className="btn btn-primary" disabled={disabled}>
-          {busy ? "Creating account" : "Create account"}
-        </button>
-        <button type="button" className="btn btn-ghost" onClick={google} disabled={disabled}>
-          <GoogleIcon />
-          Continue with Google
-        </button>
-      </div>
-      <p className="fine" style={{ marginTop: 16 }}>
+      <button type="submit" className="btn btn-primary btn-block" disabled={disabled}>
+        {busy ? "Creating account" : "Continue"}
+      </button>
+      <p className="fine agree">
         By creating an account you agree to the <Link href="/terms">Terms</Link> and <Link href="/privacy">Privacy Policy</Link>.
       </p>
     </form>

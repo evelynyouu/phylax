@@ -92,7 +92,7 @@ export function signupAlreadyExists(data: { user: { identities?: unknown[] | nul
   return Array.isArray(data.user?.identities) && data.user.identities.length === 0;
 }
 
-const NEXT_PATHS = new Set(["/app", "/signup?step=2"]);
+const NEXT_PATHS = new Set(["/app", "/signup?step=2", "/reset-password"]);
 
 /** Where to land after the auth callback. Only known internal paths, never a raw URL. */
 export function safeNext(next: string | null | undefined): string {
@@ -120,3 +120,23 @@ export function validateSignup({ name, email, password }: SignupInput): SignupEr
 
 /** Body of POST /api/account/delete. The user must have typed the word "delete". */
 export const DeleteBody = z.object({ confirm: z.literal("delete") });
+
+/** The sign-up form asks for first and last name; Supabase keeps one full_name. */
+export function fullName(first: string, last: string): string {
+  return [first.trim(), last.trim()].filter(Boolean).join(" ");
+}
+
+export type StrengthTone = "none" | "weak" | "ok" | "strong";
+
+/** The four-segment meter under the sign-up password, scored as in SignUp.dc.html. */
+export function passwordStrength(pw: string): { score: number; tone: StrengthTone; text: string } {
+  if (!pw) return { score: 0, tone: "none", text: "" };
+  let score = 0;
+  if (pw.length >= 8) score++;
+  if (pw.length >= 12) score++;
+  if (/[0-9]/.test(pw) && /[a-zA-Z]/.test(pw)) score++;
+  if (/[^a-zA-Z0-9]/.test(pw)) score++;
+  if (score <= 1) return { score, tone: "weak", text: "Too easy to guess. Add length or a number." };
+  if (score === 2) return { score, tone: "ok", text: "Good. Longer is stronger." };
+  return { score, tone: "strong", text: "Strong password." };
+}

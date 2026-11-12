@@ -9,44 +9,81 @@
 <x-dc>
 <helmet>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gloock&amp;family=Hanken+Grotesk:wght@400;500;600;700&amp;display=swap">
-<style>
-body{margin:0;background:#F7F3F5;color:#1E2B22;font-family:'Hanken Grotesk',system-ui,sans-serif;-webkit-font-smoothing:antialiased;font-variant-numeric:tabular-nums}
-a{color:#344C3D}a:hover{color:#1E2B22}
+<style>:root{--bg:#F7F3F5;--surface:#FFFFFF;--tile:#F7F3F5;--tile2:#FBF9FA;--ink:#1E2B22;--ink2:#3F4D44;--muted:#5E6B62;--line:#ECE4E8;--line2:#D6CBD0;--hover:#EDE6EA;--accent:#344C3D;--accent-hover:#26392D;--on-accent:#FFFFFF;--red:#93434C;--pink-bg:#F3DCDF;--pink-bg2:#F6E3E5;--green-bg:#DDE6D5;--blue-bg:#D0DBE7;--mauve-bg:#E3DADE;--shadow:rgba(30,43,34,0.14);--blue-ink:#2E3E48;--green-ink:#3D4F33;--on-accent2:#E3DADE}
+:root[data-theme="dark"]{--bg:#0F1612;--surface:#18221C;--tile:#212C25;--tile2:#1D2721;--ink:#E7ECE5;--ink2:#B5C1B8;--muted:#8E9C92;--line:#27342C;--line2:#3A4A40;--hover:#233029;--accent:#A9C59A;--accent-hover:#BED6B1;--on-accent:#10190F;--red:#EE9EA6;--pink-bg:#3B2429;--pink-bg2:#33232A;--green-bg:#233322;--blue-bg:#1F2D3B;--mauve-bg:#2E2529;--shadow:rgba(0,0,0,0.5);--blue-ink:#A9C1D8;--green-ink:#B7D0A6;--on-accent2:#2D3D2C;color-scheme:dark}
+[data-theme="dark"] [stroke="#344C3D"]{stroke:var(--accent)}
+[data-theme="dark"] [fill="#344C3D"]{fill:var(--accent)}
+[data-theme="dark"] [stroke="#1E2B22"]{stroke:var(--ink)}
+[data-theme="dark"] [fill="#1E2B22"]{fill:var(--ink)}
+[data-theme="dark"] [stroke="#3F4D44"]{stroke:var(--ink2)}
+[data-theme="dark"] [fill="#3F4D44"]{fill:var(--ink2)}
+[data-theme="dark"] [stroke="#5E6B62"]{stroke:var(--muted)}
+[data-theme="dark"] [fill="#5E6B62"]{fill:var(--muted)}
+[data-theme="dark"] [stroke="#ECE4E8"]{stroke:var(--line)}
+[data-theme="dark"] [fill="#ECE4E8"]{fill:var(--line)}
+[data-theme="dark"] [stroke="#D6CBD0"]{stroke:var(--line2)}
+[data-theme="dark"] [fill="#D6CBD0"]{fill:var(--line2)}
+[data-theme="dark"] [stroke="#93434C"]{stroke:var(--red)}
+[data-theme="dark"] [fill="#93434C"]{fill:var(--red)}
+[data-theme="dark"] [stroke="#3D4F33"]{stroke:var(--green-ink)}
+[data-theme="dark"] [fill="#3D4F33"]{fill:var(--green-ink)}
+[data-theme="dark"] [stroke="#2E3E48"]{stroke:var(--blue-ink)}
+[data-theme="dark"] [fill="#2E3E48"]{fill:var(--blue-ink)}
+.theming,.theming *{transition:background-color .35s ease,color .35s ease,border-color .35s ease,fill .35s ease,stroke .35s ease !important}
+.tswitch{display:flex;align-items:center;gap:12px;width:100%;min-height:44px;padding:0 10px;border:0;border-radius:12px;background:transparent;color:var(--ink);font:inherit;font-size:14px;font-weight:600;cursor:pointer;text-align:left}
+.tswitch:hover{background:var(--hover)}
+.tswitch .trk{margin-left:auto;position:relative;width:40px;height:24px;border-radius:12px;background:var(--line2);transition:background .25s ease;flex:none}
+.tswitch .knb{position:absolute;left:3px;top:3px;width:18px;height:18px;border-radius:50%;background:#FFFFFF;box-shadow:0 1px 3px rgba(0,0,0,.25);transition:transform .25s cubic-bezier(.3,1.4,.5,1)}
+[data-theme="dark"] .tswitch .trk{background:var(--accent)}
+[data-theme="dark"] .tswitch .knb{transform:translateX(16px);background:#10190F}
+.tswitch .sun{display:block}.tswitch .moon{display:none}
+[data-theme="dark"] .tswitch .sun{display:none}[data-theme="dark"] .tswitch .moon{display:block}
+@media (prefers-reduced-motion: reduce){.theming,.theming *{transition:none !important}.tswitch .knb,.tswitch .trk{transition:none}}
+
+body{margin:0;background:var(--bg);color:var(--ink);font-family:'Hanken Grotesk',system-ui,sans-serif;-webkit-font-smoothing:antialiased;font-variant-numeric:tabular-nums}
+a{color:var(--accent)}a:hover{color:var(--ink)}
 .side a.nav{text-decoration:none}
-.side a.nav:hover{background:#EDE6EA}
-.side a.nav.on:hover{background:#344C3D}
-.b-primary:hover{background:#26392D !important;color:#FFFFFF !important}
-.b-ghost:hover{background:#EDE6EA !important}
-.seg:hover{border-color:#344C3D !important}
+.side a.nav:hover{background:var(--hover)}
+.side a.nav.on:hover{background:var(--accent)}
+.b-primary:hover{background:var(--accent-hover) !important;color:var(--on-accent) !important}
+.b-ghost:hover{background:var(--hover) !important}
+.seg:hover{color:var(--ink) !important}
+.b-light:hover{background:var(--tile) !important}
 .bar{cursor:default}
 .bar:hover span{filter:brightness(0.92)}
-:focus-visible{outline:3px solid #344C3D;outline-offset:3px}
+:focus-visible{outline:3px solid var(--accent);outline-offset:3px}
 </style>
 </helmet>
 <div style="box-sizing: border-box; width: 100%; min-height: 1300px; display: flex; flex-wrap: wrap; align-items: stretch;">
 
-  <aside class="side" style="flex: 1 1 240px; min-width: 0; background: #FFFFFF; padding: 26px 18px; box-sizing: border-box; display: flex; flex-direction: column; gap: 28px; border-right: 1px solid #ECE4E8;">
-    <a href="Main.dc.html" style="font-family: Gloock, Georgia, serif; font-size: 26px; color: #1E2B22; text-decoration: none; padding: 0 10px;">Phylax</a>
+  <aside class="side" style="flex: 1 1 240px; min-width: 0; background: var(--surface); padding: 26px 18px; box-sizing: border-box; display: flex; flex-direction: column; gap: 28px; border-right: 1px solid var(--line);">
+    <a href="Main.dc.html" style="font-family: Gloock, Georgia, serif; font-size: 26px; color: var(--ink); text-decoration: none; padding: 0 10px;">Phylax</a>
     <nav aria-label="App" style="display: flex; flex-direction: column; gap: 4px;">
-      <a class="nav on" href="Dashboard.dc.html" aria-current="page" style="display: flex; align-items: center; gap: 12px; min-height: 46px; padding: 0 14px; border-radius: 14px; background: #344C3D; color: #FFFFFF; font-weight: 600;">
+      <a class="nav on" href="Dashboard.dc.html" aria-current="page" style="display: flex; align-items: center; gap: 12px; min-height: 46px; padding: 0 14px; border-radius: 14px; background: var(--accent); color: var(--on-accent); font-weight: 600;">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="3" y="3" width="7" height="9" rx="2"></rect><rect x="14" y="3" width="7" height="5" rx="2"></rect><rect x="14" y="12" width="7" height="9" rx="2"></rect><rect x="3" y="16" width="7" height="5" rx="2"></rect></svg>
         Dashboard
       </a>
-      <a class="nav" href="Subscriptions.dc.html" style="display: flex; align-items: center; gap: 12px; min-height: 46px; padding: 0 14px; border-radius: 14px; color: #1E2B22; font-weight: 500;">
+      <a class="nav" href="Subscriptions.dc.html" style="display: flex; align-items: center; gap: 12px; min-height: 46px; padding: 0 14px; border-radius: 14px; color: var(--ink); font-weight: 500;">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.3-5.7"></path><path d="M20 4v5h-5"></path></svg>
         Recurring
       </a>
-      <a class="nav" href="Calendar.dc.html" style="display: flex; align-items: center; gap: 12px; min-height: 46px; padding: 0 14px; border-radius: 14px; color: #1E2B22; font-weight: 500;">
+      <a class="nav" href="Calendar.dc.html" style="display: flex; align-items: center; gap: 12px; min-height: 46px; padding: 0 14px; border-radius: 14px; color: var(--ink); font-weight: 500;">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="3"></rect><path d="M3 10h18M8 3v4M16 3v4"></path></svg>
         Calendar
       </a>
-      <a class="nav" href="Bills.dc.html" style="display: flex; align-items: center; gap: 12px; min-height: 46px; padding: 0 14px; border-radius: 14px; color: #1E2B22; font-weight: 500;">
+      <a class="nav" href="Bills.dc.html" style="display: flex; align-items: center; gap: 12px; min-height: 46px; padding: 0 14px; border-radius: 14px; color: var(--ink); font-weight: 500;">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"></path><path d="M9 8h6M9 12h6"></path></svg>
         Bills and deadlines
       </a>
     </nav>
     <div style="margin-top: auto; display: flex; flex-direction: column; gap: 12px; padding: 0 10px;">
-      <p style="margin: 0; font-size: 14px; color: #5E6B62;">Gmail synced 4 minutes ago</p>
+      <button type="button" class="tswitch" data-theme-toggle="" role="switch" aria-checked="false" aria-label="Dark mode">
+        <svg class="sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"></path></svg>
+        <svg class="moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"></path></svg>
+        Dark mode
+        <span class="trk" aria-hidden="true"><span class="knb"></span></span>
+      </button>
+      <p style="margin: 0; font-size: 14px; color: var(--muted);">Gmail synced 4 minutes ago</p>
       <div style="display: flex; align-items: center; gap: 10px;">
         <span aria-hidden="true" style="width: 36px; height: 36px; border-radius: 50%; background: #D8959B; display: grid; place-items: center; font-weight: 700; font-size: 14px;">EY</span>
         <span style="flex: 1; min-width: 0; font-size: 14px; font-weight: 600;">Evelyn You</span>
@@ -58,90 +95,127 @@ a{color:#344C3D}a:hover{color:#1E2B22}
   <main style="flex: 999 1 640px; min-width: 0; padding: 32px clamp(20px, 3vw, 44px) 64px; box-sizing: border-box;">
     <div style="display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap;">
       <div>
-        <p style="margin: 0; font-size: 15px; color: #3F4D44;">Monday, November 9</p>
+        <p style="margin: 0; font-size: 15px; color: var(--ink2);">Monday, November 9</p>
         <h1 style="margin: 4px 0 0; font-family: Gloock, Georgia, serif; font-weight: 400; font-size: 44px; line-height: 1;">Dashboard</h1>
       </div>
-      <button type="button" class="b-ghost" onClick="{{sync}}" style="display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 18px; border-radius: 999px; border: 1.5px solid #344C3D; background: transparent; color: #344C3D; font: inherit; font-weight: 600; cursor: pointer;">
+      <button type="button" class="b-ghost" onClick="{{sync}}" style="display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 18px; border-radius: 999px; border: 1.5px solid var(--accent); background: transparent; color: var(--accent); font: inherit; font-weight: 600; cursor: pointer;">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.3-5.7"></path><path d="M20 4v5h-5"></path></svg>
         {{syncLabel}}
       </button>
     </div>
 
-    <section aria-labelledby="out-h" style="margin-top: 28px; background: #FFFFFF; border-radius: 28px; padding: 28px clamp(20px, 3vw, 32px);">
-      <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 20px; flex-wrap: wrap;">
-        <div style="min-width: 0;">
-          <h2 id="out-h" style="margin: 0; font-family: Gloock, Georgia, serif; font-weight: 400; font-size: clamp(52px, 6vw, 80px); line-height: 0.95;">{{total}}</h2>
-          <p style="margin: 10px 0 0; font-size: 17px; color: #3F4D44;">leaves your account in the next {{range}} days across {{count}} payments.</p>
+    <section aria-labelledby="out-h" style="margin-top: 28px; background: var(--tile2); border-radius: 30px; padding: 6px;">
+      <div style="background: var(--surface); border-radius: 26px; padding: 22px clamp(18px, 2.6vw, 30px) 24px; box-shadow: 0 1px 2px rgba(30,43,34,0.06);">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; flex-wrap: wrap;">
+          <div>
+            <h2 id="out-h" style="margin: 0; font-size: 17px; font-weight: 600;">Leaving your account</h2>
+            <p style="margin: 2px 0 0; font-size: 14px; color: var(--muted);">{{rangeLabel}}, from today</p>
+          </div>
+          <div role="group" aria-label="Range" style="position: relative; display: flex; background: var(--tile2); padding: 3px; border-radius: 12px;">
+            <span aria-hidden="true" style="position: absolute; left: 3px; top: 3px; width: 84px; height: 36px; border-radius: 9px; background: var(--surface); box-shadow: 0 1px 3px var(--shadow); transform: translateX({{segX}}px); transition: transform 320ms cubic-bezier(.3,.7,.2,1);"></span>
+            <sc-for list="{{ranges}}" as="r" hint-placeholder-count="3">
+              <button type="button" class="seg" aria-pressed="{{r.on}}" onClick="{{r.pick}}" style="position: relative; width: 84px; min-height: 36px; padding: 0; border-radius: 9px; border: 0; background: transparent; color: {{r.fg}}; font: inherit; font-size: 14px; font-weight: 600; cursor: pointer; transition: color 200ms ease;">{{r.label}}</button>
+            </sc-for>
+          </div>
         </div>
-        <div role="group" aria-label="Range" style="display: flex; gap: 6px; background: #F7F3F5; padding: 5px; border-radius: 999px;">
-          <sc-for list="{{ranges}}" as="r" hint-placeholder-count="2">
-            <button type="button" class="seg" aria-pressed="{{r.on}}" onClick="{{r.pick}}" style="min-height: 40px; padding: 0 16px; border-radius: 999px; border: 1.5px solid transparent; background: {{r.bg}}; color: {{r.fg}}; font: inherit; font-size: 14px; font-weight: 600; cursor: pointer;">{{r.label}}</button>
-          </sc-for>
-        </div>
-      </div>
 
-      <div role="img" aria-label="{{chartLabel}}" onMouseLeave="{{clearHover}}" style="margin-top: 26px; height: 170px; display: flex; align-items: flex-end; gap: 3px;">
-        <sc-for list="{{days}}" as="d" hint-placeholder-count="30">
-          <span class="bar" onMouseEnter="{{d.enter}}" style="flex: 1; height: 100%; display: flex; flex-direction: column-reverse;">
-            <span style="display: flex; flex-direction: column-reverse; height: {{d.h}}%; min-height: 3px; border-radius: 4px 4px 0 0; overflow: hidden; background: {{d.empty}}; outline: {{d.ring}};">
-              <span style="flex: {{d.subs}}; background: #829672;"></span>
-              <span style="flex: {{d.bills}}; background: #7F9BB8;"></span>
-            </span>
-          </span>
-        </sc-for>
-      </div>
-      <div aria-hidden="true" style="display: flex; justify-content: space-between; margin-top: 8px; font-size: 13px; color: #5E6B62;">
-        <sc-for list="{{ticks}}" as="t" hint-placeholder-count="5"><span>{{t}}</span></sc-for>
-      </div>
-      <div style="margin-top: 18px; display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; align-items: center;">
-        <p aria-live="polite" style="margin: 0; font-size: 15px; color: #1E2B22; min-height: 22px;"><strong>{{readDay}}</strong> {{readItems}}</p>
-        <div style="display: flex; gap: 18px; font-size: 14px; color: #3F4D44;">
-          <span><span aria-hidden="true" style="display: inline-block; width: 10px; height: 10px; border-radius: 3px; background: #829672; margin-right: 6px;"></span>Subscriptions {{subsTotal}}</span>
-          <span><span aria-hidden="true" style="display: inline-block; width: 10px; height: 10px; border-radius: 3px; background: #7F9BB8; margin-right: 6px;"></span>Bills {{billsTotal}}</span>
+        <div style="margin-top: 20px; display: flex; flex-wrap: wrap; gap: 28px 48px;">
+          <div style="flex: 1 1 420px; min-width: 0;">
+            <div style="display: flex; justify-content: space-between; align-items: baseline; gap: 12px; flex-wrap: wrap;">
+              <p aria-live="polite" style="margin: 0;"><span style="font-family: Gloock, Georgia, serif; font-size: clamp(44px, 5vw, 60px); line-height: 1;">{{totalShown}}</span><span style="margin-left: 10px; font-size: 16px; color: var(--ink2);">across {{count}} payments</span></p>
+              <span style="font-size: 15px; font-weight: 600; color: var(--ink2);">{{billsPct}} bills</span>
+            </div>
+            <div role="img" aria-label="{{barLabel}}" style="margin-top: 14px; height: 12px; display: flex; border-radius: 6px; overflow: hidden; background: var(--tile2);">
+              <sc-for list="{{segs}}" as="g" hint-placeholder-count="4">
+                <span style="height: 100%; width: {{g.pct}}%; background: {{g.color}}; box-shadow: inset -3px 0 0 var(--surface); transition: width 550ms cubic-bezier(.3,.7,.2,1);"></span>
+              </sc-for>
+            </div>
+            <ul style="list-style: none; margin: 16px 0 0; padding: 0; display: flex; flex-direction: column; gap: 2px;">
+              <sc-for list="{{segs}}" as="g" hint-placeholder-count="4">
+                <li style="display: flex; align-items: center; gap: 10px; min-height: 34px; font-size: 15px;">
+                  <span aria-hidden="true" style="width: 9px; height: 9px; border-radius: 2px; background: {{g.color}}; flex: none;"></span>
+                  <span style="flex: 1; min-width: 0;">{{g.name}} <span style="color: var(--muted);">{{g.countLabel}}</span></span>
+                  <span style="font-weight: 600; min-width: 96px; text-align: right;">{{g.amt}}</span>
+                  <span style="width: 44px; text-align: right; color: var(--muted);">{{g.pctLabel}}</span>
+                </li>
+              </sc-for>
+            </ul>
+          </div>
+
+          <div style="flex: 1 1 380px; min-width: 0; display: flex; flex-direction: column;">
+            <div style="display: flex; justify-content: space-between; align-items: baseline; gap: 12px;">
+              <span style="font-size: 14px; color: var(--ink2);">Per day</span>
+              <span style="font-size: 14px; color: var(--ink2);">Avg <strong style="color: var(--ink);">{{avg}}</strong> / day</span>
+            </div>
+            <div role="img" aria-label="{{chartLabel}}" onMouseLeave="{{clearHover}}" style="margin-top: 10px; height: 110px; display: flex; align-items: flex-end; gap: {{gap}}px;">
+              <sc-for list="{{days}}" as="d" hint-placeholder-count="30">
+                <span onMouseEnter="{{d.enter}}" style="flex: 1; height: 100%; display: flex; align-items: flex-end;">
+                  <span style="display: block; width: 100%; height: {{d.h}}%; border-radius: 3px 3px 1px 1px; background: {{d.color}}; border-top: {{d.empty}}; transition: height 450ms cubic-bezier(.3,.7,.2,1), background 150ms ease;"></span>
+                </span>
+              </sc-for>
+            </div>
+            <p aria-live="polite" style="margin: 10px 0 0; font-size: 14px; color: var(--ink); min-height: 40px;"><strong>{{readDay}}</strong> {{readItems}}</p>
+
+            <div style="margin-top: auto; padding-top: 16px; border-top: 1px solid var(--line); display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px;">
+              <sc-for list="{{minis}}" as="m" hint-placeholder-count="3">
+                <div style="min-width: 0;">
+                  <p style="margin: 0; font-size: 13px; color: var(--ink2);">{{m.label}}</p>
+                  <p style="margin: 2px 0 0; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"><strong>{{m.value}}</strong> <span style="color: var(--muted);">{{m.of}}</span></p>
+                  <div style="margin-top: 8px; height: 4px; border-radius: 2px; background: var(--line); overflow: hidden;">
+                    <span style="display: block; height: 100%; width: {{m.pct}}%; background: {{m.color}}; border-radius: 2px; transition: width 550ms cubic-bezier(.3,.7,.2,1);"></span>
+                  </div>
+                </div>
+              </sc-for>
+            </div>
+          </div>
         </div>
+      </div>
+      <div style="display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 10px 10px 6px 18px; flex-wrap: wrap;">
+        <span style="font-size: 14px; color: var(--ink2);">{{weekTotal}} due in the next 7 days</span>
+        <a class="b-light" href="Calendar.dc.html" style="display: inline-flex; align-items: center; min-height: 40px; padding: 0 16px; border-radius: 12px; background: var(--surface); color: var(--ink); font-size: 14px; font-weight: 600; text-decoration: none; box-shadow: 0 1px 2px rgba(30,43,34,0.08);">Open calendar</a>
       </div>
     </section>
 
-    <section aria-label="Subscription costs" style="margin-top: 16px; background: #E3DADE; border-radius: 28px; padding: 22px clamp(20px, 3vw, 32px); display: flex; flex-wrap: wrap; gap: 20px 40px;">
-      <div style="flex: 1 1 160px;"><p style="margin: 0; font-size: 14px; color: #3F4D44;">Subscriptions a month</p><p style="margin: 4px 0 0; font-family: Gloock, Georgia, serif; font-size: 34px;">$167.00</p></div>
-      <div style="flex: 1 1 160px;"><p style="margin: 0; font-size: 14px; color: #3F4D44;">A year</p><p style="margin: 4px 0 0; font-family: Gloock, Georgia, serif; font-size: 34px;">$2,004.04</p></div>
-      <div style="flex: 1 1 160px;"><p style="margin: 0; font-size: 14px; color: #3F4D44;">Active</p><p style="margin: 4px 0 0; font-family: Gloock, Georgia, serif; font-size: 34px;">13 + 2 trials</p></div>
-      <div style="flex: 1 1 160px;"><p style="margin: 0; font-size: 14px; color: #3F4D44;">This week</p><p style="margin: 4px 0 0; font-family: Gloock, Georgia, serif; font-size: 34px;">$78.42</p></div>
+    <section aria-label="Subscription costs" style="margin-top: 16px; background: var(--mauve-bg); border-radius: 28px; padding: 22px clamp(20px, 3vw, 32px); display: flex; flex-wrap: wrap; gap: 20px 40px;">
+      <div style="flex: 1 1 160px;"><p style="margin: 0; font-size: 14px; color: var(--ink2);">Subscriptions a month</p><p style="margin: 4px 0 0; font-family: Gloock, Georgia, serif; font-size: 34px;">$167.00</p></div>
+      <div style="flex: 1 1 160px;"><p style="margin: 0; font-size: 14px; color: var(--ink2);">A year</p><p style="margin: 4px 0 0; font-family: Gloock, Georgia, serif; font-size: 34px;">$2,004.04</p></div>
+      <div style="flex: 1 1 160px;"><p style="margin: 0; font-size: 14px; color: var(--ink2);">Active</p><p style="margin: 4px 0 0; font-family: Gloock, Georgia, serif; font-size: 34px;">13 + 2 trials</p></div>
+      <div style="flex: 1 1 160px;"><p style="margin: 0; font-size: 14px; color: var(--ink2);">This week</p><p style="margin: 4px 0 0; font-family: Gloock, Georgia, serif; font-size: 34px;">$78.42</p></div>
     </section>
 
     <div style="margin-top: 16px; display: flex; flex-wrap: wrap; gap: 16px; align-items: flex-start;">
-      <section aria-labelledby="att-h" style="flex: 1 1 380px; min-width: 0; background: #FFFFFF; border-radius: 28px; padding: 24px clamp(18px, 2.4vw, 28px);">
+      <section aria-labelledby="att-h" style="flex: 1 1 380px; min-width: 0; background: var(--surface); border-radius: 28px; padding: 24px clamp(18px, 2.4vw, 28px);">
         <div style="display: flex; justify-content: space-between; align-items: baseline; gap: 12px;">
           <h2 id="att-h" style="margin: 0; font-family: Gloock, Georgia, serif; font-weight: 400; font-size: 28px;">Needs attention</h2>
-          <span style="font-size: 14px; color: #3F4D44;">{{attCount}}</span>
+          <span style="font-size: 14px; color: var(--ink2);">{{attCount}}</span>
         </div>
         <ul style="list-style: none; margin: 14px 0 0; padding: 0;">
           <sc-for list="{{attention}}" as="a" hint-placeholder-count="5">
-            <li style="display: flex; gap: 14px; align-items: flex-start; padding: 14px 0; border-top: 1px solid #ECE4E8;">
+            <li style="display: flex; gap: 14px; align-items: flex-start; padding: 14px 0; border-top: 1px solid var(--line);">
               <span aria-hidden="true" style="width: 10px; height: 10px; margin-top: 7px; border-radius: 50%; flex: none; background: {{a.dot}};"></span>
               <div style="flex: 1; min-width: 0;">
                 <p style="margin: 0; font-weight: 600;">{{a.title}}</p>
                 <p style="margin: 3px 0 0; font-size: 14px; color: {{a.subColor}};">{{a.sub}}</p>
                 <div style="display: flex; gap: 14px; margin-top: 8px; flex-wrap: wrap;">
                   <a href="{{a.href}}" style="font-size: 14px; font-weight: 600;">{{a.action}}</a>
-                  <button type="button" onClick="{{a.dismiss}}" style="padding: 0; border: 0; background: none; font: inherit; font-size: 14px; color: #5E6B62; text-decoration: underline; cursor: pointer; min-height: 24px;">Dismiss</button>
+                  <button type="button" onClick="{{a.dismiss}}" style="padding: 0; border: 0; background: none; font: inherit; font-size: 14px; color: var(--muted); text-decoration: underline; cursor: pointer; min-height: 24px;">Dismiss</button>
                 </div>
               </div>
             </li>
           </sc-for>
         </ul>
         <sc-if value="{{allClear}}" hint-placeholder-val="{{false}}">
-          <p style="margin: 14px 0 0; font-size: 15px; color: #3F4D44;">Nothing needs you right now. <button type="button" onClick="{{restore}}" style="padding: 0; border: 0; background: none; font: inherit; font-weight: 600; color: #344C3D; text-decoration: underline; cursor: pointer;">Show dismissed</button></p>
+          <p style="margin: 14px 0 0; font-size: 15px; color: var(--ink2);">Nothing needs you right now. <button type="button" onClick="{{restore}}" style="padding: 0; border: 0; background: none; font: inherit; font-weight: 600; color: var(--accent); text-decoration: underline; cursor: pointer;">Show dismissed</button></p>
         </sc-if>
       </section>
 
       <div style="flex: 1 1 340px; min-width: 0; display: flex; flex-direction: column; gap: 16px;">
-        <section aria-labelledby="wk-h" style="background: #FFFFFF; border-radius: 28px; padding: 24px clamp(18px, 2.4vw, 28px);">
+        <section aria-labelledby="wk-h" style="background: var(--surface); border-radius: 28px; padding: 24px clamp(18px, 2.4vw, 28px);">
           <h2 id="wk-h" style="margin: 0; font-family: Gloock, Georgia, serif; font-weight: 400; font-size: 28px;">This week</h2>
           <ul style="list-style: none; margin: 12px 0 0; padding: 0;">
             <sc-for list="{{week}}" as="w" hint-placeholder-count="6">
-              <li style="display: flex; gap: 12px; align-items: center; padding: 10px 0; border-top: 1px solid #ECE4E8; font-size: 15px;">
-                <span style="width: 56px; color: #3F4D44;">{{w.day}}</span>
+              <li style="display: flex; gap: 12px; align-items: center; padding: 10px 0; border-top: 1px solid var(--line); font-size: 15px;">
+                <span style="width: 56px; color: var(--ink2);">{{w.day}}</span>
                 <span style="flex: 1; min-width: 0; font-weight: 600;">{{w.name}}</span>
                 <span>{{w.amt}}</span>
               </li>
@@ -150,13 +224,13 @@ a{color:#344C3D}a:hover{color:#1E2B22}
           <a href="Calendar.dc.html" style="display: inline-block; margin-top: 12px; font-size: 14px; font-weight: 600;">Open the calendar</a>
         </section>
 
-        <section aria-labelledby="cat-h" style="background: #FFFFFF; border-radius: 28px; padding: 24px clamp(18px, 2.4vw, 28px);">
+        <section aria-labelledby="cat-h" style="background: var(--surface); border-radius: 28px; padding: 24px clamp(18px, 2.4vw, 28px);">
           <h2 id="cat-h" style="margin: 0; font-family: Gloock, Georgia, serif; font-weight: 400; font-size: 28px;">By category, monthly</h2>
           <div style="margin-top: 14px; display: flex; flex-direction: column; gap: 12px;">
             <sc-for list="{{cats}}" as="c" hint-placeholder-count="5">
               <div>
                 <div style="display: flex; justify-content: space-between; font-size: 14px;"><span style="font-weight: 600;">{{c.name}}</span><span>{{c.amt}}</span></div>
-                <div style="margin-top: 6px; height: 10px; border-radius: 5px; background: #F1ECEF; overflow: hidden;"><span style="display: block; height: 100%; width: {{c.pct}}%; background: {{c.color}}; border-radius: 5px;"></span></div>
+                <div style="margin-top: 6px; height: 10px; border-radius: 5px; background: var(--tile2); overflow: hidden;"><span style="display: block; height: 100%; width: {{c.pct}}%; background: {{c.color}}; border-radius: 5px;"></span></div>
               </div>
             </sc-for>
           </div>
@@ -168,27 +242,60 @@ a{color:#344C3D}a:hover{color:#1E2B22}
 </div>
 </x-dc>
 <script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1300}}'>
+// ---- theme: light or dark, remembered in this browser and shared across the app pages ----
+(function () {
+  var KEY = 'phylax-theme';
+  function read() { try { return localStorage.getItem(KEY) === 'dark' ? 'dark' : 'light'; } catch (e) { return 'light'; } }
+  function apply(t) {
+    document.documentElement.setAttribute('data-theme', t);
+    var bs = document.querySelectorAll('[data-theme-toggle]');
+    for (var i = 0; i < bs.length; i++) bs[i].setAttribute('aria-checked', t === 'dark' ? 'true' : 'false');
+  }
+  apply(read());
+  var n = 0;
+  (function sync() { apply(document.documentElement.getAttribute('data-theme') || read()); if (n++ < 60) requestAnimationFrame(sync); })();
+  document.addEventListener('click', function (e) {
+    var b = e.target.closest && e.target.closest('[data-theme-toggle]');
+    if (!b) return;
+    var t = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+    try { localStorage.setItem(KEY, t); } catch (err) {}
+    var root = document.documentElement;
+    root.classList.add('theming');
+    apply(t);
+    setTimeout(function () { root.classList.remove('theming'); }, 420);
+  });
+  window.addEventListener('storage', function (e) { if (e.key === KEY) apply(e.newValue === 'dark' ? 'dark' : 'light'); });
+})();
+
 var TODAY = '2026-11-09';
+// kind: s = monthly subscription, r = yearly renewal, t = trial converting, b = bill
 var UP = [
   ['2026-11-09', 'Notion Plus', 10, 's'], ['2026-11-10', 'Peacock', 7.99, 's'], ['2026-11-12', 'Figma Professional', 15, 's'],
-  ['2026-11-12', 'Hulu (trial converts)', 9.99, 's'], ['2026-11-14', 'Netflix', 15.49, 's'], ['2026-11-15', 'Chegg Study (trial converts)', 19.95, 's'],
+  ['2026-11-12', 'Hulu (trial converts)', 9.99, 't'], ['2026-11-14', 'Netflix', 15.49, 's'], ['2026-11-15', 'Chegg Study (trial converts)', 19.95, 't'],
   ['2026-11-18', 'ChatGPT Plus', 20, 's'], ['2026-11-20', 'PG&E', 142.18, 'b'], ['2026-11-21', 'iCloud+', 2.99, 's'],
-  ['2026-11-22', 'GitHub Copilot', 10, 's'], ['2026-11-25', 'T-Mobile', 85, 'b'], ['2026-11-28', 'Dropbox Plus', 119.88, 's'],
-  ['2026-12-01', 'Adobe Creative Cloud', 263.88, 's'], ['2026-12-01', 'Rent', 1950, 'b'], ['2026-12-01', 'Duolingo Plus', 14.99, 's'],
+  ['2026-11-22', 'GitHub Copilot', 10, 's'], ['2026-11-25', 'T-Mobile', 85, 'b'], ['2026-11-28', 'Dropbox Plus', 119.88, 'r'],
+  ['2026-12-01', 'Adobe Creative Cloud', 263.88, 'r'], ['2026-12-01', 'Rent', 1950, 'b'], ['2026-12-01', 'Duolingo Plus', 14.99, 's'],
   ['2026-12-03', 'Spotify Premium', 12.99, 's'], ['2026-12-05', 'YouTube Premium', 13.99, 's'], ['2026-12-09', 'Notion Plus', 10, 's'],
   ['2026-12-10', 'Peacock', 7.99, 's'], ['2026-12-12', 'Figma Professional', 15, 's'], ['2026-12-12', 'Hulu', 9.99, 's'],
   ['2026-12-14', 'Netflix', 15.49, 's'], ['2026-12-15', 'Chegg Study', 19.95, 's'], ['2026-12-15', 'UC Berkeley tuition', 4832.5, 'b'],
   ['2026-12-18', 'ChatGPT Plus', 20, 's'], ['2026-12-21', 'iCloud+', 2.99, 's'], ['2026-12-22', 'GitHub Copilot', 10, 's'],
   ['2027-01-03', 'Spotify Premium', 12.99, 's'], ['2027-01-05', 'YouTube Premium', 13.99, 's']
 ];
-var ATT = [
-  { id: 'hulu', title: 'Hulu free trial converts Nov 12', sub: 'In 3 days, then $9.99 a month', dot: '#D8959B', subColor: '#93434C', action: 'Cancel trial', href: 'Subscriptions.dc.html' },
-  { id: 'peacock', title: 'Peacock renews tomorrow', sub: '$7.99, billed monthly', dot: '#D8959B', subColor: '#93434C', action: 'Review', href: 'Subscriptions.dc.html' },
-  { id: 'chegg', title: 'Chegg Study free trial converts Nov 15', sub: 'In 6 days, then $19.95 a month', dot: '#D8959B', subColor: '#93434C', action: 'Cancel trial', href: 'Subscriptions.dc.html' },
-  { id: 'duo', title: 'Duolingo Plus price rises Dec 1', sub: '$12.99 to $14.99 a month', dot: '#D0DBE7', subColor: '#3F4D44', action: 'See details', href: 'Subscriptions.dc.html' },
-  { id: 'spotify', title: 'Spotify went up in October', sub: '$11.99 to $12.99 a month', dot: '#D0DBE7', subColor: '#3F4D44', action: 'See details', href: 'Subscriptions.dc.html' }
+var KINDS = [
+  { k: 'b', name: 'Bills', color: 'var(--accent)' },
+  { k: 's', name: 'Subscriptions', color: '#829672' },
+  { k: 'r', name: 'Yearly renewals', color: '#B5C3A8' },
+  { k: 't', name: 'Trials converting', color: '#D8959B' }
 ];
-var CATS = [['Software and AI', 76.99, '#344C3D'], ['Streaming', 50.46, '#829672'], ['Learning', 14.99, '#D8959B'], ['Storage', 12.98, '#7F9BB8'], ['Shopping', 11.58, '#C2B2B9']];
+var CANCEL_LINKS = { have: 14, of: 15 };
+var ATT = [
+  { id: 'hulu', title: 'Hulu free trial converts Nov 12', sub: 'In 3 days, then $9.99 a month', dot: '#D8959B', subColor: 'var(--red)', action: 'Cancel trial', href: 'Subscriptions.dc.html' },
+  { id: 'peacock', title: 'Peacock renews tomorrow', sub: '$7.99, billed monthly', dot: '#D8959B', subColor: 'var(--red)', action: 'Review', href: 'Subscriptions.dc.html' },
+  { id: 'chegg', title: 'Chegg Study free trial converts Nov 15', sub: 'In 6 days, then $19.95 a month', dot: '#D8959B', subColor: 'var(--red)', action: 'Cancel trial', href: 'Subscriptions.dc.html' },
+  { id: 'duo', title: 'Duolingo Plus price rises Dec 1', sub: '$12.99 to $14.99 a month', dot: '#D0DBE7', subColor: 'var(--ink2)', action: 'See details', href: 'Subscriptions.dc.html' },
+  { id: 'spotify', title: 'Spotify went up in October', sub: '$11.99 to $12.99 a month', dot: '#D0DBE7', subColor: 'var(--ink2)', action: 'See details', href: 'Subscriptions.dc.html' }
+];
+var CATS = [['Software and AI', 76.99, 'var(--accent)'], ['Streaming', 50.46, '#829672'], ['Learning', 14.99, '#D8959B'], ['Storage', 12.98, '#7F9BB8'], ['Shopping', 11.58, '#C2B2B9']];
 var MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 var DOW = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
@@ -198,72 +305,108 @@ function iso(d) { return d.toISOString().slice(0, 10); }
 function addDays(isoS, n) { var d = toD(isoS); d.setUTCDate(d.getUTCDate() + n); return iso(d); }
 function short(isoS) { var d = toD(isoS); return MON[d.getUTCMonth()] + ' ' + d.getUTCDate(); }
 function diff(a, b) { return Math.round((toD(b) - toD(a)) / 86400000); }
+function windowFor(n) { return UP.filter(function (u) { var d = diff(TODAY, u[0]); return d >= 0 && d < n; }); }
+function sum(list) { return list.reduce(function (a, u) { return a + u[2]; }, 0); }
 
 class Component extends DCLogic {
-  state = { range: 30, hover: null, dismissed: {}, synced: false };
+  state = { range: 30, hover: null, dismissed: {}, synced: false, anim: null };
+
+  componentWillUnmount() { if (this.raf) cancelAnimationFrame(this.raf); }
+
+  pickRange(n) {
+    var self = this;
+    if (n === this.state.range) return;
+    var from = this.state.anim !== null ? this.state.anim : sum(windowFor(this.state.range));
+    var to = sum(windowFor(n));
+    var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    this.setState({ range: n, hover: null, anim: reduce ? null : from });
+    if (reduce) return;
+    if (this.raf) cancelAnimationFrame(this.raf);
+    var start = performance.now();
+    var step = function (now) {
+      var t = Math.min(1, (now - start) / 600);
+      var e = 1 - Math.pow(1 - t, 3);
+      self.setState({ anim: t >= 1 ? null : from + (to - from) * e });
+      if (t < 1) self.raf = requestAnimationFrame(step);
+    };
+    this.raf = requestAnimationFrame(step);
+  }
 
   renderVals() {
     var self = this;
     var s = this.state;
     var N = s.range;
-    var inRange = UP.filter(function (u) { var d = diff(TODAY, u[0]); return d >= 0 && d < N; });
-    var total = inRange.reduce(function (a, u) { return a + u[2]; }, 0);
-    var subsT = inRange.filter(function (u) { return u[3] === 's'; }).reduce(function (a, u) { return a + u[2]; }, 0);
+    var inRange = windowFor(N);
+    var total = sum(inRange);
+
+    var segs = KINDS.map(function (k) {
+      var items = inRange.filter(function (u) { return u[3] === k.k; });
+      var amt = sum(items);
+      var pct = total ? amt / total * 100 : 0;
+      return { name: k.name, color: k.color, amt: usd(amt), pct: pct.toFixed(2), pctLabel: Math.round(pct) + '%', countLabel: items.length ? items.length : '', n: items.length, raw: amt };
+    });
+    var bills = segs[0].raw;
 
     var cols = [];
     for (var i = 0; i < N; i++) {
       var day = addDays(TODAY, i);
       var items = inRange.filter(function (u) { return u[0] === day; });
-      var sv = items.filter(function (u) { return u[3] === 's'; }).reduce(function (a, u) { return a + u[2]; }, 0);
-      var bv = items.filter(function (u) { return u[3] === 'b'; }).reduce(function (a, u) { return a + u[2]; }, 0);
-      cols.push({ day: day, items: items, s: sv, b: bv, t: sv + bv });
+      cols.push({ day: day, items: items, t: sum(items) });
     }
     var max = Math.max.apply(null, cols.map(function (c) { return Math.sqrt(c.t); }).concat([1]));
     var days = cols.map(function (c) {
+      var on = s.hover === c.day;
       return {
-        h: c.t ? Math.max(6, Math.sqrt(c.t) / max * 100) : 2,
-        subs: c.s, bills: c.b,
-        empty: c.t ? 'transparent' : '#ECE4E8',
-        ring: s.hover === c.day && c.t ? '2px solid #344C3D' : 'none',
+        h: c.t ? Math.max(8, Math.sqrt(c.t) / max * 100) : 3,
+        color: c.t ? (on ? 'var(--accent)' : (c.t > 1000 ? '#D8959B' : '#C9D3C1')) : 'transparent',
+        empty: c.t ? '0' : '2px dotted var(--line2)',
         enter: function () { self.setState({ hover: c.day }); }
       };
     });
     var busiest = cols.slice().sort(function (a, b) { return b.t - a.t; })[0];
     var shown = cols.find(function (c) { return c.day === s.hover; }) || busiest;
-    var readDay = short(shown.day) + (shown === busiest && !s.hover ? ', the biggest day:' : ':');
-    var readItems = shown.items.length ? shown.items.map(function (u) { return u[1] + ' ' + usd(u[2]); }).join(', ') : 'nothing due';
+    var readDay = short(shown.day) + (!s.hover ? ', the biggest day:' : ':');
+    var readItems = shown.items.length ? shown.items.map(function (u) { return u[1].replace(/ \(trial converts\)/, '') + ' ' + usd(u[2]); }).join(', ') : 'nothing due';
 
-    var ticks = [];
-    for (var k = 0; k < N; k += (N === 30 ? 7 : 14)) ticks.push(k === 0 ? 'Today' : short(addDays(TODAY, k)));
+    var subsShare = total - bills;
+    var priceChanges = inRange.filter(function (u) { return /Spotify|Duolingo/.test(u[1]); }).length;
+    var minis = [
+      { label: 'Cancel links found', value: CANCEL_LINKS.have, of: 'of ' + CANCEL_LINKS.of + ' subscriptions', pct: (CANCEL_LINKS.have / CANCEL_LINKS.of * 100).toFixed(1), color: 'var(--accent)' },
+      { label: 'Optional spending', value: usd(subsShare), of: 'of ' + usd(total), pct: (total ? subsShare / total * 100 : 0).toFixed(1), color: '#829672' },
+      { label: 'Biggest day', value: short(busiest.day), of: usd(busiest.t), pct: (total ? busiest.t / total * 100 : 0).toFixed(1), color: '#D8959B' }
+    ];
 
     var attention = ATT.filter(function (a) { return !s.dismissed[a.id]; }).map(function (a) {
       return Object.assign({}, a, { dismiss: function () { var d = Object.assign({}, self.state.dismissed); d[a.id] = true; self.setState({ dismissed: d }); } });
     });
-
-    var week = UP.filter(function (u) { var d = diff(TODAY, u[0]); return d >= 0 && d < 7; }).map(function (u) {
+    var week = windowFor(7).map(function (u) {
       var d = toD(u[0]);
-      return { day: DOW[d.getUTCDay()] + ' ' + d.getUTCDate(), name: u[1], amt: usd(u[2]) };
+      return { day: DOW[d.getUTCDay()] + ' ' + d.getUTCDate(), name: u[1].replace(/ \(trial converts\)/, ''), amt: usd(u[2]) };
     });
-
     var cmax = CATS[0][1];
     var cats = CATS.map(function (c) { return { name: c[0], amt: usd(c[1]), pct: Math.round(c[1] / cmax * 100), color: c[2] }; });
 
     return {
-      total: usd(total),
-      range: N,
-      count: inRange.length,
-      ranges: [30, 60].map(function (r) {
+      rangeLabel: 'Next ' + N + ' days',
+      segX: [7, 30, 60].indexOf(N) * 84,
+      ranges: [7, 30, 60].map(function (r) {
         var on = r === N;
-        return { label: r + ' days', on: on, bg: on ? '#344C3D' : 'transparent', fg: on ? '#FFFFFF' : '#1E2B22', pick: function () { self.setState({ range: r, hover: null }); } };
+        return { label: r + ' days', on: on, bg: on ? 'var(--surface)' : 'transparent', shadow: on ? '0 1px 3px var(--shadow)' : 'none', fg: on ? 'var(--ink)' : 'var(--muted)', weight: on ? 600 : 500, pick: function () { self.pickRange(r); } };
       }),
+      totalShown: usd(s.anim !== null ? s.anim : total),
+      count: inRange.length,
+      billsPct: (total ? Math.round(bills / total * 100) : 0) + '%',
+      barLabel: segs.map(function (g) { return g.name + ' ' + g.amt; }).join(', '),
+      segs: segs,
+      avg: usd(total / N),
+      gap: N > 40 ? 2 : (N > 10 ? 3 : 8),
       days: days,
-      ticks: ticks,
-      chartLabel: 'Daily charges for the next ' + N + ' days. Biggest day ' + short(busiest.day) + ' at ' + usd(busiest.t) + '.',
+      chartLabel: 'Charges per day for the next ' + N + ' days. Biggest day ' + short(busiest.day) + ' at ' + usd(busiest.t) + '.',
       clearHover: function () { self.setState({ hover: null }); },
       readDay: readDay,
       readItems: readItems,
-      subsTotal: usd(subsT),
-      billsTotal: usd(total - subsT),
+      minis: minis,
+      weekTotal: usd(sum(windowFor(7))),
       attention: attention,
       attCount: attention.length ? attention.length + ' items' : '',
       allClear: attention.length === 0,

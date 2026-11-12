@@ -52,5 +52,5 @@ function decide(request: NextRequest, signedIn: boolean, response: NextResponse)
 }
 
 export const config = {
-  matcher: ["/app", "/app/:path*", "/connect-gmail", "/api/:path*", "/signin", "/signup"],
+  matcher: ["/app", "/app/:path*", "/connect-gmail", "/api/:path*", "/signin", "/signup", "/reset-password"],
 };

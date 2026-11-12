@@ -9,45 +9,81 @@
 <x-dc>
 <helmet>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gloock&amp;family=Hanken+Grotesk:wght@400;500;600;700&amp;display=swap">
-<style>
-body{margin:0;background:#F7F3F5;color:#1E2B22;font-family:'Hanken Grotesk',system-ui,sans-serif;-webkit-font-smoothing:antialiased;font-variant-numeric:tabular-nums}
-a{color:#344C3D}a:hover{color:#1E2B22}
+<style>:root{--bg:#F7F3F5;--surface:#FFFFFF;--tile:#F7F3F5;--tile2:#FBF9FA;--ink:#1E2B22;--ink2:#3F4D44;--muted:#5E6B62;--line:#ECE4E8;--line2:#D6CBD0;--hover:#EDE6EA;--accent:#344C3D;--accent-hover:#26392D;--on-accent:#FFFFFF;--red:#93434C;--pink-bg:#F3DCDF;--pink-bg2:#F6E3E5;--green-bg:#DDE6D5;--blue-bg:#D0DBE7;--mauve-bg:#E3DADE;--shadow:rgba(30,43,34,0.14);--blue-ink:#2E3E48;--green-ink:#3D4F33;--on-accent2:#E3DADE}
+:root[data-theme="dark"]{--bg:#0F1612;--surface:#18221C;--tile:#212C25;--tile2:#1D2721;--ink:#E7ECE5;--ink2:#B5C1B8;--muted:#8E9C92;--line:#27342C;--line2:#3A4A40;--hover:#233029;--accent:#A9C59A;--accent-hover:#BED6B1;--on-accent:#10190F;--red:#EE9EA6;--pink-bg:#3B2429;--pink-bg2:#33232A;--green-bg:#233322;--blue-bg:#1F2D3B;--mauve-bg:#2E2529;--shadow:rgba(0,0,0,0.5);--blue-ink:#A9C1D8;--green-ink:#B7D0A6;--on-accent2:#2D3D2C;color-scheme:dark}
+[data-theme="dark"] [stroke="#344C3D"]{stroke:var(--accent)}
+[data-theme="dark"] [fill="#344C3D"]{fill:var(--accent)}
+[data-theme="dark"] [stroke="#1E2B22"]{stroke:var(--ink)}
+[data-theme="dark"] [fill="#1E2B22"]{fill:var(--ink)}
+[data-theme="dark"] [stroke="#3F4D44"]{stroke:var(--ink2)}
+[data-theme="dark"] [fill="#3F4D44"]{fill:var(--ink2)}
+[data-theme="dark"] [stroke="#5E6B62"]{stroke:var(--muted)}
+[data-theme="dark"] [fill="#5E6B62"]{fill:var(--muted)}
+[data-theme="dark"] [stroke="#ECE4E8"]{stroke:var(--line)}
+[data-theme="dark"] [fill="#ECE4E8"]{fill:var(--line)}
+[data-theme="dark"] [stroke="#D6CBD0"]{stroke:var(--line2)}
+[data-theme="dark"] [fill="#D6CBD0"]{fill:var(--line2)}
+[data-theme="dark"] [stroke="#93434C"]{stroke:var(--red)}
+[data-theme="dark"] [fill="#93434C"]{fill:var(--red)}
+[data-theme="dark"] [stroke="#3D4F33"]{stroke:var(--green-ink)}
+[data-theme="dark"] [fill="#3D4F33"]{fill:var(--green-ink)}
+[data-theme="dark"] [stroke="#2E3E48"]{stroke:var(--blue-ink)}
+[data-theme="dark"] [fill="#2E3E48"]{fill:var(--blue-ink)}
+.theming,.theming *{transition:background-color .35s ease,color .35s ease,border-color .35s ease,fill .35s ease,stroke .35s ease !important}
+.tswitch{display:flex;align-items:center;gap:12px;width:100%;min-height:44px;padding:0 10px;border:0;border-radius:12px;background:transparent;color:var(--ink);font:inherit;font-size:14px;font-weight:600;cursor:pointer;text-align:left}
+.tswitch:hover{background:var(--hover)}
+.tswitch .trk{margin-left:auto;position:relative;width:40px;height:24px;border-radius:12px;background:var(--line2);transition:background .25s ease;flex:none}
+.tswitch .knb{position:absolute;left:3px;top:3px;width:18px;height:18px;border-radius:50%;background:#FFFFFF;box-shadow:0 1px 3px rgba(0,0,0,.25);transition:transform .25s cubic-bezier(.3,1.4,.5,1)}
+[data-theme="dark"] .tswitch .trk{background:var(--accent)}
+[data-theme="dark"] .tswitch .knb{transform:translateX(16px);background:#10190F}
+.tswitch .sun{display:block}.tswitch .moon{display:none}
+[data-theme="dark"] .tswitch .sun{display:none}[data-theme="dark"] .tswitch .moon{display:block}
+@media (prefers-reduced-motion: reduce){.theming,.theming *{transition:none !important}.tswitch .knb,.tswitch .trk{transition:none}}
+
+body{margin:0;background:var(--bg);color:var(--ink);font-family:'Hanken Grotesk',system-ui,sans-serif;-webkit-font-smoothing:antialiased;font-variant-numeric:tabular-nums}
+a{color:var(--accent)}a:hover{color:var(--ink)}
 .side a.nav{text-decoration:none}
-.side a.nav:hover{background:#EDE6EA}
-.side a.nav.on:hover{background:#344C3D}
-.b-primary:hover{background:#26392D !important;color:#FFFFFF !important}
-.b-ghost:hover{background:#EDE6EA !important}
-.b-danger:hover{background:#F6E3E5 !important}
-.tab:hover{color:#1E2B22 !important}
-.chip:hover{border-color:#344C3D !important}
-:focus-visible{outline:3px solid #344C3D;outline-offset:3px}
+.side a.nav:hover{background:var(--hover)}
+.side a.nav.on:hover{background:var(--accent)}
+.b-primary:hover{background:var(--accent-hover) !important;color:var(--on-accent) !important}
+.b-ghost:hover{background:var(--hover) !important}
+.b-danger:hover{background:var(--pink-bg2) !important}
+.tab:hover{color:var(--ink) !important}
+.chip:hover{border-color:var(--accent) !important}
+:focus-visible{outline:3px solid var(--accent);outline-offset:3px}
 input[type=checkbox]{accent-color:#344C3D;width:18px;height:18px}
 </style>
 </helmet>
 <div style="box-sizing: border-box; width: 100%; min-height: 1200px; display: flex; flex-wrap: wrap; align-items: stretch;">
 
-  <aside class="side" style="flex: 1 1 240px; min-width: 0; background: #FFFFFF; padding: 26px 18px; box-sizing: border-box; display: flex; flex-direction: column; gap: 28px; border-right: 1px solid #ECE4E8;">
-    <a href="Main.dc.html" style="font-family: Gloock, Georgia, serif; font-size: 26px; color: #1E2B22; text-decoration: none; padding: 0 10px;">Phylax</a>
+  <aside class="side" style="flex: 1 1 240px; min-width: 0; background: var(--surface); padding: 26px 18px; box-sizing: border-box; display: flex; flex-direction: column; gap: 28px; border-right: 1px solid var(--line);">
+    <a href="Main.dc.html" style="font-family: Gloock, Georgia, serif; font-size: 26px; color: var(--ink); text-decoration: none; padding: 0 10px;">Phylax</a>
     <nav aria-label="App" style="display: flex; flex-direction: column; gap: 4px;">
-      <a class="nav" href="Dashboard.dc.html" style="display: flex; align-items: center; gap: 12px; min-height: 46px; padding: 0 14px; border-radius: 14px; color: #1E2B22; font-weight: 500;">
+      <a class="nav" href="Dashboard.dc.html" style="display: flex; align-items: center; gap: 12px; min-height: 46px; padding: 0 14px; border-radius: 14px; color: var(--ink); font-weight: 500;">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="3" y="3" width="7" height="9" rx="2"></rect><rect x="14" y="3" width="7" height="5" rx="2"></rect><rect x="14" y="12" width="7" height="9" rx="2"></rect><rect x="3" y="16" width="7" height="5" rx="2"></rect></svg>
         Dashboard
       </a>
-      <a class="nav" href="Subscriptions.dc.html" style="display: flex; align-items: center; gap: 12px; min-height: 46px; padding: 0 14px; border-radius: 14px; color: #1E2B22; font-weight: 500;">
+      <a class="nav" href="Subscriptions.dc.html" style="display: flex; align-items: center; gap: 12px; min-height: 46px; padding: 0 14px; border-radius: 14px; color: var(--ink); font-weight: 500;">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.3-5.7"></path><path d="M20 4v5h-5"></path></svg>
         Recurring
       </a>
-      <a class="nav" href="Calendar.dc.html" style="display: flex; align-items: center; gap: 12px; min-height: 46px; padding: 0 14px; border-radius: 14px; color: #1E2B22; font-weight: 500;">
+      <a class="nav" href="Calendar.dc.html" style="display: flex; align-items: center; gap: 12px; min-height: 46px; padding: 0 14px; border-radius: 14px; color: var(--ink); font-weight: 500;">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="3"></rect><path d="M3 10h18M8 3v4M16 3v4"></path></svg>
         Calendar
       </a>
-      <a class="nav on" href="Bills.dc.html" aria-current="page" style="display: flex; align-items: center; gap: 12px; min-height: 46px; padding: 0 14px; border-radius: 14px; background: #344C3D; color: #FFFFFF; font-weight: 600;">
+      <a class="nav on" href="Bills.dc.html" aria-current="page" style="display: flex; align-items: center; gap: 12px; min-height: 46px; padding: 0 14px; border-radius: 14px; background: var(--accent); color: var(--on-accent); font-weight: 600;">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"></path><path d="M9 8h6M9 12h6"></path></svg>
         Bills and deadlines
       </a>
     </nav>
     <div style="margin-top: auto; display: flex; flex-direction: column; gap: 12px; padding: 0 10px;">
-      <p style="margin: 0; font-size: 14px; color: #5E6B62;">Gmail synced 4 minutes ago</p>
+      <button type="button" class="tswitch" data-theme-toggle="" role="switch" aria-checked="false" aria-label="Dark mode">
+        <svg class="sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"></path></svg>
+        <svg class="moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"></path></svg>
+        Dark mode
+        <span class="trk" aria-hidden="true"><span class="knb"></span></span>
+      </button>
+      <p style="margin: 0; font-size: 14px; color: var(--muted);">Gmail synced 4 minutes ago</p>
       <div style="display: flex; align-items: center; gap: 10px;">
         <span aria-hidden="true" style="width: 36px; height: 36px; border-radius: 50%; background: #D8959B; display: grid; place-items: center; font-weight: 700; font-size: 14px;">EY</span>
         <span style="flex: 1; min-width: 0; font-size: 14px; font-weight: 600;">Evelyn You</span>
@@ -58,15 +94,15 @@ input[type=checkbox]{accent-color:#344C3D;width:18px;height:18px}
 
   <main style="flex: 999 1 640px; min-width: 0; padding: 32px clamp(20px, 3vw, 44px) 64px; box-sizing: border-box;">
     <h1 style="margin: 0; font-family: Gloock, Georgia, serif; font-weight: 400; font-size: 44px; line-height: 1;">Bills and deadlines</h1>
-    <p style="margin: 10px 0 0; font-size: 16px; color: #3F4D44; max-width: 44em;">Bills to pay, free trials about to convert, and yearly renewals you can still stop. Mark a bill paid once you've paid it.</p>
+    <p style="margin: 10px 0 0; font-size: 16px; color: var(--ink2); max-width: 44em;">Bills to pay, free trials about to convert, and yearly renewals you can still stop. Mark a bill paid once you've paid it.</p>
 
     <div style="margin-top: 24px; display: flex; flex-wrap: wrap; gap: 14px;">
-      <div style="flex: 1 1 200px; background: #D0DBE7; border-radius: 22px; padding: 18px 20px;"><p style="margin: 0; font-size: 14px; color: #2E3E48;">Bills due in 30 days</p><p style="margin: 4px 0 0; font-family: Gloock, Georgia, serif; font-size: 32px;">{{bills30}}</p></div>
-      <div style="flex: 1 1 200px; background: #F3DCDF; border-radius: 22px; padding: 18px 20px;"><p style="margin: 0; font-size: 14px; color: #93434C;">Trials converting this week</p><p style="margin: 4px 0 0; font-family: Gloock, Georgia, serif; font-size: 32px;">{{trialsWeek}}</p></div>
-      <div style="flex: 1 1 200px; background: #DDE6D5; border-radius: 22px; padding: 18px 20px;"><p style="margin: 0; font-size: 14px; color: #3D4F33;">Renewals you can still stop</p><p style="margin: 4px 0 0; font-family: Gloock, Georgia, serif; font-size: 32px;">{{renewTotal}}</p></div>
+      <div style="flex: 1 1 200px; background: var(--blue-bg); border-radius: 22px; padding: 18px 20px;"><p style="margin: 0; font-size: 14px; color: var(--blue-ink);">Bills due in 30 days</p><p style="margin: 4px 0 0; font-family: Gloock, Georgia, serif; font-size: 32px;">{{bills30}}</p></div>
+      <div style="flex: 1 1 200px; background: var(--pink-bg); border-radius: 22px; padding: 18px 20px;"><p style="margin: 0; font-size: 14px; color: var(--red);">Trials converting this week</p><p style="margin: 4px 0 0; font-family: Gloock, Georgia, serif; font-size: 32px;">{{trialsWeek}}</p></div>
+      <div style="flex: 1 1 200px; background: var(--green-bg); border-radius: 22px; padding: 18px 20px;"><p style="margin: 0; font-size: 14px; color: var(--green-ink);">Renewals you can still stop</p><p style="margin: 4px 0 0; font-family: Gloock, Georgia, serif; font-size: 32px;">{{renewTotal}}</p></div>
     </div>
 
-    <div style="margin-top: 28px; display: flex; justify-content: space-between; align-items: flex-end; gap: 14px; flex-wrap: wrap; border-bottom: 1px solid #E0D6DB;">
+    <div style="margin-top: 28px; display: flex; justify-content: space-between; align-items: flex-end; gap: 14px; flex-wrap: wrap; border-bottom: 1px solid var(--line2);">
       <div role="tablist" aria-label="Status" style="display: flex; gap: 22px;">
         <sc-for list="{{tabs}}" as="t" hint-placeholder-count="2">
           <button type="button" role="tab" class="tab" aria-selected="{{t.on}}" onClick="{{t.pick}}" style="min-height: 46px; padding: 0 2px; border: 0; border-bottom: 3px solid {{t.line}}; background: none; font: inherit; font-size: 16px; font-weight: 600; color: {{t.fg}}; cursor: pointer;">{{t.label}}</button>
@@ -81,10 +117,10 @@ input[type=checkbox]{accent-color:#344C3D;width:18px;height:18px}
 
     <sc-for list="{{groups}}" as="g" hint-placeholder-count="3">
       <section style="margin-top: 24px;">
-        <h2 style="margin: 0; padding: 0 4px; font-size: 15px; font-weight: 600; color: #3F4D44;">{{g.title}}</h2>
+        <h2 style="margin: 0; padding: 0 4px; font-size: 15px; font-weight: 600; color: var(--ink2);">{{g.title}}</h2>
         <ul style="list-style: none; margin: 10px 0 0; padding: 0; display: flex; flex-direction: column; gap: 10px;">
           <sc-for list="{{g.items}}" as="i" hint-placeholder-count="2">
-            <li style="background: #FFFFFF; border-radius: 22px; padding: 18px 20px; display: flex; flex-wrap: wrap; gap: 14px 20px; align-items: center;">
+            <li style="background: var(--surface); border-radius: 22px; padding: 18px 20px; display: flex; flex-wrap: wrap; gap: 14px 20px; align-items: center;">
               <div style="width: 64px; flex: none; text-align: center; border-radius: 16px; padding: 8px 0; background: {{i.dateBg}};">
                 <span style="display: block; font-size: 12px; font-weight: 600; color: {{i.dateFg}};">{{i.mon}}</span>
                 <span style="display: block; font-family: Gloock, Georgia, serif; font-size: 26px; line-height: 1.1; color: {{i.dateFg}};">{{i.day}}</span>
@@ -92,7 +128,7 @@ input[type=checkbox]{accent-color:#344C3D;width:18px;height:18px}
               <div style="flex: 1 1 220px; min-width: 0;">
                 <p style="margin: 0; font-weight: 600; font-size: 16px;">{{i.name}}</p>
                 <p style="margin: 3px 0 0; font-size: 14px; color: {{i.relColor}};">{{i.what}}, {{i.rel}}</p>
-                <label style="display: inline-flex; align-items: center; gap: 8px; margin-top: 8px; font-size: 13px; color: #3F4D44; cursor: pointer;">
+                <label style="display: inline-flex; align-items: center; gap: 8px; margin-top: 8px; font-size: 13px; color: var(--ink2); cursor: pointer;">
                   <input type="checkbox" checked="{{i.remind}}" onChange="{{i.toggleRemind}}">
                   Remind me 2 days before
                 </label>
@@ -100,11 +136,11 @@ input[type=checkbox]{accent-color:#344C3D;width:18px;height:18px}
               <p style="margin: 0; font-weight: 600; font-size: 18px; min-width: 100px; text-align: right;">{{i.amt}}</p>
               <div style="display: flex; gap: 8px; flex-wrap: wrap;">
                 <sc-if value="{{i.isBill}}" hint-placeholder-val="{{true}}">
-                  <a href="{{i.url}}" target="_blank" rel="noopener noreferrer" class="b-ghost" style="display: inline-flex; align-items: center; min-height: 42px; padding: 0 14px; border-radius: 999px; border: 1.5px solid #D6CBD0; color: #1E2B22; font-size: 14px; font-weight: 600; text-decoration: none;">Pay on {{i.host}}</a>
-                  <button type="button" class="b-primary" onClick="{{i.markPaid}}" style="min-height: 42px; padding: 0 16px; border-radius: 999px; border: 0; background: #344C3D; color: #FFFFFF; font: inherit; font-size: 14px; font-weight: 600; cursor: pointer;">Mark paid</button>
+                  <a href="{{i.url}}" target="_blank" rel="noopener noreferrer" class="b-ghost" style="display: inline-flex; align-items: center; min-height: 42px; padding: 0 14px; border-radius: 999px; border: 1.5px solid var(--line2); color: var(--ink); font-size: 14px; font-weight: 600; text-decoration: none;">Pay on {{i.host}}</a>
+                  <button type="button" class="b-primary" onClick="{{i.markPaid}}" style="min-height: 42px; padding: 0 16px; border-radius: 999px; border: 0; background: var(--accent); color: var(--on-accent); font: inherit; font-size: 14px; font-weight: 600; cursor: pointer;">Mark paid</button>
                 </sc-if>
                 <sc-if value="{{i.isStoppable}}" hint-placeholder-val="{{false}}">
-                  <a href="{{i.url}}" target="_blank" rel="noopener noreferrer" class="b-danger" style="display: inline-flex; align-items: center; min-height: 42px; padding: 0 14px; border-radius: 999px; border: 1.5px solid #C98A91; color: #93434C; font-size: 14px; font-weight: 600; text-decoration: none;">Cancel on {{i.host}}</a>
+                  <a href="{{i.url}}" target="_blank" rel="noopener noreferrer" class="b-danger" style="display: inline-flex; align-items: center; min-height: 42px; padding: 0 14px; border-radius: 999px; border: 1.5px solid #C98A91; color: var(--red); font-size: 14px; font-weight: 600; text-decoration: none;">Cancel on {{i.host}}</a>
                 </sc-if>
               </div>
             </li>
@@ -114,20 +150,20 @@ input[type=checkbox]{accent-color:#344C3D;width:18px;height:18px}
     </sc-for>
 
     <sc-if value="{{empty}}" hint-placeholder-val="{{false}}">
-      <div style="margin-top: 28px; background: #FFFFFF; border-radius: 22px; padding: 28px; text-align: center;">
+      <div style="margin-top: 28px; background: var(--surface); border-radius: 22px; padding: 28px; text-align: center;">
         <p style="margin: 0; font-family: Gloock, Georgia, serif; font-size: 26px;">{{emptyTitle}}</p>
-        <p style="margin: 8px 0 0; font-size: 15px; color: #3F4D44;">{{emptyBody}}</p>
+        <p style="margin: 8px 0 0; font-size: 15px; color: var(--ink2);">{{emptyBody}}</p>
       </div>
     </sc-if>
 
     <sc-if value="{{showPaid}}" hint-placeholder-val="{{false}}">
-      <ul style="list-style: none; margin: 24px 0 0; padding: 4px 0; background: #FFFFFF; border-radius: 22px;">
+      <ul style="list-style: none; margin: 24px 0 0; padding: 4px 0; background: var(--surface); border-radius: 22px;">
         <sc-for list="{{paid}}" as="p" hint-placeholder-count="1">
           <li style="display: flex; align-items: center; gap: 14px; padding: 14px 20px; border-top: {{p.sep}};">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#3D4F33" stroke-width="2.2" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M8 12l3 3 5-6"></path></svg>
-            <span style="flex: 1; min-width: 0;"><span style="display: block; font-weight: 600;">{{p.name}}</span><span style="display: block; font-size: 14px; color: #3F4D44;">{{p.note}}</span></span>
+            <span style="flex: 1; min-width: 0;"><span style="display: block; font-weight: 600;">{{p.name}}</span><span style="display: block; font-size: 14px; color: var(--ink2);">{{p.note}}</span></span>
             <span style="font-weight: 600;">{{p.amt}}</span>
-            <button type="button" onClick="{{p.undo}}" style="min-height: 40px; padding: 0 10px; border: 0; background: none; font: inherit; font-size: 14px; font-weight: 600; color: #344C3D; text-decoration: underline; cursor: pointer;">Undo</button>
+            <button type="button" onClick="{{p.undo}}" style="min-height: 40px; padding: 0 10px; border: 0; background: none; font: inherit; font-size: 14px; font-weight: 600; color: var(--accent); text-decoration: underline; cursor: pointer;">Undo</button>
           </li>
         </sc-for>
       </ul>
@@ -136,6 +172,31 @@ input[type=checkbox]{accent-color:#344C3D;width:18px;height:18px}
 </div>
 </x-dc>
 <script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1200}}'>
+// ---- theme: light or dark, remembered in this browser and shared across the app pages ----
+(function () {
+  var KEY = 'phylax-theme';
+  function read() { try { return localStorage.getItem(KEY) === 'dark' ? 'dark' : 'light'; } catch (e) { return 'light'; } }
+  function apply(t) {
+    document.documentElement.setAttribute('data-theme', t);
+    var bs = document.querySelectorAll('[data-theme-toggle]');
+    for (var i = 0; i < bs.length; i++) bs[i].setAttribute('aria-checked', t === 'dark' ? 'true' : 'false');
+  }
+  apply(read());
+  var n = 0;
+  (function sync() { apply(document.documentElement.getAttribute('data-theme') || read()); if (n++ < 60) requestAnimationFrame(sync); })();
+  document.addEventListener('click', function (e) {
+    var b = e.target.closest && e.target.closest('[data-theme-toggle]');
+    if (!b) return;
+    var t = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+    try { localStorage.setItem(KEY, t); } catch (err) {}
+    var root = document.documentElement;
+    root.classList.add('theming');
+    apply(t);
+    setTimeout(function () { root.classList.remove('theming'); }, 420);
+  });
+  window.addEventListener('storage', function (e) { if (e.key === KEY) apply(e.newValue === 'dark' ? 'dark' : 'light'); });
+})();
+
 var TODAY = '2026-11-09';
 var ITEMS = [
   { id: 'peacock', name: 'Peacock', kind: 'renewal', date: '2026-11-10', amt: 7.99, url: 'https://www.peacocktv.com/account/cancel', what: 'Renews monthly' },
@@ -175,9 +236,9 @@ class Component extends DCLogic {
       return {
         name: i.name, what: i.what, rel: rel(d), amt: usd(i.amt), url: i.url, host: hostOf(i.url),
         mon: MON[dt.getUTCMonth()], day: dt.getUTCDate(),
-        dateBg: urgent ? '#F3DCDF' : (i.kind === 'bill' ? '#D0DBE7' : '#F7F3F5'),
-        dateFg: urgent ? '#93434C' : '#1E2B22',
-        relColor: urgent ? '#93434C' : '#3F4D44',
+        dateBg: urgent ? 'var(--pink-bg)' : (i.kind === 'bill' ? 'var(--blue-bg)' : 'var(--tile)'),
+        dateFg: urgent ? 'var(--red)' : 'var(--ink)',
+        relColor: urgent ? 'var(--red)' : 'var(--ink2)',
         isBill: i.kind === 'bill', isStoppable: i.kind !== 'bill',
         remind: !!s.remind[i.id],
         toggleRemind: function () { var r = Object.assign({}, self.state.remind); r[i.id] = !r[i.id]; self.setState({ remind: r }); },
@@ -196,7 +257,7 @@ class Component extends DCLogic {
 
     var paidList = ITEMS.filter(function (i) { return s.paid[i.id]; });
     var paid = paidList.map(function (i, idx) {
-      return { name: i.name, amt: usd(i.amt), note: 'Marked paid today, was due ' + MON[toD(i.date).getUTCMonth()] + ' ' + toD(i.date).getUTCDate(), sep: idx === 0 ? '0' : '1px solid #ECE4E8', undo: function () { var p = Object.assign({}, self.state.paid); delete p[i.id]; self.setState({ paid: p }); } };
+      return { name: i.name, amt: usd(i.amt), note: 'Marked paid today, was due ' + MON[toD(i.date).getUTCMonth()] + ' ' + toD(i.date).getUTCDate(), sep: idx === 0 ? '0' : '1px solid var(--line)', undo: function () { var p = Object.assign({}, self.state.paid); delete p[i.id]; self.setState({ paid: p }); } };
     });
 
     var bills30 = open.filter(function (i) { return i.kind === 'bill' && diff(TODAY, i.date) < 30; }).reduce(function (a, i) { return a + i.amt; }, 0);
@@ -210,11 +271,11 @@ class Component extends DCLogic {
       bills30: usd(bills30), trialsWeek: usd(trialsWeek), renewTotal: usd(renewTotal),
       tabs: [['upcoming', 'Upcoming ' + open.length], ['paid', 'Paid ' + paidList.length]].map(function (t) {
         var on = s.tab === t[0];
-        return { label: t[1], on: on, line: on ? '#344C3D' : 'transparent', fg: on ? '#1E2B22' : '#5E6B62', pick: function () { self.setState({ tab: t[0] }); } };
+        return { label: t[1], on: on, line: on ? 'var(--accent)' : 'transparent', fg: on ? 'var(--ink)' : 'var(--muted)', pick: function () { self.setState({ tab: t[0] }); } };
       }),
       kinds: KINDS.map(function (k) {
         var on = s.kind === k[0];
-        return { label: k[1], on: on, bg: on ? '#344C3D' : '#FFFFFF', fg: on ? '#FFFFFF' : '#1E2B22', border: on ? '#344C3D' : '#D6CBD0', pick: function () { self.setState({ kind: k[0] }); } };
+        return { label: k[1], on: on, bg: on ? 'var(--accent)' : 'var(--surface)', fg: on ? 'var(--on-accent)' : 'var(--ink)', border: on ? 'var(--accent)' : 'var(--line2)', pick: function () { self.setState({ kind: k[0] }); } };
       }),
       groups: groups,
       empty: upcomingEmpty || paidEmpty,

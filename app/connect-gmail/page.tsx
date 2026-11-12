@@ -1,7 +1,7 @@
 import { connection } from "next/server";
-import Link from "next/link";
 import { Suspense } from "react";
-import GmailDisclosure from "@/components/GmailDisclosure";
+import AuthShell from "@/components/AuthShell";
+import GmailDisclosure, { GmailIcon } from "@/components/GmailDisclosure";
 import { GMAIL_MESSAGES, googleConsentHref } from "@/lib/auth-copy";
 import { getCurrentUser } from "@/lib/current-user";
 import { gmailConfigured } from "@/lib/gmail";
@@ -14,23 +14,15 @@ export const metadata = { title: "Connect Gmail | Phylax" };
 // GmailDisclosure and goes straight to Google. The proxy sends signed-out visitors to /signin.
 export default function ConnectGmailPage({ searchParams }: PageProps<"/connect-gmail">) {
   return (
-    <div className="su">
-      <header className="su-head">
-        <Link href="/" className="brand">
-          Phylax
-        </Link>
-      </header>
-      <div className="su-body">
-        <main className="su-main">
-          <h1>Connect Gmail</h1>
-          <p className="lede">Google will ask you to allow read-only access. Here is what that means.</p>
-          <GmailDisclosure />
-          <Suspense fallback={null}>
-            <ConnectActions searchParams={searchParams} />
-          </Suspense>
-        </main>
-      </div>
-    </div>
+    <AuthShell wide>
+      <GmailIcon />
+      <h1>Connect your Gmail</h1>
+      <p className="lede">Phylax needs read-only access to find receipts, renewals and trial reminders. Google asks you to allow it next.</p>
+      <GmailDisclosure />
+      <Suspense fallback={null}>
+        <ConnectActions searchParams={searchParams} />
+      </Suspense>
+    </AuthShell>
   );
 }
 
@@ -42,11 +34,10 @@ async function ConnectActions({ searchParams }: { searchParams: PageProps<"/conn
   return (
     <>
       {unconfigured && <p className="auth-msg">{GMAIL_MESSAGES.not_configured.text}</p>}
-      <div className="su-actions">
-        <a href={googleConsentHref(next)} className="btn btn-primary" aria-disabled={unconfigured ? true : undefined}>
-          Continue to Google
-        </a>
-      </div>
+      <a href={googleConsentHref(next)} className="btn btn-primary btn-block auth-cta" aria-disabled={unconfigured ? true : undefined}>
+        Continue to Google
+      </a>
+      <p className="fine">You can disconnect at any time.</p>
     </>
   );
 }

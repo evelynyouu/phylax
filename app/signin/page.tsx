@@ -2,8 +2,9 @@ import { connection } from "next/server";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
-import Flower from "@/components/Flower";
 import AuthForm from "@/components/AuthForm";
+import AuthShell from "@/components/AuthShell";
+import PhylaxMark from "@/components/PhylaxMark";
 import { AUTH_MESSAGES } from "@/lib/auth-copy";
 import { getOptionalUser } from "@/lib/current-user";
 import { isDemo } from "@/lib/session";
@@ -12,32 +13,23 @@ export const metadata = { title: "Sign in | Phylax" };
 
 export default function SignInPage({ searchParams }: PageProps<"/signin">) {
   return (
-    <div className="split">
-      <aside className="split-art">
-        <Link href="/" className="brand">
-          Phylax
-        </Link>
-        <Flower />
-        <p className="quote">Welcome back. Your list kept growing while you were away.</p>
-      </aside>
-      <main className="split-main">
-        <div className="auth-box">
-          <h1>Sign in</h1>
-          <p className="lede">Use Google or your email and password.</p>
-          <Suspense fallback={null}>
-            <SignInStatus searchParams={searchParams} />
-          </Suspense>
-
-          <AuthForm mode="signin" demo={isDemo()} />
-          <p className="auth-foot">
-            New to Phylax? <Link href="/signup">Create an account</Link>
-          </p>
-          <p className="auth-foot">
-            <Link href="/privacy">Privacy</Link> · <Link href="/terms">Terms</Link>
-          </p>
-        </div>
-      </main>
-    </div>
+    <AuthShell
+      aside={
+        <>
+          New here? <Link href="/signup">Create an account</Link>
+        </>
+      }
+    >
+      <span aria-hidden="true" className="auth-icon">
+        <PhylaxMark size={32} className="sway" />
+      </span>
+      <h1>Welcome back</h1>
+      <p className="lede">Your list kept growing while you were away.</p>
+      <Suspense fallback={null}>
+        <SignInStatus searchParams={searchParams} />
+      </Suspense>
+      <AuthForm mode="signin" demo={isDemo()} />
+    </AuthShell>
   );
 }
 
