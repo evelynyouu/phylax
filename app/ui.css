@@ -22,11 +22,11 @@
 }
 .btn-primary {
   background: var(--evergreen);
-  color: #fff;
+  color: var(--on-evergreen);
 }
 .btn-primary:hover {
   background: var(--evergreen-hover);
-  color: #fff;
+  color: var(--on-evergreen);
 }
 .btn-ghost {
   background: transparent;
@@ -86,7 +86,7 @@
 .chip[aria-pressed="true"] {
   background: var(--evergreen);
   border-color: var(--evergreen);
-  color: #fff;
+  color: var(--on-evergreen);
 }
 .chip-group {
   display: flex;
@@ -98,7 +98,7 @@
 .seg-group {
   display: inline-flex;
   gap: 6px;
-  background: var(--paper);
+  background: var(--tile);
   padding: 5px;
   border-radius: var(--r-pill);
 }
@@ -118,7 +118,7 @@
 }
 .seg[aria-pressed="true"] {
   background: var(--evergreen);
-  color: #fff;
+  color: var(--on-evergreen);
 }
 
 /* ---- Tag (status) ---- */
@@ -173,7 +173,7 @@
   box-shadow: 0 0 0 3px var(--sky);
 }
 .field input:disabled {
-  background: var(--paper);
+  background: var(--tile);
   color: var(--muted);
 }
 .field-hint {
@@ -195,6 +195,7 @@
   color: var(--ink);
 }
 .mark[data-cat="software"] {
+  /* Category fills stay the same in both themes, so the letter stays white. */
   color: #fff;
 }
 
@@ -260,7 +261,7 @@
 }
 .side-nav a[aria-current="page"] {
   background: var(--evergreen);
-  color: #fff;
+  color: var(--on-evergreen);
   font-weight: 600;
 }
 .side-foot {
@@ -364,4 +365,54 @@
   .page-head h1 {
     font-size: 36px;
   }
+}
+
+/* ---- Dark mode switch (sidebar) ---- */
+.tswitch {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 44px;
+  padding: 0 10px;
+  margin: 0 -10px;
+  width: calc(100% + 20px);
+  border: 0;
+  border-radius: 12px;
+  background: transparent;
+  color: var(--ink);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: left;
+}
+.tswitch:hover {
+  background: var(--ghost-hover);
+}
+.tswitch .trk {
+  margin-left: auto;
+  position: relative;
+  width: 40px;
+  height: 24px;
+  border-radius: 12px;
+  background: var(--field-border);
+  transition: background 0.25s ease;
+  flex: none;
+}
+.tswitch .knb {
+  position: absolute;
+  left: 3px;
+  top: 3px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+  transition: transform 0.25s cubic-bezier(0.3, 1.4, 0.5, 1);
+}
+.tswitch[aria-checked="true"] .trk {
+  background: var(--evergreen);
+}
+.tswitch[aria-checked="true"] .knb {
+  transform: translateX(16px);
+  background: var(--on-evergreen);
 }

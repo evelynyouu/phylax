@@ -28,6 +28,11 @@
   --field-border: #d6cbd0;
   --sage-fill: #dde6d5;
   --mauve-fill: #f3dcdf;
+  --on-evergreen: #ffffff;
+  --track: #f1ecef;
+  --divider: #e0d6db;
+  --tile: #f7f3f5;
+  --on-evergreen-soft: #e3dade;
 
   /* Category marks (fills) */
   --cat-streaming: var(--mauve);
@@ -55,6 +60,46 @@
   /* Type: font families come from next/font variables set on <html> */
   --display: var(--font-gloock), Georgia, serif;
   --body: var(--font-hanken), system-ui, sans-serif;
+}
+
+/* Dark theme for the signed-in app, from the token sets in the final screen designs
+   (Dashboard, Subscriptions, Calendar, Bills .dc.html). The toggle sets data-theme on <html>;
+   only the app shell follows it, the sign-in pages and the landing stay light like the designs. */
+:root[data-theme="dark"] .shell {
+  --paper: #0f1612;
+  --surface: #18221c;
+  --ink: #e7ece5;
+  --moss: #b5c1b8;
+  --muted: #8e9c92;
+  --hairline: #27342c;
+  --field-border: #3a4a40;
+  --ghost-hover: #233029;
+  --evergreen: #a9c59a;
+  --evergreen-hover: #bed6b1;
+  --on-evergreen: #10190f;
+  --mauve-ink: #ee9ea6;
+  --mauve-fill: #3b2429;
+  --danger-hover: #33232a;
+  --danger-border: #7a4850;
+  --sage-fill: #233322;
+  --sky: #1f2d3b;
+  --lavender: #2e2529;
+  --slate: #a9c1d8;
+  --sage-ink: #b7d0a6;
+  --track: #1d2721;
+  --divider: #3a4a40;
+  --tile: #212c25;
+  --on-evergreen-soft: #2d3d2c;
+  color-scheme: dark;
+}
+.shell {
+  background: var(--paper);
+  color: var(--ink);
+}
+/* Smooth the switch itself; the class is only on <html> for a moment while toggling. */
+.theming .shell,
+.theming .shell * {
+  transition: background-color 0.35s ease, color 0.35s ease, border-color 0.35s ease, fill 0.35s ease, stroke 0.35s ease !important;
 }
 
 *,

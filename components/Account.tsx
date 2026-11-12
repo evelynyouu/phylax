@@ -2,16 +2,18 @@ import Link from "next/link";
 import type { AppUser } from "@/lib/current-user";
 import DeleteAccount from "./DeleteAccount";
 import DisconnectGmail from "./DisconnectGmail";
+import ThemeToggle from "./ThemeToggle";
 
 function initials(name: string): string {
   const parts = name.trim().split(/\s+/).filter(Boolean);
   return ((parts[0]?.[0] ?? "") + (parts.length > 1 ? parts[parts.length - 1][0] : "")).toUpperCase() || "?";
 }
 
-/** Sidebar footer: sync status, who is signed in, sign out, and the privacy and terms links. */
+/** Sidebar footer: dark mode switch, sync status, who is signed in, sign out, and the privacy and terms links. */
 export default function Account({ user, syncNote, demo, connected }: { user: AppUser; syncNote: string; demo: boolean; connected: boolean }) {
   return (
     <>
+      <ThemeToggle />
       <p className="sync-note">{syncNote}</p>
       <div className="account">
         <span aria-hidden="true" className="avatar">
