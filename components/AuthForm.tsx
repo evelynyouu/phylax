@@ -14,6 +14,7 @@ import {
 } from "@/lib/auth-copy";
 import { supabaseEnv } from "@/lib/supabase/config";
 import { supabaseBrowser } from "@/lib/supabase/browser";
+import ForgotLink from "./ForgotLink";
 import GoogleIcon from "./GoogleIcon";
 import PasswordField from "./PasswordField";
 import { Field } from "./ui";
@@ -128,7 +129,7 @@ export default function AuthForm({ mode }: { mode: "signin" | "signup" }) {
             label="Password"
             autoComplete="current-password"
             disabled={!configured}
-            labelAside={<Link href="/forgot-password">Forgot password?</Link>}
+            labelAside={<ForgotLink emailInputId="si-email" />}
           />
           <button type="submit" className="btn btn-primary btn-block" disabled={disabled}>
             {busy ? "Signing in" : "Sign in"}

@@ -272,6 +272,8 @@ input.pill-input { width: 200px; }
 .label-row { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
 .label-row label { font-size: 14px; font-weight: 600; }
 .label-row a { font-size: 14px; }
+.link-btn { align-self: center; padding: 4px 0; border: 0; background: none; font: inherit; font-size: 14px; color: var(--evergreen); text-decoration: underline; cursor: pointer; }
+.link-btn:disabled { color: var(--moss); text-decoration: none; cursor: default; }
 .pw-wrap { position: relative; }
 .pw-wrap input { width: 100%; min-height: 50px; padding: 0 76px 0 16px; border-radius: var(--r-field); border: 1.5px solid var(--divider); background: var(--surface); color: var(--ink); }
 .pw-wrap input:focus { outline: none; border-color: var(--evergreen); box-shadow: 0 0 0 3px var(--sky); }

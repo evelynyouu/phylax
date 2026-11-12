@@ -21,8 +21,8 @@ describe("sign-up name", () => {
 });
 
 describe("password reset", () => {
-  it("lets the auth callback land on the reset page and nowhere new", () => {
-    expect(safeNext("/reset-password")).toBe("/reset-password");
+  it("no longer lets the auth callback land on a reset page", () => {
+    expect(safeNext("/reset-password")).toBe("/app");
     expect(safeNext("https://evil.example/reset-password")).toBe("/app");
   });
 });
