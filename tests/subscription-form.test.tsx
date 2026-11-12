@@ -35,6 +35,11 @@ describe("SubscriptionForm", () => {
     expect(edit).toContain("Fix anything Phylax read wrong from your emails.");
     expect(edit).toContain("Save changes");
     expect(edit).toContain("Reset to what the emails say");
+    // Category select with all 13 options and the row's category selected.
+    const cat = renderToStaticMarkup(<SubscriptionForm mode="edit" merchantKey="nintendo" initial={initial} category="gaming" onClose={() => {}} />);
+    expect(cat).toContain("Category");
+    expect(cat).toContain('<option value="gaming" selected="">Gaming</option>');
+    expect(cat.match(/<option value="(housing|utilities|phone|software|streaming|music|gaming|storage|shopping|learning|health|insurance|other)"/g)).toHaveLength(13);
     const add = renderToStaticMarkup(<SubscriptionForm mode="add" initial={{ merchant: "", amount: "", cadence: "monthly", nextChargeDate: "" }} onClose={() => {}} />);
     expect(add).toContain("Add a recurring payment");
     expect(add).not.toContain("Reset to what the emails say");

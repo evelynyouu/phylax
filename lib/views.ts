@@ -232,6 +232,8 @@ export interface DeadlineRow {
   key: string;
   kind: DeadlineKind;
   merchant: string;
+  merchantKey: string;
+  category: Category;
   date: string;
   daysAway: number;
   amount: number | null;
@@ -265,14 +267,14 @@ export function deadlineRows(d: Dashboard, today: string): DeadlineRow[] {
       const amt = s?.amount ?? x.amount;
       what = amt !== null ? `Free trial ends, then ${money(amt, x.currency)} ${PER[s?.cadence ?? "monthly"]}` : "Free trial ends";
     } else what = s?.cadence ? `Renews ${cadenceWord(s.cadence)}` : "Auto-renews";
-    rows.push({ key: x.key, kind: x.kind, merchant: x.merchant, date: x.date, daysAway: x.daysAway, amount: x.amount, currency: x.currency, what: `${what}, ${relDays(x.daysAway)}`, urgent: x.daysAway <= 3, cancelUrl: x.cancelUrl, cancelUrlTrusted: x.cancelUrlTrusted, reminder: x.reminder });
+    rows.push({ key: x.key, kind: x.kind, merchant: x.merchant, merchantKey: x.merchantKey, category: x.category, date: x.date, daysAway: x.daysAway, amount: x.amount, currency: x.currency, what: `${what}, ${relDays(x.daysAway)}`, urgent: x.daysAway <= 3, cancelUrl: x.cancelUrl, cancelUrlTrusted: x.cancelUrlTrusted, reminder: x.reminder });
   }
   for (const s of d.subscriptions) {
     const p = s.priceChange;
     if (!p?.effective || p.effective < today || s.status === "cancelled") continue;
     const n = daysBetween(today, p.effective);
     const what = p.from !== null ? `Price rises from ${money(p.from, s.currency)}` : "Price rises";
-    rows.push({ key: `${s.merchantKey}|price|${p.effective}`, kind: "price_change", merchant: s.merchant, date: p.effective, daysAway: n, amount: p.to, currency: s.currency, what: `${what}, ${relDays(n)}`, urgent: n <= 3, cancelUrl: s.cancelUrl, cancelUrlTrusted: s.cancelUrlTrusted, reminder: false });
+    rows.push({ key: `${s.merchantKey}|price|${p.effective}`, kind: "price_change", merchant: s.merchant, merchantKey: s.merchantKey, category: s.category, date: p.effective, daysAway: n, amount: p.to, currency: s.currency, what: `${what}, ${relDays(n)}`, urgent: n <= 3, cancelUrl: s.cancelUrl, cancelUrlTrusted: s.cancelUrlTrusted, reminder: false });
   }
   return rows.sort((a, b) => a.date.localeCompare(b.date) || a.merchant.localeCompare(b.merchant));
 }

@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toEditBody, type FormValues } from "@/lib/subscription-edit";
 import type { Category } from "@/lib/categories";
+import CategorySelect from "./CategorySelect";
 import { Button, Field, MerchantMark } from "./ui";
 
 const CYCLES = [
@@ -37,16 +38,23 @@ export default function SubscriptionForm({
 }) {
   const router = useRouter();
   const [v, setV] = useState<FormValues>(initial);
+  const [cat, setCat] = useState<Category>(category ?? "other");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const set = (k: keyof FormValues) => (e: { target: { value: string } }) => setV({ ...v, [k]: e.target.value });
 
-  async function post(url: string, body: unknown) {
+  async function send(url: string, body: unknown) {
+    const res = await fetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+    if (!res.ok) throw new Error((await res.json().catch(() => ({}))).error ?? "Could not save");
+    return res;
+  }
+
+  async function post(url: string, body: unknown, after?: (res: Response) => Promise<void>) {
     setBusy(true);
     setError("");
     try {
-      const res = await fetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
-      if (!res.ok) throw new Error((await res.json().catch(() => ({}))).error ?? "Could not save");
+      const res = await send(url, body);
+      if (after) await after(res);
       onClose();
       router.refresh();
     } catch (e) {
@@ -60,6 +68,11 @@ export default function SubscriptionForm({
     post(
       "/api/subscriptions/edit",
       mode === "add" ? toEditBody(v, { mode: "add" }) : toEditBody(v, { mode: "edit", merchantKey: merchantKey!, initial, manual }),
+      async (res) => {
+        // A new payment has no category yet; save one once the server has made its key. Edits post only a changed value.
+        const key = mode === "add" ? ((await res.json().catch(() => ({}))) as { merchantKey?: string }).merchantKey : merchantKey;
+        if (key && (mode === "add" || cat !== (category ?? "other"))) await send("/api/categories", { merchantKey: key, category: cat });
+      },
     );
 
   return (
@@ -107,7 +120,13 @@ export default function SubscriptionForm({
           </select>
         </div>
       </div>
-      <Field id="sf-date" label="Next charge" type="date" value={v.nextChargeDate} onChange={set("nextChargeDate")} />
+      <div className="form-pair">
+        <Field id="sf-date" label="Next charge" type="date" value={v.nextChargeDate} onChange={set("nextChargeDate")} />
+        <div className="field">
+          <label htmlFor="sf-category">Category</label>
+          <CategorySelect id="sf-category" label="Category" value={cat} onChange={setCat} />
+        </div>
+      </div>
       {mode === "edit" && <p className="fine">Your changes stay after the next sync. Leave a field as it is to keep following the emails.</p>}
       {error && (
         <p role="alert" className="field-error">

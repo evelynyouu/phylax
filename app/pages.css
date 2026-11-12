@@ -384,3 +384,4 @@ input.pill-input { width: 200px; }
 .confirm-body input { min-height: 44px; padding: 0 12px; font: inherit; border: 1px solid var(--muted); border-radius: 10px; background: var(--surface); color: var(--ink); }
 .confirm-actions { display: flex; gap: 10px; justify-content: flex-end; }
 .confirm-actions .btn:disabled { opacity: 0.5; cursor: default; }
+.cat-select { min-height: 32px; padding: 0 10px; font-size: 13px; margin-top: 4px; max-width: 100%; }

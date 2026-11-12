@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import CancelAction from "./CancelAction";
+import CategorySelect from "./CategorySelect";
 import { deadlineGroup, type DeadlineRow } from "@/lib/views";
 import { Chip } from "./ui";
 
@@ -122,6 +123,14 @@ export default function BillsView({ rows, paid }: { rows: BillRow[]; paid: PaidR
                     </div>
                     <div className="bill-main">
                       <p className="name">{r.merchant}</p>
+                      <CategorySelect
+                        id={`cat-${r.key}`}
+                        label={`Category for ${r.merchant}`}
+                        className="pill-input cat-select"
+                        value={r.category}
+                        disabled={busy === `cat-${r.key}`}
+                        onChange={(c) => act(`cat-${r.key}`, "/api/categories", { merchantKey: r.merchantKey, category: c })}
+                      />
                       <p className={`what${r.urgent ? " urgent" : ""}`}>{r.what}</p>
                       {r.kind === "payment_due" && (
                         <label className="remind">

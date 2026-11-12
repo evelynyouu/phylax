@@ -91,3 +91,15 @@ describe("deadline rows (Bills and deadlines)", () => {
     expect([-2, 0, 6, 7, 20, 21].map(deadlineGroup)).toEqual(["Overdue", "This week", "This week", "Next two weeks", "Next two weeks", "Later"]);
   });
 });
+
+describe("deadlineRows category", () => {
+  it("carries the category of the due item and of the subscription for price rises", () => {
+    const d = {
+      due: [due({ category: "utilities" })],
+      subscriptions: [sub({ merchantKey: "hulu", merchant: "Hulu", category: "streaming", priceChange: { from: 8, to: 10, effective: "2026-12-01" } })],
+    } as unknown as Dashboard;
+    const rows = deadlineRows(d, TODAY);
+    expect(rows.find((r) => r.kind === "renewal_notice")).toMatchObject({ category: "utilities", merchantKey: "peacock" });
+    expect(rows.find((r) => r.kind === "price_change")).toMatchObject({ category: "streaming", merchantKey: "hulu" });
+  });
+});
