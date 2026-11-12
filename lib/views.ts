@@ -1,4 +1,4 @@
-import { CATEGORY_LABELS, categoryFor, type Category } from "./categories";
+import { CATEGORY_LABELS, type Category } from "./categories";
 import { addDays, daysBetween } from "./extract/dates";
 import { cadenceLabel, money, shortDate } from "./format";
 import type { Cadence, Dashboard, Subscription } from "./types";
@@ -118,7 +118,7 @@ export function categoryTotals(d: Dashboard): { category: Category; label: strin
   const sums = new Map<Category, number>();
   for (const s of d.subscriptions) {
     if (s.status !== "active") continue;
-    const c = categoryFor(s.merchantKey);
+    const c = s.category;
     sums.set(c, (sums.get(c) ?? 0) + monthlyOf(s));
   }
   return [...sums]

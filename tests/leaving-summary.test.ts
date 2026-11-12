@@ -21,6 +21,8 @@ const sub = (over: Partial<Subscription>): Subscription => ({
   manualCancel: false,
   edited: false,
   manual: false,
+  category: "other",
+  categoryChosen: false,
   ...over,
 });
 const up = (merchantKey: string, date: string, amount: number, source: "subscription" | "bill" = "subscription"): UpcomingPayment => ({

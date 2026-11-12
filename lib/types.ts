@@ -1,3 +1,5 @@
+import type { Category } from "./categories";
+
 export type EmailKind =
   | "receipt"
   | "renewal_notice"
@@ -61,6 +63,8 @@ export interface Subscription {
   manualCancel: boolean; // the user said "I've cancelled it" and no newer receipt has arrived
   edited: boolean; // the user corrected one or more fields
   manual: boolean; // the user added this recurring payment by hand; no email behind it
+  category: Category;
+  categoryChosen: boolean; // the user picked this category; otherwise it came from the rules
 }
 
 export interface UpcomingPayment {
@@ -87,6 +91,7 @@ export interface DueItem {
   cancelUrlTrusted: boolean;
   paid: boolean; // payment_due only
   reminder: boolean; // payment_due only
+  category: Category;
 }
 
 /** A bill (payment_due) with its due date, newest email per merchant and date. */
@@ -99,6 +104,7 @@ export interface BillItem {
   dueDate: string;
   paid: boolean;
   reminder: boolean;
+  category: Category;
 }
 
 /** A charge that already happened, from a receipt email. */

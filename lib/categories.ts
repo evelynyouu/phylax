@@ -107,8 +107,7 @@ const RULES: [Category, RegExp][] = [
 ];
 
 export function categoryFor(merchantKey: string, merchantName?: string): Category {
-  const known = CATEGORY_BY_MERCHANT[merchantKey];
-  if (known) return known;
+  if (Object.hasOwn(CATEGORY_BY_MERCHANT, merchantKey)) return CATEGORY_BY_MERCHANT[merchantKey];
   const text = `${merchantName ?? ""} ${merchantKey}`.toLowerCase();
   for (const [category, re] of RULES) if (re.test(text)) return category;
   return "other";

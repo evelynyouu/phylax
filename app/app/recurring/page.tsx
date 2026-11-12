@@ -2,7 +2,7 @@ import { Suspense } from "react";
 import RecurringView, { type SubRow } from "@/components/RecurringView";
 import { ConnectGmailEmpty } from "@/components/ConnectGmail";
 import { loadApp } from "@/lib/app-data";
-import { CATEGORY_LABELS, categoryFor } from "@/lib/categories";
+import { CATEGORY_LABELS } from "@/lib/categories";
 import { daysBetween } from "@/lib/extract/dates";
 import { hostOf, money, relDays, shortDate } from "@/lib/format";
 import type { Subscription } from "@/lib/types";
@@ -29,7 +29,7 @@ function priceTag(s: Subscription, today: string): string | null {
 
 function toRow(s: Subscription, today: string): SubRow {
   const refYear = Number(today.slice(0, 4));
-  const cat = categoryFor(s.merchantKey);
+  const cat = s.category;
   const days = s.nextChargeDate ? daysBetween(today, s.nextChargeDate) : null;
   const yearly = s.annualCost;
   return {

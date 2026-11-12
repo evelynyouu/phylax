@@ -1,6 +1,7 @@
 import { addDays, addMonths, daysBetween, todayIso } from "./extract/dates";
 import { billKey } from "./calendar";
 import type { SubscriptionEdit } from "./store/types";
+import { categoryFor, type Category } from "./categories";
 import type { BillItem, Cadence, Dashboard, DueItem, ExtractedRecord, PastCharge, Subscription, UpcomingPayment } from "./types";
 
 const PERIODS_PER_YEAR: Record<Cadence, number> = { weekly: 52, monthly: 12, quarterly: 4, semiannual: 2, yearly: 1 };
@@ -64,7 +65,9 @@ export function isRecurringReceipt(r: ExtractedRecord, sameMerchantReceipts: Ext
   return !!r.cadence || sameMerchantReceipts.filter((o) => o.amount === r.amount).length >= 2;
 }
 
-function buildSubscription(key: string, group: ExtractedRecord[], today: string, manualAt?: string): Subscription | null {
+type CategoryResolver = (key: string, name: string) => { category: Category; categoryChosen: boolean };
+
+function buildSubscription(key: string, group: ExtractedRecord[], today: string, resolveCategory: CategoryResolver, manualAt?: string): Subscription | null {
   // A receipt only counts toward a subscription if it states a cadence or the same amount repeats.
   // This keeps one-off purchases (e.g. an Amazon order) from masquerading as the recurring charge.
   const allReceipts = group.filter((r) => r.kind === "receipt" && r.amount !== null);
@@ -186,6 +189,7 @@ function buildSubscription(key: string, group: ExtractedRecord[], today: string,
     manualCancel: manual,
     edited: false,
     manual: false,
+    ...resolveCategory(key, latestName),
   };
 }
 
@@ -202,6 +206,7 @@ function applyEdits(
   dismissed: Set<string>,
   manualCancels: Map<string, string>,
   today: string,
+  resolveCategory: CategoryResolver,
 ) {
   for (const e of edits) {
     if (dismissed.has(e.merchantKey)) continue;
@@ -238,6 +243,7 @@ function applyEdits(
       manualCancel: cancelled,
       edited: false,
       manual: true,
+      ...resolveCategory(e.merchantKey, e.merchant ?? e.merchantKey),
     });
   }
 }
@@ -248,6 +254,7 @@ export function buildDashboard(
     today?: string;
     dismissed?: Set<string>;
     manualCancels?: Map<string, string>; // merchantKey -> ISO time the user marked it cancelled
+    categories?: Map<string, Category>; // merchantKey -> category the user chose
     paid?: Set<string>; // bill keys
     reminders?: Set<string>; // bill keys
     edits?: SubscriptionEdit[]; // the user's corrections and hand-added recurring payments
@@ -258,6 +265,11 @@ export function buildDashboard(
   const manualCancels = opts.manualCancels ?? new Map<string, string>();
   const paid = opts.paid ?? new Set<string>();
   const reminders = opts.reminders ?? new Set<string>();
+  const categories = opts.categories ?? new Map<string, Category>();
+  const resolveCategory: CategoryResolver = (key, name) => {
+    const chosen = categories.get(key);
+    return { category: chosen ?? categoryFor(key, name), categoryChosen: chosen !== undefined };
+  };
 
   const relevant = all.filter((r) => r.relevant && r.merchantKey && !dismissed.has(r.merchantKey));
   const groups = new Map<string, ExtractedRecord[]>();
@@ -270,10 +282,10 @@ export function buildDashboard(
   // ---- subscriptions ----
   const subscriptions: Subscription[] = [];
   for (const [key, group] of groups) {
-    const s = buildSubscription(key, group, today, manualCancels.get(key));
+    const s = buildSubscription(key, group, today, resolveCategory, manualCancels.get(key));
     if (s) subscriptions.push(s);
   }
-  applyEdits(subscriptions, opts.edits ?? [], dismissed, manualCancels, today);
+  applyEdits(subscriptions, opts.edits ?? [], dismissed, manualCancels, today, resolveCategory);
   const statusRank = { active: 0, trial: 1, cancelled: 2 } as const;
   subscriptions.sort(
     (a, b) =>
@@ -323,6 +335,7 @@ export function buildDashboard(
       dueDate: r.dueDate!,
       paid: paid.has(key),
       reminder: reminders.has(key),
+      category: resolveCategory(r.merchantKey!, r.merchant!).category,
     });
     // A paid bill is no longer money about to leave.
     if (r.dueDate! < today || r.dueDate! > windowEnd || paid.has(key)) continue;
@@ -379,6 +392,7 @@ export function buildDashboard(
       cancelUrlTrusted: r.kind === "payment_due" ? false : sub?.cancelUrl ? sub.cancelUrlTrusted : r.cancelUrlTrusted,
       paid: isBill && paid.has(key),
       reminder: isBill && reminders.has(key),
+      category: resolveCategory(r.merchantKey!, r.merchant!).category,
     });
   }
   due.sort((a, b) => a.date.localeCompare(b.date) || a.merchant.localeCompare(b.merchant));

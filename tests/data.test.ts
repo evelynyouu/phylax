@@ -116,6 +116,8 @@ describe("calendar", () => {
     manualCancel: false,
     edited: false,
     manual: false,
+    category: "other",
+    categoryChosen: false,
     ...over,
   });
   const empty = { subscriptions: [], bills: [], receipts: [] };
@@ -152,7 +154,7 @@ describe("calendar", () => {
   });
 
   it("skips cancelled subscriptions and includes bills by due date", () => {
-    const bills = [{ key: "pge|2026-11-20", merchantKey: "pge", merchant: "PG&E", amount: 142.18, currency: "USD", dueDate: "2026-11-20", paid: false, reminder: false }];
+    const bills = [{ key: "pge|2026-11-20", merchantKey: "pge", merchant: "PG&E", amount: 142.18, currency: "USD", dueDate: "2026-11-20", paid: false, reminder: false, category: "other" as const }];
     const e = chargesForMonth({ ...empty, subscriptions: [sub({ status: "cancelled", nextChargeDate: null })], bills }, 2026, 11, TODAY);
     expect(e).toEqual([expect.objectContaining({ date: "2026-11-20", kind: "bill", merchant: "PG&E" })]);
   });

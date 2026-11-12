@@ -4,6 +4,7 @@ import { fetchEmail, gmailConfigured, GmailReconnectError, isInvalidGrant, listM
 import { errorCode, errorMessage, logError } from "./log";
 import { processWide } from "./process-wide";
 import { withRetry } from "./retry";
+import type { Category } from "./categories";
 import { buildDashboard } from "./resolve";
 import type { Store } from "./store/types";
 import type { Dashboard, ExtractedRecord, RawEmail } from "./types";
@@ -258,7 +259,7 @@ export async function lastSyncedAt(store: Store): Promise<string | null> {
 export async function getDashboard(
   store: Store,
 ): Promise<{ dashboard: Dashboard; connected: boolean; reconnect: boolean }> {
-  const [records, dismissed, manualCancels, paid, reminders, conn, edits] = await Promise.all([
+  const [records, dismissed, manualCancels, paid, reminders, conn, edits, categories] = await Promise.all([
     store.loadRecords(),
     store.marks("dismissed"),
     store.marks("manual_cancels"),
@@ -270,6 +271,10 @@ export async function getDashboard(
       logError("dashboard: could not load subscription edits", e);
       return [];
     }),
+    store.listCategories().catch((e) => {
+      logError("dashboard: could not load categories", e);
+      return new Map<string, Category>();
+    }),
   ]);
   const dashboard = buildDashboard(records, {
     dismissed: new Set(dismissed.keys()),
@@ -277,6 +282,7 @@ export async function getDashboard(
     paid: new Set(paid.keys()),
     reminders: new Set(reminders.keys()),
     edits,
+    categories,
   });
   return { dashboard, connected: conn !== null, reconnect: conn?.needsReconnect === true };
 }

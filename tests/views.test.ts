@@ -21,6 +21,8 @@ const sub = (over: Partial<Subscription>): Subscription => ({
   manualCancel: false,
   edited: false,
   manual: false,
+  category: "other",
+  categoryChosen: false,
   ...over,
 });
 
@@ -38,6 +40,7 @@ const due = (over: Partial<DueItem>): DueItem => ({
   cancelUrlTrusted: false,
   paid: false,
   reminder: false,
+  category: "other",
   ...over,
 });
 
@@ -96,9 +99,9 @@ describe("category totals", () => {
   it("sums active subscriptions a month by category, leaving out trials and cancelled", () => {
     const d = dash({
       subscriptions: [
-        sub({}),
+        sub({ category: "streaming" }),
         sub({ merchantKey: "hulu", status: "trial", annualCost: 119.88 }),
-        sub({ merchantKey: "openai", annualCost: 240 }),
+        sub({ merchantKey: "openai", annualCost: 240, category: "software" }),
         sub({ merchantKey: "peacock", status: "cancelled", annualCost: 95.88 }),
       ],
     });

@@ -40,7 +40,7 @@ describe("billed every 6 months", () => {
     const s = {
       merchantKey: "gym", merchant: "Gym", status: "active" as const, amount: 60, currency: "USD", cadence: "semiannual" as const,
       lastChargeDate: null, nextChargeDate: "2026-12-01", priceChange: null, cancelUrl: null, cancelUrlTrusted: false,
-      evidenceEmailIds: [], annualCost: 120, manualCancel: false, edited: false, manual: true,
+      evidenceEmailIds: [], annualCost: 120, manualCancel: false, edited: false, manual: true, category: "other" as const, categoryChosen: false,
     };
     const months = [12, 1, 2, 3, 4, 5, 6].map((m) => chargesForMonth({ ...empty, subscriptions: [s] }, m === 12 ? 2026 : 2027, m, "2026-11-09").length);
     expect(months).toEqual([1, 0, 0, 0, 0, 0, 1]);

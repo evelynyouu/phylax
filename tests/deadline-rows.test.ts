@@ -20,6 +20,8 @@ const sub = (over: Partial<Subscription>): Subscription => ({
   manualCancel: false,
   edited: false,
   manual: false,
+  category: "other",
+  categoryChosen: false,
   ...over,
 });
 const due = (over: Partial<DueItem>): DueItem => ({
@@ -36,6 +38,7 @@ const due = (over: Partial<DueItem>): DueItem => ({
   cancelUrlTrusted: true,
   paid: false,
   reminder: false,
+  category: "other",
   ...over,
 });
 const dash = (over: Partial<Dashboard>): Dashboard => ({
