@@ -1,3 +1,5 @@
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
 
@@ -27,6 +29,17 @@ describe("privacy and terms pages", () => {
     expect(page).toContain("<table>");
     expect(page).toContain('href="https://developers.google.com/terms/api-services-user-data-policy"');
     expect(page).not.toContain("Draft for review");
+  });
+
+  it("privacy page discloses the profile photo and category choices; the inventory lists their storage", () => {
+    const page = html(<PrivacyPage />);
+    expect(page).toContain("profile photo");
+    expect(page).toContain("category");
+    expect(page).toContain("nothing goes to an outside service");
+    const inventory = readFileSync(join(process.cwd(), "docs/legal/DATA_INVENTORY.md"), "utf8");
+    expect(inventory).toContain("merchant_categories");
+    expect(inventory).toContain("avatars");
+    expect(inventory).not.toContain("\u2014");
   });
 
   it("render the terms headings without the draft line or the reviewer notes", () => {

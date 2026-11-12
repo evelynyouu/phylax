@@ -15,8 +15,10 @@ Phylax uses Supabase for accounts and storage, and Google for Gmail access.
 1. Create a project at supabase.com.
 2. In Project Settings > Data API, copy the **Project URL**. Use the bare `https://<ref>.supabase.co`, not the `/rest/v1` address. In Project Settings > API Keys, copy the anon or publishable key. Put both in `.env.local` (see step 3).
 3. For development, turn off **Confirm email** (Authentication > Sign In / Providers > Email), so new accounts can sign in at once.
-4. In the SQL Editor, run both files in `supabase/migrations/`, in filename order: `20261110000000_init.sql`, then `20261111000000_gmail_needs_reconnect.sql`.
+4. In the SQL Editor, run every file in `supabase/migrations/`, in filename order: `20261110000000_init.sql`, `20261111000000_gmail_needs_reconnect.sql`, then the three newer ones: `20261112000000_semiannual_cadence.sql`, `20261112000001_merchant_categories.sql` and `20261112000002_avatars.sql` (the last creates the private `avatars` storage bucket).
 5. Only for `npm run test:db`: create two users in Authentication > Users with auto confirm on, then set `SUPABASE_TEST_EMAIL_A`, `SUPABASE_TEST_EMAIL_B` and `SUPABASE_TEST_PASSWORD` (the same password for both).
+6. Password reset emails a code instead of a link. In Authentication > Email Templates > "Reset Password", make the body include the code `{{ .Token }}` and remove the link, for example: "Your Phylax code is {{ .Token }}. It expires in one hour." Use "Phylax" (not "Subwatch") in every template.
+7. Keep **Secure email change** on (Authentication > Sign In / Providers > Email). An email change then needs confirmation from both the old and the new address.
 
 ### 2. Google Cloud
 
