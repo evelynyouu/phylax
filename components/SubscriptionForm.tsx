@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toEditBody, type FormValues } from "@/lib/subscription-edit";
 import type { Category } from "@/lib/categories";
+import { addThenCategorize } from "@/lib/save-payment";
 import CategorySelect from "./CategorySelect";
 import { Button, Field, MerchantMark } from "./ui";
 
@@ -38,13 +39,17 @@ export default function SubscriptionForm({
 }) {
   const router = useRouter();
   const [v, setV] = useState<FormValues>(initial);
-  const [cat, setCat] = useState<Category>(category ?? "other");
+  const [cat, setCat] = useState<Category | "">(mode === "add" ? "" : (category ?? "other"));
+  // Set once the payment is saved, so a failed category save is retried alone and never adds the payment again.
+  const [addedKey, setAddedKey] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const set = (k: keyof FormValues) => (e: { target: { value: string } }) => setV({ ...v, [k]: e.target.value });
 
+  const raw = (url: string, body: unknown) => fetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+
   async function send(url: string, body: unknown) {
-    const res = await fetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+    const res = await raw(url, body);
     if (!res.ok) throw new Error((await res.json().catch(() => ({}))).error ?? "Could not save");
     return res;
   }
@@ -64,16 +69,30 @@ export default function SubscriptionForm({
     }
   }
 
+  async function saveAdd() {
+    setBusy(true);
+    setError("");
+    const r = await addThenCategorize(raw, toEditBody(v, { mode: "add" }), cat, addedKey ?? undefined);
+    setBusy(false);
+    if (r.ok) {
+      onClose();
+      router.refresh();
+    } else if (r.stage === "payment") {
+      setError(r.error);
+    } else {
+      setAddedKey(r.merchantKey);
+      router.refresh();
+      setError("Your payment was added, but its category did not save. Press Save category to try again, or close this and change it later.");
+    }
+  }
+
   const save = () =>
-    post(
-      "/api/subscriptions/edit",
-      mode === "add" ? toEditBody(v, { mode: "add" }) : toEditBody(v, { mode: "edit", merchantKey: merchantKey!, initial, manual }),
-      async (res) => {
-        // A new payment has no category yet; save one once the server has made its key. Edits post only a changed value.
-        const key = mode === "add" ? ((await res.json().catch(() => ({}))) as { merchantKey?: string }).merchantKey : merchantKey;
-        if (key && (mode === "add" || cat !== (category ?? "other"))) await send("/api/categories", { merchantKey: key, category: cat });
-      },
-    );
+    mode === "add"
+      ? saveAdd()
+      : post("/api/subscriptions/edit", toEditBody(v, { mode: "edit", merchantKey: merchantKey!, initial, manual }), async () => {
+          // Edits post a category only when it changed.
+          if (cat && cat !== (category ?? "other")) await send("/api/categories", { merchantKey: merchantKey!, category: cat });
+        });
 
   return (
     <form
@@ -124,7 +143,7 @@ export default function SubscriptionForm({
         <Field id="sf-date" label="Next charge" type="date" value={v.nextChargeDate} onChange={set("nextChargeDate")} />
         <div className="field">
           <label htmlFor="sf-category">Category</label>
-          <CategorySelect id="sf-category" label="Category" value={cat} onChange={setCat} />
+          <CategorySelect id="sf-category" label="Category" value={cat} onChange={setCat} emptyLabel={mode === "add" ? "Pick for me" : undefined} disabled={addedKey !== null} />
         </div>
       </div>
       {mode === "edit" && <p className="fine">Your changes stay after the next sync. Leave a field as it is to keep following the emails.</p>}
@@ -135,7 +154,7 @@ export default function SubscriptionForm({
       )}
       <div className="form-actions">
         <Button type="submit" disabled={busy} className="btn-block">
-          {busy ? "Saving" : mode === "add" ? "Add payment" : "Save changes"}
+          {busy ? "Saving" : mode === "add" ? (addedKey ? "Save category" : "Add payment") : "Save changes"}
         </Button>
         {mode === "edit" && canUndo && merchantKey && (
           <button type="button" className="linkish" disabled={busy} onClick={() => post("/api/subscriptions/edit/delete", { merchantKey })}>

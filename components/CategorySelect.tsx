@@ -10,16 +10,20 @@ export default function CategorySelect({
   onChange,
   disabled,
   className = "pill-input",
+  emptyLabel,
 }: {
   id: string;
   label: string;
-  value: Category;
-  onChange: (c: Category) => void;
+  value: Category | "";
+  onChange: (c: Category | "") => void;
   disabled?: boolean;
   className?: string;
+  /** Adds a first option with an empty value, e.g. "Pick for me". */
+  emptyLabel?: string;
 }) {
   return (
-    <select id={id} className={className} aria-label={label} value={value} disabled={disabled} onChange={(e) => onChange(e.target.value as Category)}>
+    <select id={id} className={className} aria-label={label} value={value} disabled={disabled} onChange={(e) => onChange(e.target.value as Category | "")}>
+      {emptyLabel && <option value="">{emptyLabel}</option>}
       {CATEGORY_ORDER.map((c) => (
         <option key={c} value={c}>
           {CATEGORY_LABELS[c]}

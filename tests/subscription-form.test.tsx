@@ -42,6 +42,8 @@ describe("SubscriptionForm", () => {
     expect(cat.match(/<option value="(housing|utilities|phone|software|streaming|music|gaming|storage|shopping|learning|health|insurance|other)"/g)).toHaveLength(13);
     const add = renderToStaticMarkup(<SubscriptionForm mode="add" initial={{ merchant: "", amount: "", cadence: "monthly", nextChargeDate: "" }} onClose={() => {}} />);
     expect(add).toContain("Add a recurring payment");
+    expect(add).toContain('<option value="" selected="">Pick for me</option>');
+    expect(edit).not.toContain("Pick for me");
     expect(add).not.toContain("Reset to what the emails say");
   });
 });

@@ -129,7 +129,7 @@ export default function BillsView({ rows, paid }: { rows: BillRow[]; paid: PaidR
                         className="pill-input cat-select"
                         value={r.category}
                         disabled={busy === `cat-${r.key}`}
-                        onChange={(c) => act(`cat-${r.key}`, "/api/categories", { merchantKey: r.merchantKey, category: c })}
+                        onChange={(c) => c && act(`cat-${r.key}`, "/api/categories", { merchantKey: r.merchantKey, category: c })}
                       />
                       <p className={`what${r.urgent ? " urgent" : ""}`}>{r.what}</p>
                       {r.kind === "payment_due" && (
