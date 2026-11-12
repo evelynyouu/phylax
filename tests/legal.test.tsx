@@ -34,7 +34,7 @@ describe("privacy and terms pages", () => {
   it("privacy page discloses the profile photo and category choices; the inventory lists their storage", () => {
     const page = html(<PrivacyPage />);
     expect(page).toContain("profile photo");
-    expect(page).toContain("category");
+    expect(page).toContain("pick a category for a merchant");
     expect(page).toContain("nothing goes to an outside service");
     const inventory = readFileSync(join(process.cwd(), "docs/legal/DATA_INVENTORY.md"), "utf8");
     expect(inventory).toContain("merchant_categories");

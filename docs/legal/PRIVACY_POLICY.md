@@ -33,7 +33,7 @@ In plain terms:
 | Password | You type it. It goes from your browser straight to our sign-in provider, Supabase. Our own server never receives it. | To sign you in with email and password |
 | Name | You type it at sign-up, or Google sends your profile name | To show your name and initials in the app |
 | Google profile details (if you sign in with Google): your Google account ID, name, email and profile picture link | Google, through Supabase sign-in | Supabase stores these with your account so you can sign in with Google |
-| Profile photo (optional) | You upload it in the app | To show your picture next to your name. It is kept in a private storage area, shown only to you through links that expire after an hour, and deleted when you remove it or delete your account. PNG, JPEG or WebP, up to 2 MB. |
+| Profile photo (optional) | You upload it in the app | To show your picture next to your name. It is kept in a private storage area, shown only to you through links that expire after an hour, and Phylax deletes it when you remove it or delete your account. PNG, JPEG or WebP, up to 2 MB. |
 | Sign-in session details (session tokens in cookies; Supabase also records session information such as IP address and browser type) | Your browser and Supabase | To keep you signed in and protect your account |
 
 Signing in with Google only shares your basic profile (name, email, picture). It does not give Phylax access to your Gmail. Gmail access is a separate step.
