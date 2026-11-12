@@ -19,6 +19,7 @@ Phylax uses Supabase for accounts and storage, and Google for Gmail access.
 5. Only for `npm run test:db`: create two users in Authentication > Users with auto confirm on, then set `SUPABASE_TEST_EMAIL_A`, `SUPABASE_TEST_EMAIL_B` and `SUPABASE_TEST_PASSWORD` (the same password for both).
 6. Password reset emails a code instead of a link. In Authentication > Email Templates > "Reset Password", make the body include the code `{{ .Token }}` and remove the link, for example: "Your Phylax code is {{ .Token }}. It expires in one hour." Use "Phylax" (not "Subwatch") in every template.
 7. Keep **Secure email change** on (Authentication > Sign In / Providers > Email). An email change then needs confirmation from both the old and the new address.
+8. In the same Authentication settings, turn on **Secure password change**, so changing a password needs a recent sign-in.
 
 ### 2. Google Cloud
 

@@ -192,7 +192,8 @@
   place-items: center;
   border-radius: var(--r-leaf);
   font-weight: 700;
-  color: var(--ink);
+  /* Category fills stay light in both themes, so the letter is a fixed dark color, not the ink token that turns light in dark mode. */
+  color: #1e2b22;
 }
 .mark[data-cat="software"] {
   /* Category fills stay the same in both themes, so the letter stays white. */

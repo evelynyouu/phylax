@@ -9,7 +9,10 @@ afterEach(() => {
   }
 });
 
-vi.mock("@/lib/supabase/server", () => ({ supabaseServer: async () => ({ auth: { signOut: async () => ({}) } }) }));
+const s = vi.hoisted(() => ({ exchangeError: null as null | { message: string } }));
+vi.mock("@/lib/supabase/server", () => ({
+  supabaseServer: async () => ({ auth: { signOut: async () => ({}), exchangeCodeForSession: async () => ({ error: s.exchangeError }) } }),
+}));
 
 import { NextRequest } from "next/server";
 import { GET as authCallback } from "../app/auth/callback/route";
@@ -34,6 +37,21 @@ describe("auth redirects stay on the browser's host", () => {
     expect(await loc("next=/app")).toBe("http://localhost:3200/app");
     expect(await loc("next=https://evil.example")).toBe("http://localhost:3200/app");
     expect(await loc("error=access_denied&next=/app/settings")).toBe("http://localhost:3200/signin?auth=denied");
+  });
+
+  it("/auth/callback with a code says the email changed on Settings, and sends a failed Settings exchange back to Settings", async () => {
+    env.NEXT_PUBLIC_SUPABASE_URL = "http://x.test";
+    env.NEXT_PUBLIC_SUPABASE_ANON_KEY = "k";
+    const loc = async (q: string) => (await authCallback(new NextRequest(`http://localhost:3200/auth/callback?${q}`, { headers: { host: "localhost:3200" } }))).headers.get("location");
+    s.exchangeError = null;
+    expect(await loc("code=abc&next=/app/settings")).toBe("http://localhost:3200/app/settings?email=changed");
+    expect(await loc("code=abc&next=/app")).toBe("http://localhost:3200/app");
+    s.exchangeError = { message: "invalid flow state" };
+    // Opened on another device: no code verifier here, but the email may already be changed.
+    expect(await loc("code=abc&next=/app/settings")).toBe("http://localhost:3200/app/settings?email=check");
+    expect(await loc("code=abc&next=/app")).toBe("http://localhost:3200/signin?auth=failed");
+    expect(await loc("code=abc")).toBe("http://localhost:3200/signin?auth=failed");
+    s.exchangeError = null;
   });
 
   it("sign-out lands on the browser's host when APP_URL is unset", async () => {

@@ -12,6 +12,7 @@ const s = vi.hoisted(() => ({
   revokes: [] as { email: string; deletedAtCall: number }[],
   removed: [] as string[][],
   removeThrows: false,
+  removeError: null as null | { message: string },
 }));
 
 vi.mock("@/lib/route-auth", () => ({ requireUser: async () => ({ user: { id: "u1", email: "u@x.co", name: "U" } }) }));
@@ -45,7 +46,7 @@ vi.mock("@/lib/supabase/admin", () => ({
           remove: async (paths: string[]) => {
             if (s.removeThrows) throw new Error("storage down");
             s.removed.push([bucket, ...paths]);
-            return { error: null };
+            return { error: s.removeError };
           },
         }),
       },
@@ -70,7 +71,7 @@ const del = () =>
   deleteAccount(new Request("http://localhost/api/account/delete", { method: "POST", body: JSON.stringify({ confirm: "delete" }), headers: { "content-type": "application/json" } }));
 
 beforeEach(() => {
-  Object.assign(s, { adminThrows: null, deleteError: null, deleted: [], signOuts: 0, disconnects: 0, revokeFailed: false, gmail: { gmailEmail: "g@x.co" }, revokes: [], removed: [], removeThrows: false });
+  Object.assign(s, { adminThrows: null, deleteError: null, deleted: [], signOuts: 0, disconnects: 0, revokeFailed: false, gmail: { gmailEmail: "g@x.co" }, revokes: [], removed: [], removeThrows: false, removeError: null });
 });
 
 describe("POST /api/account/delete", () => {
@@ -81,6 +82,16 @@ describe("POST /api/account/delete", () => {
     const res = await del();
     expect(res.status).toBe(200);
     expect((await res.json()).ok).toBe(true);
+  });
+
+  it("logs a storage error that is returned instead of thrown, and still deletes the account", async () => {
+    s.removeError = { message: "storage refused" };
+    const log = vi.spyOn(console, "error").mockImplementation(() => {});
+    const res = await del();
+    expect(res.status).toBe(200);
+    expect(s.deleted).toEqual(["u1"]);
+    expect(log).toHaveBeenCalledWith("avatar cleanup failed", "storage refused");
+    log.mockRestore();
   });
 
   it("answers plain JSON, keeps the session and the Gmail connection when the admin client is not configured", async () => {

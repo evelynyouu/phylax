@@ -30,7 +30,7 @@ export default function ProfileSection({ user, avatarUrl }: { user: AppUser; ava
     setError("");
     setBusy(true);
     try {
-      const { error: err } = await supabaseBrowser().auth.updateUser({ data: { full_name: name.trim() } });
+      const { error: err } = await supabaseBrowser().auth.updateUser({ data: { display_name: name.trim() } });
       if (err) {
         setError("Could not save your name. Please try again.");
         return;

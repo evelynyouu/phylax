@@ -69,6 +69,19 @@ describe("POST /api/categories", () => {
     expect((await u1.listCategories()).size).toBe(0);
   });
 
+  it("answers a generic 500 JSON and logs only the message when the store fails", async () => {
+    u1.setCategory = async () => {
+      throw new Error("db down at db.internal");
+    };
+    const log = vi.spyOn(console, "error").mockImplementation(() => {});
+    const res = await POST(req({ merchantKey: "pge", category: "utilities" }));
+    expect(res.status).toBe(500);
+    expect(res.headers.get("content-type")).toMatch(/application\/json/);
+    expect(await res.json()).toEqual({ error: "Could not save the category. Please try again." });
+    expect(log).toHaveBeenCalledWith("category save failed", "db down at db.internal");
+    log.mockRestore();
+  });
+
   it("gives a hand-added payment a category using the returned key", async () => {
     const add = await editPOST(req({ merchant: "City Gym", amount: 40, cadence: "monthly", nextChargeDate: "2026-11-25", manual: true }));
     const { merchantKey } = await add.json();

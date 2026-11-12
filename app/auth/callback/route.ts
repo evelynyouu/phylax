@@ -25,7 +25,15 @@ export async function GET(req: NextRequest) {
     return NextResponse.redirect(target);
   }
 
+  const settings = (email: "changed" | "check") => NextResponse.redirect(new URL(`/app/settings?email=${email}`, base));
   const { error } = await (await supabaseServer()).auth.exchangeCodeForSession(code);
-  if (error) return fail("failed");
+  if (error) {
+    // An email change link opened on another device has no code verifier, so the exchange fails
+    // even though the email may already be changed. Say so on Settings; the proxy still sends a
+    // signed-out browser to sign in.
+    if (next === "/app/settings") return settings("check");
+    return fail("failed");
+  }
+  if (next === "/app/settings") return settings("changed");
   return NextResponse.redirect(new URL(next, base));
 }

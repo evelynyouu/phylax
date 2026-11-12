@@ -46,6 +46,13 @@ describe("POST /api/subscriptions/edit", () => {
     expect(await u2.listEdits()).toEqual([]);
   });
 
+  it("ignores an edit that changes no field, so a category-only change does not mark the row Edited", async () => {
+    const res = await editPOST(req({ merchantKey: "netflix", merchant: null, amount: null, cadence: null, nextChargeDate: null, manual: false }));
+    expect(res.status).toBe(200);
+    expect(await res.json()).toEqual({ ok: true, merchantKey: "netflix" });
+    expect(await u1.listEdits()).toEqual([]);
+  });
+
   it("adds a manual payment and derives its key from the name", async () => {
     const res = await editPOST(req({ merchant: "City Gym", amount: 40, cadence: "monthly", nextChargeDate: "2026-11-25", manual: true }));
     expect(res.status).toBe(200);

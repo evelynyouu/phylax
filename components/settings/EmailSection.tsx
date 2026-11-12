@@ -9,7 +9,10 @@ import { supabaseBrowser } from "@/lib/supabase/browser";
 const NOTICES = {
   pending: "One link confirmed. Open the link sent to your other address to finish.",
   changed: "Your email is updated.",
+  check: "If you opened the link on another device, your email may already be changed. Sign in again to see it.",
 } as const;
+
+const isNotice = (n: string | null | undefined): n is keyof typeof NOTICES => n === "pending" || n === "changed" || n === "check";
 
 export default function EmailSection({ user, notice }: { user: AppUser; notice?: string | null }) {
   const [next, setNext] = useState("");
@@ -50,7 +53,7 @@ export default function EmailSection({ user, notice }: { user: AppUser; notice?:
     <section className="card" aria-labelledby="set-email">
       <h2 id="set-email">Email</h2>
       <p>{user.email}</p>
-      {notice === "pending" || notice === "changed" ? <p role="status">{NOTICES[notice]}</p> : null}
+      {isNotice(notice) ? <p role="status">{NOTICES[notice]}</p> : null}
       {hasPassword(user) ? (
         <form onSubmit={submit} noValidate>
           <div className="field">

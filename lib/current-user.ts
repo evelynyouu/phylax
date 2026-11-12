@@ -15,7 +15,8 @@ export interface AppUser {
 export function appUserFrom(user: User): AppUser {
   const email = user.email ?? "";
   const meta = user.user_metadata ?? {};
-  const name = [meta.full_name, meta.name].find((v): v is string => typeof v === "string" && v.trim() !== "");
+  // display_name is what the user picks in Settings. Google sign-in can rewrite full_name and name.
+  const name = [meta.display_name, meta.full_name, meta.name].find((v): v is string => typeof v === "string" && v.trim() !== "");
   const app = user.app_metadata ?? {};
   const providers: string[] = Array.isArray(app.providers)
     ? app.providers.filter((p: unknown): p is string => typeof p === "string")

@@ -36,3 +36,35 @@ export async function addThenCategorize(post: Post, editBody: unknown, category:
   }
   return { ok: true, merchantKey };
 }
+
+type EditFields = { merchantKey?: string; merchant?: unknown; amount?: unknown; currency?: unknown; cadence?: unknown; nextChargeDate?: unknown; manual?: boolean };
+
+/** True when an edit of an email-found subscription changes no field (a manual payment always counts as a change). */
+export function isEmptyEdit(b: EditFields): boolean {
+  return b.manual !== true && [b.merchant, b.amount, b.currency, b.cadence, b.nextChargeDate].every((v) => v == null);
+}
+
+/**
+ * Save an edit, then the category when it changed. An edit that changes no field is not sent, so a
+ * category-only change does not mark the subscription as Edited.
+ */
+export async function editThenCategorize(
+  post: Post,
+  editBody: EditFields & { merchantKey: string },
+  category: Category | "",
+  previous: Category,
+): Promise<{ ok: true } | { ok: false; error: string }> {
+  try {
+    if (!isEmptyEdit(editBody)) {
+      const res = await post("/api/subscriptions/edit", editBody);
+      if (!res.ok) return { ok: false, error: await errorOf(res, "Could not save") };
+    }
+    if (category && category !== previous) {
+      const res = await post("/api/categories", { merchantKey: editBody.merchantKey, category });
+      if (!res.ok) return { ok: false, error: await errorOf(res, "Could not save the category") };
+    }
+  } catch {
+    return { ok: false, error: "Could not save" };
+  }
+  return { ok: true };
+}

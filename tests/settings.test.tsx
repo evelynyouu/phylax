@@ -6,6 +6,9 @@ import SettingsView from "../components/settings/SettingsView";
 import { NAV } from "../components/NavLinks";
 import { authErrorMessage, safeNext } from "../lib/auth-copy";
 import { hasPassword, validateName, validateNewEmail } from "../lib/profile";
+import { appUserFrom } from "../lib/current-user";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 
 const html = (el: React.ReactElement) => renderToStaticMarkup(el);
 const emailUser = { id: "u", email: "a@b.co", name: "Evelyn You", avatarPath: null, providers: ["email"] };
@@ -66,5 +69,27 @@ describe("email change notices", () => {
     const changed = html(<SettingsView user={emailUser} avatarUrl={null} gmailEmail={null} emailNotice="changed" />);
     expect(changed).toContain("Your email is updated.");
     expect(html(<SettingsView user={emailUser} avatarUrl={null} gmailEmail={null} emailNotice="bogus" />)).not.toContain("Your email is updated.");
+  });
+  it("shows the check message when the link was opened on another device", () => {
+    const check = html(<SettingsView user={emailUser} avatarUrl={null} gmailEmail={null} emailNotice="check" />);
+    expect(check).toContain('<p role="status">If you opened the link on another device, your email may already be changed. Sign in again to see it.</p>');
+  });
+});
+
+describe("display name", () => {
+  const u = (meta: Record<string, unknown>, email = "jo@x.co") =>
+    ({ id: "u", email, user_metadata: meta, app_metadata: { provider: "email" } }) as unknown as Parameters<typeof appUserFrom>[0];
+  it("prefers the name chosen in Settings over the one Google writes", () => {
+    expect(appUserFrom(u({ display_name: "Evelyn", full_name: "Evelyn Google", name: "E G" })).name).toBe("Evelyn");
+  });
+  it("falls back to full_name, then name, then the email prefix, ignoring blank and non-string values", () => {
+    expect(appUserFrom(u({ display_name: "  ", full_name: "Full Name" })).name).toBe("Full Name");
+    expect(appUserFrom(u({ display_name: 42, full_name: null, name: "Nick" })).name).toBe("Nick");
+    expect(appUserFrom(u({ display_name: { a: 1 }, full_name: ["x"] })).name).toBe("jo");
+  });
+  it("Settings saves the name as display_name, which Google sign-in does not overwrite", () => {
+    const src = readFileSync(join(process.cwd(), "components/settings/ProfileSection.tsx"), "utf8");
+    expect(src).toContain("data: { display_name: name.trim() }");
+    expect(src).not.toContain("full_name");
   });
 });

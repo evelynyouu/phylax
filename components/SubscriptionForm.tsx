@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toEditBody, type FormValues } from "@/lib/subscription-edit";
 import type { Category } from "@/lib/categories";
-import { addThenCategorize } from "@/lib/save-payment";
+import { addThenCategorize, editThenCategorize } from "@/lib/save-payment";
 import CategorySelect from "./CategorySelect";
 import { Button, Field, MerchantMark } from "./ui";
 
@@ -54,12 +54,11 @@ export default function SubscriptionForm({
     return res;
   }
 
-  async function post(url: string, body: unknown, after?: (res: Response) => Promise<void>) {
+  async function post(url: string, body: unknown) {
     setBusy(true);
     setError("");
     try {
-      const res = await send(url, body);
-      if (after) await after(res);
+      await send(url, body);
       onClose();
       router.refresh();
     } catch (e) {
@@ -86,13 +85,22 @@ export default function SubscriptionForm({
     }
   }
 
-  const save = () =>
-    mode === "add"
-      ? saveAdd()
-      : post("/api/subscriptions/edit", toEditBody(v, { mode: "edit", merchantKey: merchantKey!, initial, manual }), async () => {
-          // Edits post a category only when it changed.
-          if (cat && cat !== (category ?? "other")) await send("/api/categories", { merchantKey: merchantKey!, category: cat });
-        });
+  async function saveEdit() {
+    setBusy(true);
+    setError("");
+    // Skips the edit when no field changed and posts the category only when it changed.
+    const body = { ...toEditBody(v, { mode: "edit", merchantKey: merchantKey!, initial, manual }), merchantKey: merchantKey! };
+    const r = await editThenCategorize(raw, body, cat, category ?? "other");
+    setBusy(false);
+    if (r.ok) {
+      onClose();
+      router.refresh();
+    } else {
+      setError(r.error);
+    }
+  }
+
+  const save = () => (mode === "add" ? saveAdd() : saveEdit());
 
   return (
     <form

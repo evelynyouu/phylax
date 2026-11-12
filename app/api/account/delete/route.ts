@@ -32,9 +32,11 @@ export async function POST(req: Request) {
     return unavailable(e);
   }
 
-  // Remove the profile photo first (the user's folder is not cascaded). Best effort: never blocks.
+  // Remove the profile photo first: storage objects are not cascaded, and Supabase refuses to delete
+  // a user who still owns storage objects. Best effort: a failure is logged and never blocks.
   try {
-    await admin.storage.from(AVATAR_BUCKET).remove([avatarObjectPath(user.id)]);
+    const { error } = await admin.storage.from(AVATAR_BUCKET).remove([avatarObjectPath(user.id)]);
+    if (error) logError("avatar cleanup failed", error);
   } catch (e) {
     logError("avatar cleanup failed", e);
   }

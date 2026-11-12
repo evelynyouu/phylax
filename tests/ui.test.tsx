@@ -39,3 +39,14 @@ describe("shared components", () => {
     expect(Object.values(CATEGORY_LABELS)).toEqual(["Housing and rent", "Utilities", "Phone and internet", "AI and technology", "Streaming", "Music", "Gaming", "Storage", "Shopping", "Learning", "Health and fitness", "Insurance", "Other"]);
   });
 });
+
+describe("merchant mark letters", () => {
+  it("use a fixed dark letter on the fixed light fills in both themes, white only on software", async () => {
+    const { readFileSync } = await import("node:fs");
+    const css = readFileSync(`${process.cwd()}/app/ui.css`, "utf8");
+    const rule = (sel: string) => css.match(new RegExp(`\\n${sel.replace(/[.[\]"=]/g, "\\$&")} \\{([^}]*)\\}`))?.[1] ?? "";
+    expect(rule(".mark")).toMatch(/color: #1e2b22;/);
+    expect(rule(".mark")).not.toContain("var(--ink)");
+    expect(rule('.mark[data-cat="software"]')).toMatch(/color: #fff;/);
+  });
+});

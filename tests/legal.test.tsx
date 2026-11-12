@@ -42,6 +42,17 @@ describe("privacy and terms pages", () => {
     expect(inventory).not.toContain("\u2014");
   });
 
+  it("describe the photo and a failed account delete accurately, and the README asks for Secure password change", () => {
+    const inventory = readFileSync(join(process.cwd(), "docs/legal/DATA_INVENTORY.md"), "utf8");
+    expect(inventory).not.toContain("nothing else changes");
+    expect(inventory).toContain("the profile photo is already removed by then");
+    const policy = readFileSync(join(process.cwd(), "docs/legal/PRIVACY_POLICY.md"), "utf8");
+    expect(policy).not.toContain("shown only to you");
+    expect(policy).toContain("shown to you through links that expire after an hour");
+    const readme = readFileSync(join(process.cwd(), "README.md"), "utf8");
+    expect(readme).toContain("Secure password change");
+  });
+
   it("render the terms headings without the draft line or the reviewer notes", () => {
     const page = html(<TermsPage />);
     expect(page).toContain("<h1>Phylax Terms of Use</h1>");
