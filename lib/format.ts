@@ -2,13 +2,7 @@ import type { Cadence } from "./types";
 
 export function money(amount: number | null, currency = "USD"): string {
   if (amount === null) return "Amount unknown";
-  const whole = Number.isInteger(amount);
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency,
-    minimumFractionDigits: whole ? 0 : 2,
-    maximumFractionDigits: 2,
-  }).format(amount);
+  return new Intl.NumberFormat("en-US", { style: "currency", currency, minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(amount);
 }
 
 /** "Nov 14", or "Jan 15, 2027" when the year differs from refYear. Parsed as UTC so there is no timezone drift. */

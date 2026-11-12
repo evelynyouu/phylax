@@ -207,10 +207,19 @@ export default function RecurringView({ rows }: { rows: SubRow[] }) {
                   <p>{r.amountLabel}</p>
                   <p>{r.per}</p>
                 </div>
-                <button type="button" className="btn btn-danger btn-row" onClick={() => show(r.merchantKey)}>
-                  {r.status === "trial" ? "Cancel trial" : "Cancel"}
-                  <span className="sr-only"> {r.merchant}</span>
-                </button>
+                <div className="row-actions">
+                  <button type="button" className="btn btn-edit btn-row" onClick={() => openForm({ mode: "edit", row: r })}>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+                      <path d="M4 20h4L19 9l-4-4L4 16v4z" />
+                      <path d="M14 6l4 4" />
+                    </svg>
+                    Edit<span className="sr-only"> {r.merchant}</span>
+                  </button>
+                  <button type="button" className="btn btn-danger btn-row" onClick={() => show(r.merchantKey)}>
+                    {r.status === "trial" ? "Cancel trial" : "Cancel"}
+                    <span className="sr-only"> {r.merchant}</span>
+                  </button>
+                </div>
               </li>
             ))}
           </ul>
@@ -351,6 +360,7 @@ export default function RecurringView({ rows }: { rows: SubRow[] }) {
             initial={form.mode === "edit" ? form.row.form : { merchant: "", amount: "", cadence: "monthly", nextChargeDate: "" }}
             manual={form.mode === "edit" && form.row.manual}
             canUndo={form.mode === "edit" && (form.row.edited || form.row.manual)}
+            category={form.mode === "edit" ? form.row.category : undefined}
             onClose={() => formDialog.current?.close()}
           />
         )}

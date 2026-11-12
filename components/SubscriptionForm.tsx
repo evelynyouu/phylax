@@ -3,7 +3,8 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toEditBody, type FormValues } from "@/lib/subscription-edit";
-import { Button, Field } from "./ui";
+import type { Category } from "@/lib/categories";
+import { Button, Field, MerchantMark } from "./ui";
 
 const CYCLES = [
   ["weekly", "Weekly"],
@@ -22,6 +23,7 @@ export default function SubscriptionForm({
   initial,
   manual = false,
   canUndo = false,
+  category,
   onClose,
 }: {
   mode: "add" | "edit";
@@ -29,6 +31,7 @@ export default function SubscriptionForm({
   initial: FormValues;
   manual?: boolean;
   canUndo?: boolean;
+  category?: Category;
   onClose: () => void;
 }) {
   const router = useRouter();
@@ -67,45 +70,59 @@ export default function SubscriptionForm({
       }}
     >
       <div className="panel-top">
-        <h2 id="form-h">{mode === "add" ? "Add a recurring payment" : `Edit ${initial.merchant}`}</h2>
+        <div className="form-title">
+          {mode === "edit" && category && <MerchantMark merchant={initial.merchant} category={category} size={52} />}
+          <div>
+            <h2 id="form-h">{mode === "add" ? "Add a recurring payment" : `Edit ${initial.merchant}`}</h2>
+            <p className="form-sub">
+              {mode === "add" ? "For payments with no email, like rent or a gym. It shows up with your other subscriptions." : "Fix anything Phylax read wrong from your emails."}
+            </p>
+          </div>
+        </div>
+        <button type="button" className="icon-btn" aria-label="Close" onClick={onClose}>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+            <path d="M6 6l12 12M18 6L6 18" />
+          </svg>
+        </button>
       </div>
-      <p className="fine">
-        {mode === "add"
-          ? "For payments with no email, like rent or a gym. It shows up with your other subscriptions."
-          : "Your changes win over what the emails say and stay after the next sync. Leave a field as it is to keep following the emails."}
-      </p>
       <Field id="sf-name" label="Name" value={v.merchant} onChange={set("merchant")} maxLength={80} required={mode === "add"} />
-      <Field id="sf-amount" label="Amount" inputMode="decimal" value={v.amount} onChange={set("amount")} placeholder="12.99" />
-      <div className="field">
-        <label htmlFor="sf-cycle">Billing cycle</label>
-        <select id="sf-cycle" className="pill-input" value={v.cadence} onChange={set("cadence")}>
-          <option value="">Not sure</option>
-          {CYCLES.map(([value, label]) => (
-            <option key={value} value={value}>
-              {label}
-            </option>
-          ))}
-        </select>
+      <div className="form-pair">
+        <div className="field">
+          <label htmlFor="sf-amount">Amount</label>
+          <span className="money-input">
+            <span aria-hidden="true">$</span>
+            <input id="sf-amount" inputMode="decimal" value={v.amount} onChange={set("amount")} placeholder="12.99" />
+          </span>
+        </div>
+        <div className="field">
+          <label htmlFor="sf-cycle">Billed</label>
+          <select id="sf-cycle" className="pill-input" value={v.cadence} onChange={set("cadence")}>
+            <option value="">Not sure</option>
+            {CYCLES.map(([value, label]) => (
+              <option key={value} value={value}>
+                {label}
+              </option>
+            ))}
+          </select>
+        </div>
       </div>
-      <Field id="sf-date" label="Next charge date" type="date" value={v.nextChargeDate} onChange={set("nextChargeDate")} />
+      <Field id="sf-date" label="Next charge" type="date" value={v.nextChargeDate} onChange={set("nextChargeDate")} />
+      {mode === "edit" && <p className="fine">Your changes stay after the next sync. Leave a field as it is to keep following the emails.</p>}
       {error && (
         <p role="alert" className="field-error">
           {error}
         </p>
       )}
-      <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-        <Button type="submit" disabled={busy}>
-          {busy ? "Saving" : "Save"}
+      <div className="form-actions">
+        <Button type="submit" disabled={busy} className="btn-block">
+          {busy ? "Saving" : mode === "add" ? "Add payment" : "Save changes"}
         </Button>
-        <Button variant="ghost" onClick={onClose} disabled={busy}>
-          Cancel
-        </Button>
+        {mode === "edit" && canUndo && merchantKey && (
+          <button type="button" className="linkish" disabled={busy} onClick={() => post("/api/subscriptions/edit/delete", { merchantKey })}>
+            {manual ? "Remove this payment" : "Reset to what the emails say"}
+          </button>
+        )}
       </div>
-      {mode === "edit" && canUndo && merchantKey && (
-        <button type="button" className="linkish quiet" style={{ alignSelf: "flex-start", fontSize: 14 }} disabled={busy} onClick={() => post("/api/subscriptions/edit/delete", { merchantKey })}>
-          {manual ? "Remove this payment" : "Undo my changes"}
-        </button>
-      )}
     </form>
   );
 }

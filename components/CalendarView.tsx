@@ -99,7 +99,7 @@ export default function CalendarView({
         {(
           [
             ["subs", "Subscriptions", "var(--sage)"],
-            ["trials", "Trials", "var(--mauve)"],
+            ["trials", "Trials ending", "var(--mauve)"],
             ["bills", "Bills", "var(--bill-dot)"],
           ] as const
         ).map(([k, label, dot]) => (

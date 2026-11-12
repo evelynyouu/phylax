@@ -117,6 +117,9 @@ input.pill-input { width: 200px; }
 .sub-amt p:first-child { font-weight: 600; font-size: 16px; }
 .sub-amt p:last-child { margin-top: 2px; font-size: 13px; color: var(--moss); }
 .btn-row { min-height: 40px; padding: 0 16px; font-size: 14px; }
+.row-actions { display: flex; gap: 8px; flex: none; }
+.btn-edit { gap: 6px; padding: 0 14px; border-color: var(--field-border); background: var(--surface); color: var(--ink); }
+.btn-edit:hover { background: var(--ghost-hover); color: var(--ink); }
 
 /* Side panel (subscription detail) */
 .panel-wrap { position: fixed; inset: 0; z-index: 20; display: flex; justify-content: flex-end; }
@@ -125,7 +128,17 @@ input.pill-input { width: 200px; }
 .panel-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
 .panel-top h2 { font-family: var(--display); font-weight: 400; font-size: 32px; line-height: 1; }
 .panel-top .plan { margin-top: 6px; font-size: 14px; color: var(--moss); }
-.icon-btn { width: 44px; height: 44px; border-radius: 50%; border: 0; background: var(--tile); cursor: pointer; display: grid; place-items: center; flex: none; }
+.form-title { display: flex; gap: 14px; align-items: center; min-width: 0; }
+.form-sub { margin-top: 6px; font-size: 14px; color: var(--moss); }
+.form-pair { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 12px; }
+.form-pair select.pill-input { min-height: 48px; border-radius: var(--r-field); font-size: 16px; }
+.money-input { position: relative; display: block; }
+.money-input > span { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--muted); }
+.money-input input { width: 100%; min-height: 48px; padding: 0 14px 0 28px; border-radius: var(--r-field); border: 1.5px solid var(--field-border); background: var(--surface); color: var(--ink); }
+.money-input input:focus { outline: none; border-color: var(--evergreen); box-shadow: 0 0 0 3px var(--sky); }
+.form-actions { margin-top: auto; display: flex; flex-direction: column; align-items: center; gap: 10px; }
+.form-actions .linkish { font-size: 14px; min-height: 44px; }
+.icon-btn { color: var(--ink); width: 44px; height: 44px; border-radius: 50%; border: 0; background: var(--tile); cursor: pointer; display: grid; place-items: center; flex: none; }
 .facts { margin: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; background: var(--tile); border-radius: 18px; padding: 18px; }
 .facts dt { font-size: 13px; color: var(--moss); }
 .facts dd { margin: 2px 0 0; font-weight: 600; }

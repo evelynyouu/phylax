@@ -29,11 +29,14 @@ describe("toEditBody", () => {
 describe("SubscriptionForm", () => {
   it("renders labeled fields and the right actions", () => {
     const edit = renderToStaticMarkup(<SubscriptionForm mode="edit" merchantKey="nintendo" initial={initial} canUndo onClose={() => {}} />);
-    for (const label of ["Name", "Amount", "Billing cycle", "Next charge date"]) expect(edit).toContain(label);
-    expect(edit).toContain("Save");
-    expect(edit).toContain("Undo my changes");
+    // Wording from the final Subscriptions design's edit panel.
+    for (const label of ["Name", "Amount", "Billed", "Next charge"]) expect(edit).toContain(label);
+    expect(edit).toContain("Edit Nintendo");
+    expect(edit).toContain("Fix anything Phylax read wrong from your emails.");
+    expect(edit).toContain("Save changes");
+    expect(edit).toContain("Reset to what the emails say");
     const add = renderToStaticMarkup(<SubscriptionForm mode="add" initial={{ merchant: "", amount: "", cadence: "monthly", nextChargeDate: "" }} onClose={() => {}} />);
     expect(add).toContain("Add a recurring payment");
-    expect(add).not.toContain("Undo my changes");
+    expect(add).not.toContain("Reset to what the emails say");
   });
 });
