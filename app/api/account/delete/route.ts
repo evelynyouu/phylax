@@ -3,7 +3,6 @@ import { DeleteBody } from "@/lib/auth-copy";
 import { revokeBestEffort } from "@/lib/gmail";
 import { logError } from "@/lib/log";
 import { requireUser } from "@/lib/route-auth";
-import { isDemo } from "@/lib/session";
 import { storeFor } from "@/lib/store";
 import type { GmailConnection } from "@/lib/store/types";
 import { supabaseAdmin } from "@/lib/supabase/admin";
@@ -17,7 +16,6 @@ function unavailable(e: unknown) {
 }
 
 export async function POST(req: Request) {
-  if (isDemo()) return NextResponse.json({ error: "Demo mode has no account to delete." }, { status: 400 });
   const auth = await requireUser(req);
   if ("denied" in auth) return auth.denied;
   const { user } = auth;

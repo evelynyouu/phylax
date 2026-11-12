@@ -8,7 +8,6 @@ import GmailDisclosure, { GmailIcon } from "@/components/GmailDisclosure";
 import { AUTH_MESSAGES, GMAIL_MESSAGES } from "@/lib/auth-copy";
 import { getOptionalUser } from "@/lib/current-user";
 import { gmailConfigured } from "@/lib/gmail";
-import { isDemo } from "@/lib/session";
 
 export const metadata = { title: "Create your account | Phylax" };
 
@@ -42,7 +41,7 @@ async function SignUpBody({ searchParams }: { searchParams: PageProps<"/signup">
   // Gmail is not configured, so that code is not repeated at the top.
   const messages = step === 1 ? AUTH_MESSAGES : GMAIL_MESSAGES;
   const msg = code && !(step === 2 && code === "not_configured") ? messages[code] : null;
-  const connectHref = isDemo() ? "/signup?step=3" : "/api/auth/google?next=signup";
+  const connectHref = "/api/auth/google?next=signup";
   const first = user?.name.trim().split(/\s+/)[0] ?? "";
   const notice = msg && (
     <p role="alert" className={`auth-msg${msg.info ? " info" : ""}`}>
@@ -51,7 +50,7 @@ async function SignUpBody({ searchParams }: { searchParams: PageProps<"/signup">
   );
 
   if (step === 2) {
-    const unconfigured = !isDemo() && !gmailConfigured();
+    const unconfigured = !gmailConfigured();
     return (
       <>
         <GmailIcon />
@@ -63,7 +62,7 @@ async function SignUpBody({ searchParams }: { searchParams: PageProps<"/signup">
         <GmailDisclosure />
         {unconfigured && <p className="auth-msg">{GMAIL_MESSAGES.not_configured.text}</p>}
         <a href={connectHref} className="btn btn-primary btn-block auth-cta" aria-disabled={unconfigured ? true : undefined}>
-          {isDemo() ? "Use the sample inbox" : "Connect Gmail"}
+          Connect Gmail
         </a>
         <p className="fine">Google shows its permission screen next. You can disconnect at any time.</p>
         <Link href="/signup" className="auth-back">
@@ -79,7 +78,7 @@ async function SignUpBody({ searchParams }: { searchParams: PageProps<"/signup">
     <>
       <h1>Create your account</h1>
       {notice}
-      <AuthForm mode="signup" demo={isDemo()} />
+      <AuthForm mode="signup" />
     </>
   );
 }

@@ -5,7 +5,6 @@ import GmailDisclosure, { GmailIcon } from "@/components/GmailDisclosure";
 import { GMAIL_MESSAGES, googleConsentHref } from "@/lib/auth-copy";
 import { getCurrentUser } from "@/lib/current-user";
 import { gmailConfigured } from "@/lib/gmail";
-import { isDemo } from "@/lib/session";
 
 export const metadata = { title: "Connect Gmail | Phylax" };
 
@@ -30,7 +29,7 @@ async function ConnectActions({ searchParams }: { searchParams: PageProps<"/conn
   await connection();
   await getCurrentUser();
   const { next } = await searchParams;
-  const unconfigured = !isDemo() && !gmailConfigured();
+  const unconfigured = !gmailConfigured();
   return (
     <>
       {unconfigured && <p className="auth-msg">{GMAIL_MESSAGES.not_configured.text}</p>}

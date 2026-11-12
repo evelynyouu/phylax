@@ -5,7 +5,6 @@ import { errorCode, errorMessage, logError } from "./log";
 import { processWide } from "./process-wide";
 import { withRetry } from "./retry";
 import { buildDashboard } from "./resolve";
-import { isDemo } from "./session";
 import type { Store } from "./store/types";
 import type { Dashboard, ExtractedRecord, RawEmail } from "./types";
 
@@ -13,10 +12,6 @@ export { GmailReconnectError } from "./gmail";
 
 export type DataSource = "gmail" | "fixtures";
 
-/** Sample data only in demo mode; a production build always reads Gmail. */
-export function dataSource(): DataSource {
-  return isDemo() ? "fixtures" : "gmail";
-}
 
 export interface SyncResult {
   source: DataSource;
@@ -107,6 +102,8 @@ export async function inBatches<T, R>(items: T[], size: number, fn: (x: T) => Pr
 export interface SyncOptions {
   /** Backoff delay between retries; tests inject an instant one. */
   sleep?: (ms: number) => Promise<void>;
+  /** Tests only: read the sample emails in fixtures/ instead of Gmail. The app always reads Gmail. */
+  source?: DataSource;
 }
 
 export async function runSync(
@@ -159,7 +156,7 @@ async function syncInner(
   skip: (n: number) => void,
   opts: SyncOptions,
 ): Promise<SyncResult> {
-  const source = dataSource();
+  const source = opts.source ?? "gmail";
   const result: SyncResult = { source, listed: 0, processed: 0, relevant: 0, llmUsed: 0, errors: 0 };
   const keep = async (email: RawEmail) => {
     // Rules only: the AI fallback is a local eval tool and is never on for users (lib/extract).
@@ -186,7 +183,7 @@ async function syncInner(
     return result;
   }
 
-  if (!gmail.configured()) throw new Error("Set GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET, or use DATA_SOURCE=fixtures");
+  if (!gmail.configured()) throw new Error("Set GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET");
   const conn = await store.getGmail();
   if (!conn) throw new Error("Gmail is not connected");
 
@@ -260,23 +257,14 @@ export async function lastSyncedAt(store: Store): Promise<string | null> {
 
 export async function getDashboard(
   store: Store,
-): Promise<{ dashboard: Dashboard; source: DataSource; connected: boolean; reconnect: boolean }> {
-  const source = dataSource();
-  if (source === "fixtures") {
-    // Demo mode: pin "today" so the sample data always has upcoming items, and load it on first view.
-    process.env.PHYLAX_TODAY ??= "2026-11-09";
-    if ((await store.loadRecords()).length === 0) {
-      // Join a sync that is already running rather than starting a second one.
-      await (running.get(store.userId) ?? runSync(store));
-    }
-  }
+): Promise<{ dashboard: Dashboard; connected: boolean; reconnect: boolean }> {
   const [records, dismissed, manualCancels, paid, reminders, conn, edits] = await Promise.all([
     store.loadRecords(),
     store.marks("dismissed"),
     store.marks("manual_cancels"),
     store.marks("paid"),
     store.marks("reminders"),
-    source === "fixtures" ? Promise.resolve(null) : store.getGmail(),
+    store.getGmail(),
     // Edits are optional: if their table is missing (migration not applied yet) the dashboard still works.
     store.listEdits().catch((e) => {
       logError("dashboard: could not load subscription edits", e);
@@ -290,6 +278,5 @@ export async function getDashboard(
     reminders: new Set(reminders.keys()),
     edits,
   });
-  if (source === "fixtures") return { dashboard, source, connected: true, reconnect: false };
-  return { dashboard, source, connected: conn !== null, reconnect: conn?.needsReconnect === true };
+  return { dashboard, connected: conn !== null, reconnect: conn?.needsReconnect === true };
 }

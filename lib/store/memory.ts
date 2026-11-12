@@ -1,8 +1,7 @@
-import { processWide } from "../process-wide";
 import type { ExtractedRecord } from "../types";
 import type { GmailConnection, MarkTable, Store, SubscriptionEdit } from "./types";
 
-/** A fresh, empty in-memory store. Used for tests and the demo. */
+/** A fresh, empty in-memory store, for tests and local scripts. */
 export function memoryStore(userId = "memory"): Store {
   const records = new Map<string, ExtractedRecord>();
   const markTables = new Map<MarkTable, Map<string, string>>();
@@ -47,12 +46,4 @@ export function memoryStore(userId = "memory"): Store {
       edits.delete(merchantKey);
     },
   };
-}
-
-/**
- * Process-wide demo store (userId "demo"). Starts empty; the sync fills it from fixtures.
- * Kept on globalThis so pages and route handlers share it.
- */
-export function demoStore(): Store {
-  return processWide("demoStore", () => memoryStore("demo"));
 }

@@ -27,11 +27,10 @@ function callbackUrl(next: string): string {
 
 /**
  * Email and password plus Google, for sign-in and sign-up step 1. Errors show inline.
- * In demo mode it never creates a Supabase client; every path just moves on.
  */
-export default function AuthForm({ mode, demo = false }: { mode: "signin" | "signup"; demo?: boolean }) {
+export default function AuthForm({ mode }: { mode: "signin" | "signup" }) {
   const next = NEXT[mode];
-  const configured = demo || supabaseEnv() !== null;
+  const configured = supabaseEnv() !== null;
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [info, setInfo] = useState("");
@@ -40,7 +39,6 @@ export default function AuthForm({ mode, demo = false }: { mode: "signin" | "sig
 
   async function google() {
     setError("");
-    if (demo) return window.location.assign(next);
     setBusy(true);
     const { error } = await supabaseBrowser().auth.signInWithOAuth({
       provider: "google",
@@ -67,8 +65,6 @@ export default function AuthForm({ mode, demo = false }: { mode: "signin" | "sig
       setFieldErrors(errors);
       if (Object.keys(errors).length > 0) return;
     }
-    if (demo) return window.location.assign(next);
-
     setBusy(true);
     try {
       const auth = supabaseBrowser().auth;
@@ -112,11 +108,7 @@ export default function AuthForm({ mode, demo = false }: { mode: "signin" | "sig
     </>
   );
 
-  const google_ = demo ? (
-    <Link href={next} className="btn btn-google">
-      {mode === "signin" ? "Open the demo" : "Continue with the sample inbox"}
-    </Link>
-  ) : (
+  const googleButton = (
     <button type="button" className="btn btn-google" onClick={google} disabled={disabled}>
       <GoogleIcon />
       Continue with Google
@@ -127,7 +119,7 @@ export default function AuthForm({ mode, demo = false }: { mode: "signin" | "sig
     return (
       <>
         {messages}
-        {google_}
+        {googleButton}
         <p className="or">or use email</p>
         <form onSubmit={submit} className="auth-form">
           <Field id="si-email" name="email" label="Email" type="email" autoComplete="email" placeholder="example@gmail.com" required disabled={!configured} />
@@ -155,7 +147,7 @@ export default function AuthForm({ mode, demo = false }: { mode: "signin" | "sig
   return (
     <form onSubmit={submit} noValidate className="auth-form">
       {messages}
-      {google_}
+      {googleButton}
       <p className="or">or with email</p>
       <div className="form-pair">
         <Field id="su-first" name="first" label="First name" autoComplete="given-name" placeholder="First" error={fieldErrors.name} disabled={!configured} />

@@ -31,7 +31,7 @@ const totalText = money(total);
 const monthText = money(total / 12);
 const receiptAria = `A receipt listing ${lineCount} subscriptions found in a year of billing email, totaling $${totalText}, with ${flagCount} flagged for a second look.`;
 
-export default function Landing({ sampleHref }: { sampleHref: string }) {
+export default function Landing() {
   const [run, setRun] = useState(0);
   const motion = useRef<LandingMotion | null>(null);
   useEffect(() => {
@@ -168,24 +168,19 @@ export default function Landing({ sampleHref }: { sampleHref: string }) {
             >
               <span className={blurClass} style={{ display: "inline-block", animationDelay: "0.95s" }}>
                 Prune
-              </span>
-              {" "}
+              </span>{" "}
               <span className={blurClass} style={{ display: "inline-block", animationDelay: "1.03s" }}>
                 what
-              </span>
-              {" "}
+              </span>{" "}
               <span className={blurClass} style={{ display: "inline-block", animationDelay: "1.11s" }}>
                 you
-              </span>
-              {" "}
+              </span>{" "}
               <span className={blurClass} style={{ display: "inline-block", animationDelay: "1.19s" }}>
                 forgot
-              </span>
-              {" "}
+              </span>{" "}
               <span className={blurClass} style={{ display: "inline-block", animationDelay: "1.27s" }}>
                 you
-              </span>
-              {" "}
+              </span>{" "}
               <span
                 className={blurClass}
                 aria-hidden="true"
@@ -225,8 +220,7 @@ export default function Landing({ sampleHref }: { sampleHref: string }) {
                     }}
                   />
                 </span>
-              </span>
-              {" "}
+              </span>{" "}
               <span className={blurClass} style={{ display: "inline-block", animationDelay: "1.43s" }}>
                 planted.
               </span>
@@ -269,27 +263,6 @@ export default function Landing({ sampleHref }: { sampleHref: string }) {
                   <path d="M3 7l9 6 9-6" />
                 </svg>
                 Connect Gmail
-              </Link>
-              <Link
-                className="g-btn"
-                href={sampleHref}
-                style={{
-                  display: "inline-flex",
-                  alignItems: "center",
-                  minHeight: "50px",
-                  padding: "0 22px",
-                  borderRadius: "999px",
-                  border: "1.5px solid rgba(255,255,255,0.85)",
-                  background: "rgba(30,52,78,0.12)",
-                  color: "#FFFFFF",
-                  fontWeight: "600",
-                  fontSize: "16px",
-                  textDecoration: "none",
-                  WebkitBackdropFilter: "blur(6px)",
-                  backdropFilter: "blur(6px)",
-                }}
-              >
-                See a sample dashboard
               </Link>
             </div>
           </div>
@@ -921,14 +894,13 @@ export default function Landing({ sampleHref }: { sampleHref: string }) {
               className="rvf"
               style={{ "--d": "150ms", margin: "0 0 8px", maxWidth: "24em", fontSize: "17px", lineHeight: "1.55", color: "#3F4D44" } as CSSProperties}
             >
-              Four views built from your billing email. Open any of them with sample data.
+              Four views built from your billing email.
             </p>
           </div>
           <div style={{ marginTop: "44px", display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(270px, 1fr))", gap: "20px" }}>
-            <Link
+            <div
               data-rv=""
               className="lp-tile rv"
-              href="/app"
               style={
                 {
                   "--d": "0ms",
@@ -962,21 +934,17 @@ export default function Landing({ sampleHref }: { sampleHref: string }) {
               </div>
               <div>
                 <h3 style={{ margin: "0", display: "flex", alignItems: "center", justifyContent: "space-between", fontSize: "21px", fontWeight: "600" }}>
-                  Dashboard{" "}
-                  <svg className="arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
-                    <path d="M5 12h14M13 6l6 6-6 6" />
-                  </svg>
+                  Dashboard
                 </h3>
                 <p style={{ margin: "6px 0 0", fontSize: "15px", lineHeight: "1.55", color: "#3F4D44" }}>
                   Everything leaving your account in the next 30 days, and what your subscriptions cost a month.
                 </p>
               </div>
-            </Link>
+            </div>
 
-            <Link
+            <div
               data-rv=""
               className="lp-tile rv"
-              href="/app/recurring"
               style={
                 {
                   "--d": "100ms",
@@ -1027,21 +995,17 @@ export default function Landing({ sampleHref }: { sampleHref: string }) {
               </div>
               <div>
                 <h3 style={{ margin: "0", display: "flex", alignItems: "center", justifyContent: "space-between", fontSize: "21px", fontWeight: "600" }}>
-                  Recurring{" "}
-                  <svg className="arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
-                    <path d="M5 12h14M13 6l6 6-6 6" />
-                  </svg>
+                  Recurring
                 </h3>
                 <p style={{ margin: "6px 0 0", fontSize: "15px", lineHeight: "1.55", color: "#3F4D44" }}>
                   Subscriptions grouped by category, with the cancel link from each company&apos;s own email.
                 </p>
               </div>
-            </Link>
+            </div>
 
-            <Link
+            <div
               data-rv=""
               className="lp-tile rv"
-              href="/app/calendar"
               style={
                 {
                   "--d": "200ms",
@@ -1075,21 +1039,17 @@ export default function Landing({ sampleHref }: { sampleHref: string }) {
               </div>
               <div>
                 <h3 style={{ margin: "0", display: "flex", alignItems: "center", justifyContent: "space-between", fontSize: "21px", fontWeight: "600" }}>
-                  Calendar{" "}
-                  <svg className="arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
-                    <path d="M5 12h14M13 6l6 6-6 6" />
-                  </svg>
+                  Calendar
                 </h3>
                 <p style={{ margin: "6px 0 0", fontSize: "15px", lineHeight: "1.55", color: "#3F4D44" }}>
                   Every charge and due date on a month view, so the heavy weeks don&apos;t surprise you.
                 </p>
               </div>
-            </Link>
+            </div>
 
-            <Link
+            <div
               data-rv=""
               className="lp-tile rv"
-              href="/app/bills"
               style={
                 {
                   "--d": "300ms",
@@ -1133,16 +1093,13 @@ export default function Landing({ sampleHref }: { sampleHref: string }) {
               </div>
               <div>
                 <h3 style={{ margin: "0", display: "flex", alignItems: "center", justifyContent: "space-between", fontSize: "21px", fontWeight: "600" }}>
-                  Bills and deadlines{" "}
-                  <svg className="arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
-                    <path d="M5 12h14M13 6l6 6-6 6" />
-                  </svg>
+                  Bills and deadlines
                 </h3>
                 <p style={{ margin: "6px 0 0", fontSize: "15px", lineHeight: "1.55", color: "#3F4D44" }}>
                   Bills to pay, free trials about to convert, and renewals you can still stop.
                 </p>
               </div>
-            </Link>
+            </div>
           </div>
         </section>
 
@@ -1276,23 +1233,6 @@ export default function Landing({ sampleHref }: { sampleHref: string }) {
                     <path d="M3 7l9 6 9-6" />
                   </svg>
                   Get started
-                </Link>
-                <Link
-                  href={sampleHref}
-                  style={{
-                    display: "inline-flex",
-                    alignItems: "center",
-                    minHeight: "52px",
-                    padding: "0 22px",
-                    borderRadius: "999px",
-                    border: "1.5px solid #344C3D",
-                    color: "#344C3D",
-                    fontWeight: "600",
-                    fontSize: "16px",
-                    textDecoration: "none",
-                  }}
-                >
-                  See a sample dashboard
                 </Link>
               </div>
             </div>

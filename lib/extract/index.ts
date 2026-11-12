@@ -8,7 +8,7 @@ export interface ExtractOptions {
   /**
    * Default false. The AI fallback sends email text to Anthropic, so it is a local developer
    * tool: only the eval script passes true (npm run eval:llm, scripts/eval.ts --llm). Sync for
-   * real users and the demo never set it.
+   * real users never set it.
    */
   useLlm?: boolean;
 }

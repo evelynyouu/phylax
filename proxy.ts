@@ -1,15 +1,12 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import { gate } from "@/lib/gate";
-import { isDemo } from "@/lib/session";
 import { supabaseEnv } from "@/lib/supabase/config";
 
 // Refreshes the Supabase session cookies on every matched request (the @supabase/ssr
 // updateSession pattern), then gates /app pages and API routes. Pages and route handlers
-// check the user again. Demo mode never touches Supabase.
+// check the user again.
 export async function proxy(request: NextRequest) {
-  if (isDemo()) return decide(request, true, NextResponse.next());
-
   let response = NextResponse.next({ request });
   let signedIn = false;
   const env = supabaseEnv();

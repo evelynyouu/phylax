@@ -1,7 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { safeNext } from "@/lib/auth-copy";
 import { requestOrigin } from "@/lib/csrf";
-import { isDemo } from "@/lib/session";
 import { supabaseEnv } from "@/lib/supabase/config";
 import { supabaseServer } from "@/lib/supabase/server";
 
@@ -14,8 +13,6 @@ export async function GET(req: NextRequest) {
   // when the browser used 127.0.0.1, so read the Host header.
   const base = requestOrigin(req.headers, req.url);
   const next = safeNext(url.searchParams.get("next"));
-  if (isDemo()) return NextResponse.redirect(new URL(next, base));
-
   const fail = (reason: string) => NextResponse.redirect(new URL(`/signin?auth=${reason}`, base));
   if (!supabaseEnv()) return fail("accounts_not_configured");
   if (url.searchParams.get("error")) return fail("denied");

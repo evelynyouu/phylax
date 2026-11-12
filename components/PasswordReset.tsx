@@ -10,8 +10,8 @@ import PasswordField from "./PasswordField";
 import { Field } from "./ui";
 
 /** /forgot-password: Supabase emails a link that signs the person in and lands on /reset-password. */
-export function ForgotForm({ demo }: { demo: boolean }) {
-  const configured = !demo && supabaseEnv() !== null;
+export function ForgotForm() {
+  const configured = supabaseEnv() !== null;
   const [busy, setBusy] = useState(false);
   const [sent, setSent] = useState(false);
   const [error, setError] = useState("");
@@ -32,7 +32,6 @@ export function ForgotForm({ demo }: { demo: boolean }) {
     setSent(true);
   }
 
-  if (demo) return <p className="auth-msg info">The demo has no passwords. Open it from the sign-in page.</p>;
   if (sent)
     return (
       <p role="status" className="auth-msg info">

@@ -5,9 +5,9 @@ import { GmailNotice } from "@/components/ConnectGmail";
 import { loadApp, loadSyncNote } from "@/lib/app-data";
 
 async function AccountSlot() {
-  const { user, store, source, connected } = await loadApp();
+  const { user, store, connected } = await loadApp();
   return (
-    <Account user={user} syncNote={await loadSyncNote(store, source, connected)} demo={source === "fixtures"} connected={connected} />
+    <Account user={user} syncNote={await loadSyncNote(store, connected)} connected={connected} />
   );
 }
 

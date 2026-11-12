@@ -1,7 +1,6 @@
 import type { User } from "@supabase/supabase-js";
 import { redirect } from "next/navigation";
 import { cache } from "react";
-import { DEMO_USER, isDemo } from "./session";
 import { supabaseEnv } from "./supabase/config";
 import { supabaseServer } from "./supabase/server";
 
@@ -10,8 +9,6 @@ export interface AppUser {
   email: string;
   name: string;
 }
-
-export const DEMO_APP_USER: AppUser = { id: "demo", email: DEMO_USER.email, name: DEMO_USER.name };
 
 export function appUserFrom(user: User): AppUser {
   const email = user.email ?? "";
@@ -25,7 +22,6 @@ export function appUserFrom(user: User): AppUser {
  * Request-time: call inside a Suspense boundary or a route handler. Cached per request.
  */
 export const getOptionalUser = cache(async (): Promise<AppUser | null> => {
-  if (isDemo()) return DEMO_APP_USER;
   if (!supabaseEnv()) return null;
   const supabase = await supabaseServer();
   const { data, error } = await supabase.auth.getUser();

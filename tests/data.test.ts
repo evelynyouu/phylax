@@ -1,10 +1,10 @@
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { describe, expect, it } from "vitest";
 import { billKey, chargesForMonth } from "../lib/calendar";
 import { categoryFor } from "../lib/categories";
 import { GMAIL_SCOPE, SCOPES, updateGmail } from "../lib/gmail";
 import { buildDashboard } from "../lib/resolve";
 import { memoryStore } from "../lib/store/memory";
-import { dataSource, getDashboard, GmailReconnectError, runSync, syncProgress, type GmailLayer } from "../lib/sync";
+import { getDashboard, GmailReconnectError, runSync, syncProgress, type GmailLayer } from "../lib/sync";
 import type { Store } from "../lib/store/types";
 import type { ExtractedRecord, Subscription } from "../lib/types";
 import { gmailState } from "../lib/views";
@@ -174,38 +174,26 @@ describe("store: paid, reminders, manual cancels", () => {
   });
 });
 
-function withDataSource(value: string | undefined) {
-  let prev: string | undefined;
-  beforeEach(() => {
-    prev = process.env.DATA_SOURCE;
-    if (value === undefined) delete process.env.DATA_SOURCE;
-    else process.env.DATA_SOURCE = value;
-  });
-  afterEach(() => {
-    if (prev === undefined) delete process.env.DATA_SOURCE;
-    else process.env.DATA_SOURCE = prev;
-  });
-}
+// The pipeline tests read the sample emails in fixtures/ through runSync's test-only source option.
+const FIXTURES = { source: "fixtures" as const };
 
 describe("sync progress", { timeout: 15000 }, () => {
-  withDataSource("fixtures");
-
   it("reports progress while a sync runs and a summary when it ends", async () => {
     const s = memoryStore("progress");
     const seen: number[] = [];
-    const r = await runSync(s, (p) => seen.push(p.processed));
+    const r = await runSync(s, (p) => seen.push(p.processed), undefined, FIXTURES);
     expect(r.processed).toBe(45);
     expect(seen.length).toBeGreaterThan(1);
     expect(seen[seen.length - 1]).toBe(45);
     expect(syncProgress("progress")).toMatchObject({ running: false, listed: 45, processed: 45, checked: 45 });
     // A second scan finds nothing new but still reports every email it looked at.
-    await runSync(s);
+    await runSync(s, undefined, undefined, FIXTURES);
     expect(syncProgress("progress")).toMatchObject({ listed: 45, processed: 0, checked: 45 });
   });
 
   it("sync progress is per user", async () => {
     const a = memoryStore("a"), b = memoryStore("b");
-    await runSync(a);
+    await runSync(a, undefined, undefined, FIXTURES);
     expect(syncProgress("a")).toMatchObject({ processed: 45, checked: 45 });
     expect(syncProgress("b")).toMatchObject({ listed: 0, processed: 0 });
     expect(await b.loadRecords()).toEqual([]);
@@ -213,31 +201,21 @@ describe("sync progress", { timeout: 15000 }, () => {
 
   it("a second sync for the same user while one runs is refused", async () => {
     const s = memoryStore("c");
-    const first = runSync(s);
-    await expect(runSync(s)).rejects.toThrow(/already running/);
+    const first = runSync(s, undefined, undefined, FIXTURES);
+    await expect(runSync(s, undefined, undefined, FIXTURES)).rejects.toThrow(/already running/);
     await first;
   });
 
   it("dashboard reads paid, reminders, dismissed and manual cancels from the store", async () => {
     const s = memoryStore("d");
-    await runSync(s);
+    await runSync(s, undefined, undefined, FIXTURES);
     await s.setMark("manual_cancels", "netflix", true);
     const { dashboard } = await getDashboard(s);
     expect(dashboard.subscriptions.find((x) => x.merchantKey === "netflix")!.status).toBe("cancelled");
   });
-
-  it("the demo's first-load sync joins a sync that is already running", async () => {
-    const s = memoryStore("join");
-    const first = runSync(s);
-    const { dashboard } = await getDashboard(s);
-    expect(dashboard.subscriptions.length).toBeGreaterThan(0);
-    expect((await first).processed).toBe(45);
-  });
 });
 
 describe("expired Gmail token (invalid_grant)", { timeout: 15000 }, () => {
-  withDataSource(undefined);
-
   const grant = () => Object.assign(new Error("invalid_grant"), { response: { data: { error: "invalid_grant", error_description: "Token has been expired or revoked." } } });
   const raw = (id: string) => ({ id, from: "Netflix <info@netflix.com>", subject: "Your receipt", date: "2026-10-14T15:00:00Z", bodyText: "Total $15.49", links: [] });
 
@@ -406,21 +384,15 @@ describe("Gmail state of an /app page", () => {
   });
 });
 
-describe("demo refusal and Gmail scopes", () => {
-  const env = process.env as Record<string, string | undefined>;
-  let saved: { ds?: string; ne?: string };
-  beforeEach(() => (saved = { ds: env.DATA_SOURCE, ne: env.NODE_ENV }));
-  afterEach(() => {
-    if (saved.ds === undefined) delete env.DATA_SOURCE; else env.DATA_SOURCE = saved.ds;
-    if (saved.ne === undefined) delete env.NODE_ENV; else env.NODE_ENV = saved.ne;
-  });
-
-  it("a production build never reads fixtures, even with DATA_SOURCE=fixtures", () => {
-    env.DATA_SOURCE = "fixtures";
-    env.NODE_ENV = "production";
-    expect(dataSource()).toBe("gmail");
-    env.NODE_ENV = "development";
-    expect(dataSource()).toBe("fixtures");
+describe("Gmail scopes and data source", () => {
+  it("the app reads Gmail unless a test passes the fixtures source, whatever DATA_SOURCE says", async () => {
+    process.env.DATA_SOURCE = "fixtures";
+    try {
+      const gmail = { configured: () => false } as unknown as GmailLayer;
+      await expect(runSync(memoryStore("no-demo"), undefined, gmail)).rejects.toThrow(/GOOGLE_CLIENT_ID/);
+    } finally {
+      delete process.env.DATA_SOURCE;
+    }
   });
 
   it("asks Google for read-only Gmail plus the account email, nothing else", () => {

@@ -7,8 +7,8 @@ export type AuthMessage = { text: string; info?: boolean };
 
 // Copy for ?auth= codes on /signin: Supabase sign-in failures (/auth/callback) and sign-out.
 export const AUTH_MESSAGES: Record<string, AuthMessage> = {
-  not_configured: { text: "Google sign-in is not set up yet. Add GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET as the README describes, or run npm run demo for sample data." },
-  accounts_not_configured: { text: "Accounts are not set up yet. Add the Supabase keys as the README describes, or run npm run demo for sample data." },
+  not_configured: { text: "Google sign-in is not set up yet. Add GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET as the README describes." },
+  accounts_not_configured: { text: "Accounts are not set up yet. Add the Supabase keys as the README describes." },
   denied: { text: "Google sign-in was cancelled. Try again when you're ready." },
   failed: { text: "Google sign-in failed. Check the OAuth settings in the README and try again." },
   signed_out: { text: "You're signed out.", info: true },
@@ -17,7 +17,7 @@ export const AUTH_MESSAGES: Record<string, AuthMessage> = {
 // Copy for ?auth= codes set by the Connect Gmail flow (/api/auth/google and /api/auth/callback),
 // shown on sign-up step 2 and on /app.
 export const GMAIL_MESSAGES: Record<string, AuthMessage> = {
-  not_configured: { text: "Connecting Gmail is not set up yet. Add GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET as the README describes, or run npm run demo for sample data." },
+  not_configured: { text: "Connecting Gmail is not set up yet. Add GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET as the README describes." },
   denied: { text: "Connecting Gmail was cancelled. Try again when you're ready." },
   no_gmail: { text: "Phylax needs read-only Gmail access. On Google's screen, keep the Gmail box ticked." },
   invalid_state: { text: "Phylax could not verify the answer from Google. Please connect Gmail again." },

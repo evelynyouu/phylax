@@ -7,7 +7,6 @@ import AuthShell from "@/components/AuthShell";
 import PhylaxMark from "@/components/PhylaxMark";
 import { AUTH_MESSAGES } from "@/lib/auth-copy";
 import { getOptionalUser } from "@/lib/current-user";
-import { isDemo } from "@/lib/session";
 
 export const metadata = { title: "Sign in | Phylax" };
 
@@ -28,7 +27,7 @@ export default function SignInPage({ searchParams }: PageProps<"/signin">) {
       <Suspense fallback={null}>
         <SignInStatus searchParams={searchParams} />
       </Suspense>
-      <AuthForm mode="signin" demo={isDemo()} />
+      <AuthForm mode="signin" />
     </AuthShell>
   );
 }
@@ -37,10 +36,7 @@ export default function SignInPage({ searchParams }: PageProps<"/signin">) {
 async function SignInStatus({ searchParams }: { searchParams: PageProps<"/signin">["searchParams"] }) {
   await connection();
   const sp = await searchParams;
-  if (await getOptionalUser()) {
-    // Demo mode is always signed in; after "Sign out" it stays here to show the message.
-    if (!isDemo() || sp.auth !== "signed_out") redirect("/app");
-  }
+  if (await getOptionalUser()) redirect("/app");
   const code = typeof sp.auth === "string" ? sp.auth : null;
   const msg = code ? AUTH_MESSAGES[code] : null;
   if (!msg) return null;

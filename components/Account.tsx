@@ -10,7 +10,7 @@ function initials(name: string): string {
 }
 
 /** Sidebar footer: dark mode switch, sync status, who is signed in, sign out, and the privacy and terms links. */
-export default function Account({ user, syncNote, demo, connected }: { user: AppUser; syncNote: string; demo: boolean; connected: boolean }) {
+export default function Account({ user, syncNote, connected }: { user: AppUser; syncNote: string; connected: boolean }) {
   return (
     <>
       <ThemeToggle />
@@ -31,8 +31,8 @@ export default function Account({ user, syncNote, demo, connected }: { user: App
       <p className="fine">
         <Link href="/privacy">Privacy</Link> · <Link href="/terms">Terms</Link>
       </p>
-      {!demo && connected && <DisconnectGmail />}
-      {!demo && <DeleteAccount />}
+      {connected && <DisconnectGmail />}
+      <DeleteAccount />
     </>
   );
 }

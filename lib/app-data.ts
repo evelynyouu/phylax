@@ -16,17 +16,16 @@ export const loadApp = cache(async () => {
   await connection();
   const user = await getCurrentUser();
   const store = await storeFor(user);
-  const { dashboard, source, connected, reconnect } = await getDashboard(store);
-  // getDashboard pins "today" in demo mode so the sample data stays current.
+  const { dashboard, connected, reconnect } = await getDashboard(store);
+  // PHYLAX_TODAY pins "today" for local testing against old email.
   const today = process.env.PHYLAX_TODAY ?? todayIso();
   // Records found before a Disconnect stay; only an account with nothing found gets the empty state.
   const hasData = dashboard.subscriptions.length > 0 || dashboard.bills.length > 0 || dashboard.receipts.length > 0;
   const gmail = gmailState({ connected, reconnect, hasData });
-  return { user, store, dashboard, source, connected, reconnect, gmail, today };
+  return { user, store, dashboard, connected, reconnect, gmail, today };
 });
 
-export async function loadSyncNote(store: Store, source: "gmail" | "fixtures", connected: boolean): Promise<string> {
-  if (source === "fixtures") return "Sample data, not your Gmail";
+export async function loadSyncNote(store: Store, connected: boolean): Promise<string> {
   if (!connected) return "Gmail not connected";
   const at = await lastSyncedAt(store);
   return at ? `Gmail synced ${ago(at)}` : "Gmail not synced yet";

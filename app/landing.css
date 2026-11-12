@@ -32,12 +32,7 @@
 .lp .rvf.pre{opacity:0;filter:blur(10px)}
 .lp .lp-card{transition:transform 400ms cubic-bezier(.2,.7,.2,1),box-shadow 400ms ease}
 .lp .lp-card:hover{transform:translateY(-6px);box-shadow:0 30px 60px rgba(30,43,34,0.28)}
-.lp .lp-tile{text-decoration:none;transition:transform 300ms cubic-bezier(.2,.7,.2,1), box-shadow 300ms ease}
-.lp .lp-tile:hover{transform:translateY(-5px);box-shadow:0 22px 44px rgba(52,76,61,.14)}
-.lp .lp-tile .peek{transition:transform 500ms cubic-bezier(.2,.7,.2,1)}
-.lp .lp-tile:hover .peek{transform:scale(1.03)}
-.lp .arrow{transition:transform 300ms ease}
-.lp .lp-tile:hover .arrow{transform:translateX(4px)}
+.lp .lp-tile{text-decoration:none}
 .lp .b-primary:hover{background:#26392D !important;color:#FFFFFF !important}
 .lp .zig-down{background:linear-gradient(135deg,#FBFAF6 50%,transparent 50%) 0 0/10px 10px repeat-x,linear-gradient(225deg,#FBFAF6 50%,transparent 50%) 0 0/10px 10px repeat-x !important}
 .lp .lp-card:hover{box-shadow:0 26px 54px rgba(52,76,61,0.16) !important}

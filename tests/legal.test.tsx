@@ -1,5 +1,8 @@
 import { renderToStaticMarkup } from "react-dom/server";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
+
+// The sidebar's Delete account and Disconnect buttons use the App Router; this renders them statically.
+vi.mock("next/navigation", async (orig) => ({ ...(await orig<typeof import("next/navigation")>()), useRouter: () => ({ refresh: () => {}, push: () => {} }) }));
 import Account from "../components/Account";
 import AuthForm from "../components/AuthForm";
 import Landing from "../app/page";
@@ -67,13 +70,13 @@ describe("markdown line breaks and links", () => {
 
 describe("links to the privacy and terms pages", () => {
   it("sit under Sign out in the app sidebar", () => {
-    const out = html(<Account user={{ id: "u", email: "u@x.co", name: "U" }} syncNote="" demo connected={false} />);
+    const out = html(<Account user={{ id: "u", email: "u@x.co", name: "U" }} syncNote="" connected={false} />);
     expect(out.indexOf('href="/privacy"')).toBeGreaterThan(out.indexOf("Sign out"));
     expect(out).toContain('href="/terms"');
   });
 
   it("appear on sign-up with the agreement line, after both submit buttons", () => {
-    const out = html(<AuthForm mode="signup" demo />);
+    const out = html(<AuthForm mode="signup" />);
     expect(out).toContain("By creating an account you agree to the");
     expect(out).toMatch(/agree to the <a[^>]*href="\/terms"[^>]*>Terms<\/a> and <a[^>]*href="\/privacy"[^>]*>Privacy Policy<\/a>\./);
     expect(out.indexOf("By creating an account")).toBeGreaterThan(out.lastIndexOf("Continue with Google"));

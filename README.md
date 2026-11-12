@@ -6,13 +6,6 @@ Finds recurring charges, upcoming payments, and deadlines in your Gmail, and put
 - **Coming up:** every expected charge over the next 60 days, including bills.
 - **Deadlines:** bills to pay, free trials about to convert, renewals you can still stop.
 
-## Try it without Gmail
-
-```bash
-npm install
-npm run demo        # http://127.0.0.1:3000 with 45 sample emails
-```
-
 ## Set up your own copy
 
 Phylax uses Supabase for accounts and storage, and Google for Gmail access.
@@ -33,7 +26,7 @@ Phylax uses Supabase for accounts and storage, and Google for Gmail access.
 
 ### 3. Environment
 
-Copy `.env.example` to `.env.local` and fill it in. `TOKEN_ENC_KEY` is 64 hex characters: `openssl rand -hex 32`. `SUPABASE_SERVICE_ROLE_KEY` is used only to delete accounts and by the eval export script. `ANTHROPIC_API_KEY` is optional and only for the local eval (`npm run eval:llm`, `npm run eval:real:llm`): the AI fallback is a developer tool and is off for every user, so sync and the demo never send email to Anthropic. Do not set it in production. `EVAL_OWNER_USER_ID` is your own Phylax account id, for the eval export (see below).
+Copy `.env.example` to `.env.local` and fill it in. `TOKEN_ENC_KEY` is 64 hex characters: `openssl rand -hex 32`. `SUPABASE_SERVICE_ROLE_KEY` is used only to delete accounts and by the eval export script. `ANTHROPIC_API_KEY` is optional and only for the local eval (`npm run eval:llm`, `npm run eval:real:llm`): the AI fallback is a developer tool and is off for every user, so sync never sends email to Anthropic. Do not set it in production. `EVAL_OWNER_USER_ID` is your own Phylax account id, for the eval export (see below).
 
 `APP_URL` must equal the exact host and port you open in the browser, for example `http://127.0.0.1:3000`. Use one host everywhere: either `127.0.0.1` or `localhost`, the same in `APP_URL`, every Google redirect URI, and the address you open in the browser. A mismatch breaks Google sign-in and Connect Gmail.
 
@@ -68,7 +61,7 @@ Gmail (read-only) -> sync -> rules extractor -> records (Supabase)
                                                    dashboard
 ```
 
-- **Rules only, for users.** Classification, amounts, dates, cadence, and cancel links come from patterns and a merchant table. The code also has an AI fallback (`lib/extract/llm.ts`) for emails the rules score below 0.7, or that look billing-related but matched nothing. It is a local developer tool: `extractEmail` leaves it off unless a caller passes `useLlm: true`, and only `scripts/eval.ts --llm` does. Sync and the demo never use it.
+- **Rules only, for users.** Classification, amounts, dates, cadence, and cancel links come from patterns and a merchant table. The code also has an AI fallback (`lib/extract/llm.ts`) for emails the rules score below 0.7, or that look billing-related but matched nothing. It is a local developer tool: `extractEmail` leaves it off unless a caller passes `useLlm: true`, and only `scripts/eval.ts --llm` does. Sync never uses it.
 - **Resolution.** Records are grouped by merchant. A merchant is a subscription when emails state a cadence, a renewal or trial notice exists, or charges repeat. One-off purchases are ignored. Cancelled subscriptions are detected from cancellation emails.
 - **Storage.** For a billing email, only the billing facts (merchant, amount, currency, cadence, dates, cancel link and whether it is on the sender's domain) plus the Gmail message id, date, kind and confidence are saved, in the signed-in user's rows in Supabase (row level security keeps each account to its own data). For any other email only the id, date, kind and confidence are kept, so it is not fetched again. Email text, subject and sender are not stored. The optional eval corpus in `data/eval/` is the one exception: it stores sampled email bodies, encrypted with the token key, only when you run `npm run eval:export`.
 
