@@ -58,3 +58,13 @@ describe("SettingsView", () => {
     expect(out).toContain("g@gmail.com");
   });
 });
+
+describe("email change notices", () => {
+  it("shows the pending and changed messages in the Email card", () => {
+    const pending = html(<SettingsView user={emailUser} avatarUrl={null} gmailEmail={null} emailNotice="pending" />);
+    expect(pending).toContain("One link confirmed. Open the link sent to your other address to finish.");
+    const changed = html(<SettingsView user={emailUser} avatarUrl={null} gmailEmail={null} emailNotice="changed" />);
+    expect(changed).toContain("Your email is updated.");
+    expect(html(<SettingsView user={emailUser} avatarUrl={null} gmailEmail={null} emailNotice="bogus" />)).not.toContain("Your email is updated.");
+  });
+});

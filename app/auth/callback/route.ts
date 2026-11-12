@@ -17,7 +17,13 @@ export async function GET(req: NextRequest) {
   if (!supabaseEnv()) return fail("accounts_not_configured");
   if (url.searchParams.get("error")) return fail("denied");
   const code = url.searchParams.get("code");
-  if (!code) return fail("failed");
+  if (!code) {
+    // Secure email change: the first of the two confirmation links returns here without a code.
+    // That is not a failure; land on Settings (or the whitelisted next) and say what happened.
+    const target = new URL(next, base);
+    if (next === "/app/settings") target.searchParams.set("email", url.searchParams.has("message") ? "pending" : "changed");
+    return NextResponse.redirect(target);
+  }
 
   const { error } = await (await supabaseServer()).auth.exchangeCodeForSession(code);
   if (error) return fail("failed");

@@ -6,7 +6,12 @@ import type { AppUser } from "@/lib/current-user";
 import { hasPassword, validateNewEmail } from "@/lib/profile";
 import { supabaseBrowser } from "@/lib/supabase/browser";
 
-export default function EmailSection({ user }: { user: AppUser }) {
+const NOTICES = {
+  pending: "One link confirmed. Open the link sent to your other address to finish.",
+  changed: "Your email is updated.",
+} as const;
+
+export default function EmailSection({ user, notice }: { user: AppUser; notice?: string | null }) {
   const [next, setNext] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
@@ -45,6 +50,7 @@ export default function EmailSection({ user }: { user: AppUser }) {
     <section className="card" aria-labelledby="set-email">
       <h2 id="set-email">Email</h2>
       <p>{user.email}</p>
+      {notice === "pending" || notice === "changed" ? <p role="status">{NOTICES[notice]}</p> : null}
       {hasPassword(user) ? (
         <form onSubmit={submit} noValidate>
           <div className="field">

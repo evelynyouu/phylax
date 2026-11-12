@@ -23,6 +23,19 @@ describe("auth redirects stay on the browser's host", () => {
     expect(res.headers.get("location")).toBe("http://127.0.0.1:3200/signin?auth=accounts_not_configured");
   });
 
+  it("/auth/callback without a code lands on Settings or the whitelisted next, never on a sign-in error", async () => {
+    env.NEXT_PUBLIC_SUPABASE_URL = "http://x.test";
+    env.NEXT_PUBLIC_SUPABASE_ANON_KEY = "k";
+    const loc = async (q: string) => (await authCallback(new NextRequest(`http://localhost:3200/auth/callback?${q}`, { headers: { host: "localhost:3200" } }))).headers.get("location");
+    const res = await authCallback(new NextRequest("http://localhost:3200/auth/callback?next=/app/settings&message=Confirmation+link+accepted", { headers: { host: "localhost:3200" } }));
+    expect(res.status).toBe(307);
+    expect(res.headers.get("location")).toBe("http://localhost:3200/app/settings?email=pending");
+    expect(await loc("next=/app/settings")).toBe("http://localhost:3200/app/settings?email=changed");
+    expect(await loc("next=/app")).toBe("http://localhost:3200/app");
+    expect(await loc("next=https://evil.example")).toBe("http://localhost:3200/app");
+    expect(await loc("error=access_denied&next=/app/settings")).toBe("http://localhost:3200/signin?auth=denied");
+  });
+
   it("sign-out lands on the browser's host when APP_URL is unset", async () => {
     delete env.APP_URL;
     delete env.NEXT_PUBLIC_SUPABASE_URL;

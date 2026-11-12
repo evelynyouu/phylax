@@ -7,7 +7,7 @@ import EmailSection from "./EmailSection";
 import PasswordSection from "./PasswordSection";
 import ProfileSection from "./ProfileSection";
 
-export default function SettingsView({ user, avatarUrl, gmailEmail }: { user: AppUser; avatarUrl: string | null; gmailEmail: string | null }) {
+export default function SettingsView({ user, avatarUrl, gmailEmail, emailNotice = null }: { user: AppUser; avatarUrl: string | null; gmailEmail: string | null; emailNotice?: string | null }) {
   return (
     <>
       <header className="page-head">
@@ -15,7 +15,7 @@ export default function SettingsView({ user, avatarUrl, gmailEmail }: { user: Ap
       </header>
       <div className="settings">
         <ProfileSection user={user} avatarUrl={avatarUrl} />
-        <EmailSection user={user} />
+        <EmailSection user={user} notice={emailNotice} />
         <PasswordSection user={user} />
         <AppearanceSection />
         <section className="card" aria-labelledby="set-gmail">

@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { authErrorMessage, passwordStrength, PASSWORD_HINT } from "@/lib/auth-copy";
 import type { AppUser } from "@/lib/current-user";
@@ -8,6 +9,7 @@ import { supabaseBrowser } from "@/lib/supabase/browser";
 import PasswordField from "../PasswordField";
 
 export default function PasswordSection({ user }: { user: AppUser }) {
+  const router = useRouter();
   const has = hasPassword(user);
   const [current, setCurrent] = useState("");
   const [pw, setPw] = useState("");
@@ -42,6 +44,7 @@ export default function PasswordSection({ user }: { user: AppUser }) {
       setDone("Password changed.");
       setCurrent("");
       setPw("");
+      router.refresh();
     } catch {
       setError("Something went wrong. Please try again.");
     } finally {
