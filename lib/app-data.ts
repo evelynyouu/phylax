@@ -18,7 +18,7 @@ export const loadApp = cache(async () => {
   const store = await storeFor(user);
   const { dashboard, source, connected, reconnect } = await getDashboard(store);
   // getDashboard pins "today" in demo mode so the sample data stays current.
-  const today = process.env.SUBWATCH_TODAY ?? todayIso();
+  const today = process.env.PHYLAX_TODAY ?? todayIso();
   // Records found before a Disconnect stay; only an account with nothing found gets the empty state.
   const hasData = dashboard.subscriptions.length > 0 || dashboard.bills.length > 0 || dashboard.receipts.length > 0;
   const gmail = gmailState({ connected, reconnect, hasData });

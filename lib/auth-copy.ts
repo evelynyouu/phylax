@@ -19,8 +19,8 @@ export const AUTH_MESSAGES: Record<string, AuthMessage> = {
 export const GMAIL_MESSAGES: Record<string, AuthMessage> = {
   not_configured: { text: "Connecting Gmail is not set up yet. Add GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET as the README describes, or run npm run demo for sample data." },
   denied: { text: "Connecting Gmail was cancelled. Try again when you're ready." },
-  no_gmail: { text: "Subwatch needs read-only Gmail access. On Google's screen, keep the Gmail box ticked." },
-  invalid_state: { text: "Subwatch could not verify the answer from Google. Please connect Gmail again." },
+  no_gmail: { text: "Phylax needs read-only Gmail access. On Google's screen, keep the Gmail box ticked." },
+  invalid_state: { text: "Phylax could not verify the answer from Google. Please connect Gmail again." },
   failed: { text: "Connecting Gmail failed. Check the OAuth settings in the README and try again." },
   no_identity: { text: "Google did not say which Gmail account you chose. Please connect Gmail again." },
 };

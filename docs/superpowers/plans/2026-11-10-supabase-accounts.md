@@ -272,7 +272,7 @@ git commit -m "feat(auth): Supabase sign-up, sign-in, Google and sign-out; proxy
   export async function getDashboard(store: Store): Promise<{ dashboard: Dashboard; source: DataSource; connected: boolean }>;
   export async function lastSyncedAt(store: Store): Promise<string | null>;
   ```
-- The Gmail OAuth scope list stays `[gmail.readonly, openid, email]` (email shows which Gmail is connected; it may differ from the Subwatch account email). No owner check: the connection belongs to the signed-in Subwatch user.
+- The Gmail OAuth scope list stays `[gmail.readonly, openid, email]` (email shows which Gmail is connected; it may differ from the Phylax account email). No owner check: the connection belongs to the signed-in Phylax user.
 - The sync cursor moves from kv `last_sync_epoch` to `gmail_connections.last_sync_epoch`; disconnecting deletes the row, so a reconnect rescans 13 months.
 - One sync per user at a time: a module-level `Map<userId, Promise<SyncResult>>`; a second POST while one runs returns 409, and `getDashboard`'s demo first-load sync awaits the same promise instead of starting another.
 - `scripts/eval-export.ts` keeps working for the developer by building a store for a user id given as `--user <uuid>` with the service role key; add that flag.
@@ -355,7 +355,7 @@ it("refuses account deletion without the typed confirmation", async () => {
 Run: `npx vitest run tests/auth.test.ts`
 Expected: FAIL, missing export.
 
-- [ ] **Step 3: Implement the route, `supabaseAdmin`, and the confirm dialog** (the user types `delete`; copy: "This deletes your Subwatch account and everything it found. Your Gmail is not touched.").
+- [ ] **Step 3: Implement the route, `supabaseAdmin`, and the confirm dialog** (the user types `delete`; copy: "This deletes your Phylax account and everything it found. Your Gmail is not touched.").
 
 - [ ] **Step 4: Update `README.md`.** Replace "Connect your Gmail" with: Supabase setup (Task 2 Step 1 and Task 3 Step 4), Google Cloud setup with redirect URIs for both `/api/auth/callback` and the Supabase callback, `.env.local` from `.env.example`, `npm run dev`. Security model: RLS per user, tokens encrypted with `TOKEN_ENC_KEY`, service role key used only for deletion. Known limits: Google "Testing" mode allows up to 100 listed test users and expires refresh tokens after 7 days; public launch needs Google's restricted-scope verification.
 

@@ -55,7 +55,7 @@ describe("Gmail connect failures", () => {
       expect(GMAIL_MESSAGES[r]?.text).toBeTruthy();
     }
     expect(GMAIL_MESSAGES.denied.text).toBe("Connecting Gmail was cancelled. Try again when you're ready.");
-    expect(GMAIL_MESSAGES.no_gmail.text).toBe("Subwatch needs read-only Gmail access. On Google's screen, keep the Gmail box ticked.");
+    expect(GMAIL_MESSAGES.no_gmail.text).toBe("Phylax needs read-only Gmail access. On Google's screen, keep the Gmail box ticked.");
     expect(AUTH_MESSAGES.denied.text).toBe("Google sign-in was cancelled. Try again when you're ready.");
     for (const m of [...Object.values(GMAIL_MESSAGES), ...Object.values(AUTH_MESSAGES)]) expect(m.text).not.toMatch(/\u2014/);
   });

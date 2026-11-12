@@ -11,7 +11,7 @@ export default function AppShell({ account, children }: { account: ReactNode; ch
       </a>
       <aside className="side">
         <Link href="/" className="side-brand">
-          Subwatch
+          Phylax
         </Link>
         <NavLinks />
         <div className="side-foot">{account}</div>

@@ -16,7 +16,7 @@ function safeEqual(a: string, b: string): boolean {
 const NEXT: Record<string, string> = { signup: "/signup?step=3", app: "/app" };
 
 // Gmail connection callback. Signing in is Supabase's job (/auth/callback); this only stores
-// the Gmail connection, for the signed-in Subwatch user (any Gmail address they choose).
+// the Gmail connection, for the signed-in Phylax user (any Gmail address they choose).
 export async function GET(req: NextRequest) {
   const url = new URL(req.url);
   // Google sends the browser here at APP_URL (the registered redirect URI), so the browser's host

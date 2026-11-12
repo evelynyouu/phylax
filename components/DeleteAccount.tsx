@@ -55,7 +55,7 @@ export default function DeleteAccount() {
           }}
         >
           <h2 id="delete-h">Delete account</h2>
-          <p>This deletes your Subwatch account and everything it found. Your Gmail is not touched.</p>
+          <p>This deletes your Phylax account and everything it found. Your Gmail is not touched.</p>
           <label>
             Type <strong>delete</strong> to confirm
             <input type="text" value={text} onChange={(e) => setText(e.target.value)} autoComplete="off" autoCapitalize="off" spellCheck={false} />

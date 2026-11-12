@@ -163,7 +163,7 @@ describe("corpus store", () => {
   let dir: string;
   let savedKey: string | undefined;
   beforeEach(() => {
-    dir = fs.mkdtempSync(path.join(os.tmpdir(), "subwatch-eval-"));
+    dir = fs.mkdtempSync(path.join(os.tmpdir(), "phylax-eval-"));
     savedKey = process.env.TOKEN_ENC_KEY;
     process.env.TOKEN_ENC_KEY = "a".repeat(64);
   });
@@ -351,7 +351,7 @@ describe("final review fixes", () => {
   let savedKey: string | undefined;
   let savedApi: string | undefined;
   beforeEach(() => {
-    dir = fs.mkdtempSync(path.join(os.tmpdir(), "subwatch-eval-"));
+    dir = fs.mkdtempSync(path.join(os.tmpdir(), "phylax-eval-"));
     savedKey = process.env.TOKEN_ENC_KEY;
     savedApi = process.env.ANTHROPIC_API_KEY;
     process.env.TOKEN_ENC_KEY = "a".repeat(64);

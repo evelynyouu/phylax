@@ -1,4 +1,4 @@
-# Subwatch account flows: live E2E report (2026-11-11)
+# Phylax account flows: live E2E report (2026-11-11)
 
 Setup: scratch copy of branch `supabase-accounts` outside the repo, `next build` + `next start -H 127.0.0.1 -p 3200`, `APP_URL=http://127.0.0.1:3200`, no DATA_SOURCE, against the hosted Supabase project. No GOOGLE_CLIENT_ID/SECRET, no SUPABASE_SERVICE_ROLE_KEY. Browser flows ran in headless Chrome over CDP, with one isolated browser context per user. Port 3000 was not touched (it still answered 200 after cleanup).
 

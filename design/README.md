@@ -1,6 +1,6 @@
-# Subwatch design reference
+# Phylax design reference
 
-Exported from the Subwatch mockup canvas. These files are the source of truth for look and behavior.
+Exported from the Phylax mockup canvas. These files are the source of truth for look and behavior.
 They are mockups, not production code: port them into the Next.js app, don't copy them in as-is.
 
 - pages/Main.dc.html: landing page (scroll-driven 3D hero, how it works, previews, privacy, CTA)

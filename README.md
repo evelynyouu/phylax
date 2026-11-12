@@ -1,4 +1,4 @@
-# Subwatch
+# Phylax
 
 Finds recurring charges, upcoming payments, and deadlines in your Gmail, and puts the cancel link from each company's own email next to the subscription.
 
@@ -15,7 +15,7 @@ npm run demo        # http://127.0.0.1:3000 with 45 sample emails
 
 ## Set up your own copy
 
-Subwatch uses Supabase for accounts and storage, and Google for Gmail access.
+Phylax uses Supabase for accounts and storage, and Google for Gmail access.
 
 ### 1. Supabase
 
@@ -33,7 +33,7 @@ Subwatch uses Supabase for accounts and storage, and Google for Gmail access.
 
 ### 3. Environment
 
-Copy `.env.example` to `.env.local` and fill it in. `TOKEN_ENC_KEY` is 64 hex characters: `openssl rand -hex 32`. `SUPABASE_SERVICE_ROLE_KEY` is used only to delete accounts and by the eval export script. `ANTHROPIC_API_KEY` is optional and only for the local eval (`npm run eval:llm`, `npm run eval:real:llm`): the AI fallback is a developer tool and is off for every user, so sync and the demo never send email to Anthropic. Do not set it in production. `EVAL_OWNER_USER_ID` is your own Subwatch account id, for the eval export (see below).
+Copy `.env.example` to `.env.local` and fill it in. `TOKEN_ENC_KEY` is 64 hex characters: `openssl rand -hex 32`. `SUPABASE_SERVICE_ROLE_KEY` is used only to delete accounts and by the eval export script. `ANTHROPIC_API_KEY` is optional and only for the local eval (`npm run eval:llm`, `npm run eval:real:llm`): the AI fallback is a developer tool and is off for every user, so sync and the demo never send email to Anthropic. Do not set it in production. `EVAL_OWNER_USER_ID` is your own Phylax account id, for the eval export (see below).
 
 `APP_URL` must equal the exact host and port you open in the browser, for example `http://127.0.0.1:3000`. Use one host everywhere: either `127.0.0.1` or `localhost`, the same in `APP_URL`, every Google redirect URI, and the address you open in the browser. A mismatch breaks Google sign-in and Connect Gmail.
 
@@ -43,9 +43,9 @@ Copy `.env.example` to `.env.local` and fill it in. `TOKEN_ENC_KEY` is 64 hex ch
 
 ### Disconnect and delete
 
-- **Disconnect Gmail** asks Google to revoke Subwatch's Gmail access, deletes the stored tokens, and keeps the records it already found; the app keeps showing them with a notice to connect again. If you then connect a different Gmail address, its records are added alongside the old ones, and the old address's access is revoked.
-- **Delete account** deletes your Subwatch account, your Gmail connection and every saved record and choice. Your Gmail itself is never touched.
-- Revoking at Google is best effort. If Google does not confirm it, Disconnect and Delete still go ahead and the response says `revokeFailed: true`; remove Subwatch yourself at https://myaccount.google.com/permissions.
+- **Disconnect Gmail** asks Google to revoke Phylax's Gmail access, deletes the stored tokens, and keeps the records it already found; the app keeps showing them with a notice to connect again. If you then connect a different Gmail address, its records are added alongside the old ones, and the old address's access is revoked.
+- **Delete account** deletes your Phylax account, your Gmail connection and every saved record and choice. Your Gmail itself is never touched.
+- Revoking at Google is best effort. If Google does not confirm it, Disconnect and Delete still go ahead and the response says `revokeFailed: true`; remove Phylax yourself at https://myaccount.google.com/permissions.
 - If the server has no `SUPABASE_SERVICE_ROLE_KEY`, Delete account answers "Account deletion is not available right now. Please try again later." and changes nothing.
 
 ### Deploy

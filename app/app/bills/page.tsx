@@ -4,7 +4,7 @@ import { ConnectGmailEmpty } from "@/components/ConnectGmail";
 import { loadApp } from "@/lib/app-data";
 import { money, shortDate } from "@/lib/format";
 
-export const metadata = { title: "Bills and deadlines | Subwatch" };
+export const metadata = { title: "Bills and deadlines | Phylax" };
 
 export default function BillsPage() {
   return (

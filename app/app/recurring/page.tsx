@@ -8,7 +8,7 @@ import { hostOf, money, relDays, shortDate } from "@/lib/format";
 import type { Subscription } from "@/lib/types";
 import { monthlyOf, PER, subscriptionSubtitle } from "@/lib/views";
 
-export const metadata = { title: "Recurring | Subwatch" };
+export const metadata = { title: "Recurring | Phylax" };
 
 export default function RecurringPage() {
   return (

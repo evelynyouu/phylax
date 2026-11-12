@@ -14,12 +14,12 @@ Recommendation: build to WCAG 2.1 AA ([WCAG 2.1](https://www.w3.org/TR/WCAG21/))
 
 ## Checklist for the incoming frontend (WCAG 2.1 A and AA)
 
-Each line is one success criterion from [WCAG 2.1](https://www.w3.org/TR/WCAG21/). "Subwatch note" says what it means here.
+Each line is one success criterion from [WCAG 2.1](https://www.w3.org/TR/WCAG21/). "Phylax note" says what it means here.
 
 ### Perceivable
 
-- [ ] **1.1.1 Non-text Content (A).** Every meaningful icon, chart and image has a text alternative; decorative ones are `aria-hidden` or `alt=""`. Subwatch note: the WebGL bouquet, the dashboard bar chart and merchant marks.
-- [ ] **1.2.1 to 1.2.5 Time-based media (A/AA).** Captions and alternatives for any video or audio. Subwatch note: none today; applies if a demo video is embedded.
+- [ ] **1.1.1 Non-text Content (A).** Every meaningful icon, chart and image has a text alternative; decorative ones are `aria-hidden` or `alt=""`. Phylax note: the WebGL bouquet, the dashboard bar chart and merchant marks.
+- [ ] **1.2.1 to 1.2.5 Time-based media (A/AA).** Captions and alternatives for any video or audio. Phylax note: none today; applies if a demo video is embedded.
 - [ ] **1.3.1 Info and Relationships (A).** Headings, lists, tables, labels and groups are in the markup, not just the styling.
 - [ ] **1.3.2 Meaningful Sequence (A).** Reading order in the DOM matches the visual order, including the layered landing hero.
 - [ ] **1.3.3 Sensory Characteristics (A).** Instructions do not rely only on shape, color, position or sound ("select the pink petal" needs a non-visual path).
@@ -40,8 +40,8 @@ Each line is one success criterion from [WCAG 2.1](https://www.w3.org/TR/WCAG21/
 - [ ] **2.1.1 Keyboard (A).** Everything works by keyboard, including chart day details, petal pruning, dialogs and tabs.
 - [ ] **2.1.2 No Keyboard Trap (A).** Focus can always leave a component; dialogs return focus on close.
 - [ ] **2.1.4 Character Key Shortcuts (A).** No single-key shortcuts, or they can be turned off.
-- [ ] **2.2.1 Timing Adjustable (A).** No time limits, or they can be extended. Subwatch note: OAuth state cookie expires after 10 minutes; tell the user and let them retry.
-- [ ] **2.2.2 Pause, Stop, Hide (A).** Moving content that starts automatically and lasts more than 5 seconds has a pause control. Subwatch note: bluebird animation and any looping hero motion.
+- [ ] **2.2.1 Timing Adjustable (A).** No time limits, or they can be extended. Phylax note: OAuth state cookie expires after 10 minutes; tell the user and let them retry.
+- [ ] **2.2.2 Pause, Stop, Hide (A).** Moving content that starts automatically and lasts more than 5 seconds has a pause control. Phylax note: bluebird animation and any looping hero motion.
 - [ ] **2.3.1 Three Flashes or Below Threshold (A).**
 - [ ] **2.4.1 Bypass Blocks (A).** Skip link on every page with repeated navigation.
 - [ ] **2.4.2 Page Titled (A).** Unique, descriptive `<title>` per page.
@@ -64,7 +64,7 @@ Each line is one success criterion from [WCAG 2.1](https://www.w3.org/TR/WCAG21/
 - [ ] **3.3.1 Error Identification (A).** Errors are described in text and tied to the field.
 - [ ] **3.3.2 Labels or Instructions (A).** Every input has a visible label; requirements (password length) are stated up front.
 - [ ] **3.3.3 Error Suggestion (AA).** Errors say how to fix them.
-- [ ] **3.3.4 Error Prevention (Legal, Financial, Data) (AA).** Destructive or data-changing actions are reversible, checked, or confirmed. Subwatch note: account deletion (confirm), disconnect (confirm), mark paid and mark cancelled (undo).
+- [ ] **3.3.4 Error Prevention (Legal, Financial, Data) (AA).** Destructive or data-changing actions are reversible, checked, or confirmed. Phylax note: account deletion (confirm), disconnect (confirm), mark paid and mark cancelled (undo).
 
 ### Robust
 

@@ -20,18 +20,18 @@ This report is left uncommitted.
 - "Last updated": PRIVACY_POLICY.md has its own line (`Last updated: [EFFECTIVE DATE]`), and it is rendered. TERMS.md has no Last updated line, only `Effective date: [EFFECTIVE DATE]`, and that line is rendered. I did not make up a date.
 - Links:
   - `components/Account.tsx`: a `<p className="fine">` with Privacy · Terms under the Sign out row.
-  - `app/signin/page.tsx`: a second `auth-foot` line with Privacy · Terms under "New to Subwatch?".
+  - `app/signin/page.tsx`: a second `auth-foot` line with Privacy · Terms under "New to Phylax?".
   - `components/AuthForm.tsx` (sign-up mode only): "By creating an account you agree to the Terms and Privacy Policy." with links, under both the submit button and Continue with Google.
   - `app/page.tsx` footer only: the `#privacy` anchor now goes to `/privacy`, and Terms was added. The header's `#privacy` link is unchanged, as instructed.
 
 ### 2. Disclosure before Gmail consent
 
-- `components/GmailDisclosure.tsx` (new) is the one place this copy lives: the "Subwatch will / Subwatch can't" block taken from sign-up step 2, the data paragraph, and the existing "You can connect any Gmail account" note. Both sign-up step 2 and `/connect-gmail` render it.
+- `components/GmailDisclosure.tsx` (new) is the one place this copy lives: the "Phylax will / Phylax can't" block taken from sign-up step 2, the data paragraph, and the existing "You can connect any Gmail account" note. Both sign-up step 2 and `/connect-gmail` render it.
 - `app/connect-gmail/page.tsx` (new): heading, lede, `<GmailDisclosure />`, then a Suspense child that runs `await connection()` and `getCurrentUser()` and renders "Continue to Google" plus "Read the Privacy Policy". The button links to `googleConsentHref(next)`, a new helper in `lib/auth-copy.ts`: `next=signup` stays `signup`, and anything else becomes `app`. It also shows the existing `GMAIL_MESSAGES.not_configured` line when Google is not configured, the same way step 2 does.
 - Redirect for signed-out visitors: `redirect()` inside a streamed Suspense boundary only emits a client-side meta refresh (Next docs, `redirect.md`), so curl would see 200. To get a real 307 to `/signin`, `/connect-gmail` was added to the proxy matcher (`proxy.ts`) and to `gate()`'s sign-in list (`lib/gate.ts`). The page's `getCurrentUser()` is a second check.
 - `components/ConnectGmail.tsx`: `CONNECT_HREF` is now `/connect-gmail?next=app`. This covers Connect Gmail on the empty state, Reconnect Gmail and the Disconnected notice. A grep found nothing else in `app/` or `components/` that linked to `/api/auth/google` except sign-up step 2, which still goes straight to `/api/auth/google?next=signup`.
-- Checking the copy: I checked the requested paragraph against `docs/legal/DATA_INVENTORY.md` and the code. "Never sends email content to anyone" is not literally true. Email text is processed in Vercel function memory (DATA_INVENTORY section 2), and the fields Subwatch keeps are saved in Supabase. GAPS.md H3 also asks the disclosure to say who data is shared with. So I changed that sentence and left the code alone. The final paragraph is:
-  > Subwatch keeps the merchant, amount, dates and cancel link it finds. It never stores the text of your emails and never uses them for ads or AI training. Your emails are processed only on Subwatch's own server, hosted by Vercel. What Subwatch keeps is saved in its database, hosted by Supabase. You can disconnect or delete your account at any time.
+- Checking the copy: I checked the requested paragraph against `docs/legal/DATA_INVENTORY.md` and the code. "Never sends email content to anyone" is not literally true. Email text is processed in Vercel function memory (DATA_INVENTORY section 2), and the fields Phylax keeps are saved in Supabase. GAPS.md H3 also asks the disclosure to say who data is shared with. So I changed that sentence and left the code alone. The final paragraph is:
+  > Phylax keeps the merchant, amount, dates and cancel link it finds. It never stores the text of your emails and never uses them for ads or AI training. Your emails are processed only on Phylax's own server, hosted by Vercel. What Phylax keeps is saved in its database, hosted by Supabase. You can disconnect or delete your account at any time.
 
   Supporting evidence: no body, subject or sender is saved (`lib/sync.ts` `recordToSave`, `lib/types.ts`). The AI fallback is off for users (`lib/extract`, DATA_INVENTORY section 2). There are no analytics or ads (PRIVACY_POLICY section 6). Disconnect Gmail and Delete account are both in the sidebar (`components/Account.tsx`).
 
@@ -81,8 +81,8 @@ What the tests cover:
 - `npm run lint`: clean.
 - `npm run build`: success. `○ /privacy`, `○ /terms`, `◐ /connect-gmail`.
 - Scratch production server: an APFS clone (`cp -c -R`) in the scratchpad, without `.next`, `.env.local`, `.git` or `data`. Supabase env vars were unset, so nothing contacted the live project. Built and started on 127.0.0.1:3200:
-  - `/privacy`: 200, `<h1>Subwatch Privacy Policy</h1>` and its h2s, 0 "Draft for review".
-  - `/terms`: 200, `<h1>Subwatch Terms of Use</h1>` and its h2s, 0 "Draft for review", 0 "Notes for the reviewer".
+  - `/privacy`: 200, `<h1>Phylax Privacy Policy</h1>` and its h2s, 0 "Draft for review".
+  - `/terms`: 200, `<h1>Phylax Terms of Use</h1>` and its h2s, 0 "Draft for review", 0 "Notes for the reviewer".
   - `/connect-gmail?next=app` signed out: `307` to `http://127.0.0.1:3200/signin`.
   - `/`: the footer contains `href="/privacy"` and `href="/terms"`.
   - The server was stopped (port 3200 then refused connections) and the clone deleted.

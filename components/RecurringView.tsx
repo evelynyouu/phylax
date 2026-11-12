@@ -333,7 +333,7 @@ export default function RecurringView({ rows }: { rows: SubRow[] }) {
               </p>
             )}
             <p className="fine">
-              Subwatch never cancels for you. Marking it here hides future charges from your totals until a new receipt arrives.
+              Phylax never cancels for you. Marking it here hides future charges from your totals until a new receipt arrives.
             </p>
             <button type="button" className="linkish quiet" style={{ alignSelf: "flex-start", fontSize: 14 }} disabled={busy} onClick={() => stopTracking(open.merchantKey)}>
               Stop tracking {open.merchant}

@@ -264,7 +264,7 @@ export async function getDashboard(
   const source = dataSource();
   if (source === "fixtures") {
     // Demo mode: pin "today" so the sample data always has upcoming items, and load it on first view.
-    process.env.SUBWATCH_TODAY ??= "2026-11-09";
+    process.env.PHYLAX_TODAY ??= "2026-11-09";
     if ((await store.loadRecords()).length === 0) {
       // Join a sync that is already running rather than starting a second one.
       await (running.get(store.userId) ?? runSync(store));

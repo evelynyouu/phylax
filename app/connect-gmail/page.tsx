@@ -7,7 +7,7 @@ import { getCurrentUser } from "@/lib/current-user";
 import { gmailConfigured } from "@/lib/gmail";
 import { isDemo } from "@/lib/session";
 
-export const metadata = { title: "Connect Gmail | Subwatch" };
+export const metadata = { title: "Connect Gmail | Phylax" };
 
 // Shown before Google's consent screen (Google API Services User Data Policy: prominent
 // disclosure). Every in-app Connect or Reconnect button lands here; sign-up step 2 shows the same
@@ -17,7 +17,7 @@ export default function ConnectGmailPage({ searchParams }: PageProps<"/connect-g
     <div className="su">
       <header className="su-head">
         <Link href="/" className="brand">
-          Subwatch
+          Phylax
         </Link>
       </header>
       <div className="su-body">

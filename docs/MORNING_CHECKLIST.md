@@ -43,8 +43,8 @@ The new UI needs these to stay legal and honest (details in docs/legal/GAPS.md):
 - `/privacy` and `/terms` already exist (plain styling) and render docs/legal/PRIVACY_POLICY.md and TERMS.md. Fill in every placeholder such as [CONTACT EMAIL] and [EFFECTIVE DATE], and delete the reviewer notes in TERMS.md: Google rejects template text. Restyle the pages in your frontend.
 - The Gmail disclosure already exists at `/connect-gmail` and on sign-up step 2 (components/GmailDisclosure.tsx). Every Connect Gmail button must keep going through it.
 - Landing copy must match docs/legal/DATA_INVENTORY.md exactly (what is stored).
-- Show `revokeFailed` from Disconnect and Delete as "Remove Subwatch at myaccount.google.com/permissions".
-- Clear the `subwatch.dismissed-attention` localStorage key on sign-out and delete.
+- Show `revokeFailed` from Disconnect and Delete as "Remove Phylax at myaccount.google.com/permissions".
+- Clear the `phylax.dismissed-attention` localStorage key on sign-out and delete.
 - WCAG 2.1 AA: docs/legal/ACCESSIBILITY.md.
 - A full Content-Security-Policy once the final scripts and styles are known (only frame-ancestors, base-uri and form-action are set now).
 

@@ -15,8 +15,8 @@ const html = (el: React.ReactElement) => renderToStaticMarkup(el);
 describe("privacy and terms pages", () => {
   it("render the privacy policy headings, its Last updated line and the contact placeholder as written", () => {
     const page = html(<PrivacyPage />);
-    expect(page).toContain("<h1>Subwatch Privacy Policy</h1>");
-    for (const h of ["Google API disclosure (Limited Use)", "What Subwatch collects and why", "How to control and delete your data", "Contact"]) {
+    expect(page).toContain("<h1>Phylax Privacy Policy</h1>");
+    for (const h of ["Google API disclosure (Limited Use)", "What Phylax collects and why", "How to control and delete your data", "Contact"]) {
       expect(page).toContain(`<h2>${h}</h2>`);
     }
     expect(page).toContain("Last updated:");
@@ -28,8 +28,8 @@ describe("privacy and terms pages", () => {
 
   it("render the terms headings without the draft line or the reviewer notes", () => {
     const page = html(<TermsPage />);
-    expect(page).toContain("<h1>Subwatch Terms of Use</h1>");
-    for (const h of ["1. What Subwatch is", "2. Subwatch never cancels anything for you", "14. Contact"]) expect(page).toContain(`<h2>${h}</h2>`);
+    expect(page).toContain("<h1>Phylax Terms of Use</h1>");
+    for (const h of ["1. What Phylax is", "2. Phylax never cancels anything for you", "14. Contact"]) expect(page).toContain(`<h2>${h}</h2>`);
     expect(page).toContain("Effective date:");
     expect(page).toContain("[CONTACT EMAIL]");
     // The [APP URL]/privacy link points at this site's privacy page.

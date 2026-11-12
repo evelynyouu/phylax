@@ -31,7 +31,7 @@ export interface ListingInfo {
  */
 export function evalOwnerError(userId: string, owner: string | undefined): string | null {
   const o = owner?.trim();
-  if (!o) return "Set EVAL_OWNER_USER_ID in .env.local to your own Subwatch account id. The export only reads that account.";
+  if (!o) return "Set EVAL_OWNER_USER_ID in .env.local to your own Phylax account id. The export only reads that account.";
   if (userId.toLowerCase() !== o.toLowerCase()) {
     return "Refusing: --user is not EVAL_OWNER_USER_ID. The eval export may only read your own account, never another user's mail.";
   }

@@ -9,7 +9,7 @@ import { getOptionalUser } from "@/lib/current-user";
 import { gmailConfigured } from "@/lib/gmail";
 import { isDemo } from "@/lib/session";
 
-export const metadata = { title: "Create your account | Subwatch" };
+export const metadata = { title: "Create your account | Phylax" };
 
 const STEPS = [
   ["Create account", "Name, email and password"],
@@ -22,7 +22,7 @@ export default function SignUpPage({ searchParams }: PageProps<"/signup">) {
     <div className="su">
       <header className="su-head">
         <Link href="/" className="brand">
-          Subwatch
+          Phylax
         </Link>
         <p>
           Have an account? <Link href="/signin">Sign in</Link>
@@ -83,7 +83,7 @@ async function SignUpBody({ searchParams }: { searchParams: PageProps<"/signup">
         {step === 1 && (
           <>
             <h1>Create your account</h1>
-            <p className="lede">Then connect Gmail and Subwatch starts the first scan.</p>
+            <p className="lede">Then connect Gmail and Phylax starts the first scan.</p>
             <AuthForm mode="signup" demo={isDemo()} />
           </>
         )}

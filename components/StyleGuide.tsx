@@ -27,7 +27,7 @@ export default function StyleGuide() {
     <div className="sg">
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 16, flexWrap: "wrap" }}>
         <Link href="/" className="display" style={{ fontSize: 24, textDecoration: "none", color: "var(--ink)" }}>
-          Subwatch
+          Phylax
         </Link>
         <Link href="/" style={{ fontSize: 15, fontWeight: 600 }}>
           Back to the site

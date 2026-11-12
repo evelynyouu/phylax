@@ -10,7 +10,7 @@ import { addDays } from "@/lib/extract/dates";
 import { longDate, money } from "@/lib/format";
 import { attentionItems, categoryTotals, dailySeries } from "@/lib/views";
 
-export const metadata = { title: "Dashboard | Subwatch" };
+export const metadata = { title: "Dashboard | Phylax" };
 
 const DOW = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 const BAR: Record<string, string> = {

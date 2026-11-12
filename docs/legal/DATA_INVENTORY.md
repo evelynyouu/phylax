@@ -1,12 +1,12 @@
 Draft for review. Not legal advice.
 
-# Subwatch data inventory
+# Phylax data inventory
 
-Built from the code on branch `supabase-accounts`. Line numbers refer to the files as read on 2026-11-11 around 00:50; another agent was editing code at the same time, so recheck them. "App-encrypted" means Subwatch encrypts the value itself before saving it; Supabase separately states that all customer data is encrypted at rest with AES-256 and in transit with TLS ([Supabase security](https://supabase.com/security)).
+Built from the code on branch `supabase-accounts`. Line numbers refer to the files as read on 2026-11-11 around 00:50; another agent was editing code at the same time, so recheck them. "App-encrypted" means Phylax encrypts the value itself before saving it; Supabase separately states that all customer data is encrypted at rest with AES-256 and in transit with TLS ([Supabase security](https://supabase.com/security)).
 
 Access legend:
 - **User** = the signed-in owner, through row level security (RLS) policies `*_owner` (`supabase/migrations/20261110000000_init.sql:47-87`).
-- **Server** = Subwatch server code acting for the signed-in user (anon key plus the user's session, so RLS applies) (`lib/store/index.ts:11-14`, `lib/supabase/server.ts`).
+- **Server** = Phylax server code acting for the signed-in user (anon key plus the user's session, so RLS applies) (`lib/store/index.ts:11-14`, `lib/supabase/server.ts`).
 - **Admin** = anyone holding `SUPABASE_SERVICE_ROLE_KEY` (bypasses RLS). Used by account deletion (`app/api/account/delete/route.ts`) and the eval export script (`scripts/eval-export.ts`), which only runs for `EVAL_OWNER_USER_ID`, the developer's own account.
 - **Dev** = the developer, through the Supabase and Vercel dashboards.
 
@@ -14,10 +14,10 @@ Access legend:
 
 | Data | Where | App-encrypted? | Retention | How deleted | Who can access | Code |
 |---|---|---|---|---|---|---|
-| Email address, password hash, name (`full_name` metadata), timestamps | Supabase Auth `auth.users` | No (password handled by Supabase; the password goes browser to Supabase and never reaches Subwatch's server) | Until account deletion | `auth.admin.deleteUser` (hard delete by default; `shouldSoftDelete` defaults to false per [Supabase docs](https://supabase.com/docs/reference/javascript/auth-admin-deleteuser)) | User (own profile), Admin, Dev | `components/AuthForm.tsx:69-73`, `app/api/account/delete/route.ts:46` |
+| Email address, password hash, name (`full_name` metadata), timestamps | Supabase Auth `auth.users` | No (password handled by Supabase; the password goes browser to Supabase and never reaches Phylax's server) | Until account deletion | `auth.admin.deleteUser` (hard delete by default; `shouldSoftDelete` defaults to false per [Supabase docs](https://supabase.com/docs/reference/javascript/auth-admin-deleteuser)) | User (own profile), Admin, Dev | `components/AuthForm.tsx:69-73`, `app/api/account/delete/route.ts:46` |
 | Google profile from "Continue with Google": Google account ID, name, email, picture URL | Supabase Auth `auth.users` metadata and `auth.identities` | No | Until account deletion | Same as above | User, Admin, Dev | `components/AuthForm.tsx:30-42`; scopes per [Supabase Google guide](https://supabase.com/docs/guides/auth/social-login/auth-google) |
 | Sessions and refresh tokens, including IP and user agent in `auth.sessions` | Supabase Auth | No | Session lifetime; deleted with the user (assumed, unverified) | Sign out, or account deletion | Admin, Dev | `proxy.ts:10-33`; IP column per [Supabase audit logs](https://supabase.com/docs/guides/auth/audit-logs) |
-| Auth audit log (sign-up, login, logout, user_deleted events) | Supabase log storage; optionally `auth.audit_log_entries` in the database | No | Per Supabase plan; not tied to the user row, so it is unverified whether it is removed on deletion | Not deleted by Subwatch | Dev | [Supabase audit logs](https://supabase.com/docs/guides/auth/audit-logs) |
+| Auth audit log (sign-up, login, logout, user_deleted events) | Supabase log storage; optionally `auth.audit_log_entries` in the database | No | Per Supabase plan; not tied to the user row, so it is unverified whether it is removed on deletion | Not deleted by Phylax | Dev | [Supabase audit logs](https://supabase.com/docs/guides/auth/audit-logs) |
 | Session cookies (`sb-*`) | User's browser | No (signed JWTs) | Session | Sign out, deletion (`app/api/account/delete/route.ts:61-65`) | User's browser | `lib/supabase/server.ts`, `proxy.ts` |
 | OAuth `state` and `next` cookies | User's browser | No; httpOnly, 10 minute max age | 10 minutes or until callback | Callback deletes them (`app/api/auth/callback/route.ts:26-31`) | User's browser | `app/api/auth/google/route.ts:8-32` |
 | Connected Gmail address | `gmail_connections.gmail_email` | No | Until disconnect or account deletion | Disconnect deletes the row (`lib/store/supabase.ts:51-55`); cascade on user delete | User, Server, Admin, Dev | `lib/gmail.ts:107-133`, migration `:12-17` |
@@ -28,11 +28,11 @@ Access legend:
 | "I've cancelled it" marks | `manual_cancels` | No | Same | Same | Same | `app/api/cancelled/route.ts`, migration `:26-31` |
 | Bills marked paid (key is merchant key plus due date) | `paid` | No | Same | Same | Same | `app/api/bills/paid/route.ts`, migration `:33-38` |
 | Dashboard reminder toggles | `reminders` | No | Same | Same | Same | `app/api/bills/reminder/route.ts`, migration `:40-45` |
-| "Needs attention" dismissals (item keys that include merchant keys and dates) | Browser `localStorage` key `subwatch.dismissed-attention` | No | Until the user clears site data | **Not cleared on sign out or account deletion** | Anyone using that browser profile | `components/AttentionList.tsx:7-43` |
+| "Needs attention" dismissals (item keys that include merchant keys and dates) | Browser `localStorage` key `phylax.dismissed-attention` | No | Until the user clears site data | **Not cleared on sign out or account deletion** | Anyone using that browser profile | `components/AttentionList.tsx:7-43` |
 | Encryption key `TOKEN_ENC_KEY` | Vercel environment variable (production); `.env.local` (local) | Vercel says env values are "encrypted at rest" ([Vercel docs](https://vercel.com/docs/environment-variables)) | Until rotated | Manual | Dev, anyone with Vercel project env access | `lib/crypto.ts:11-17` |
 | Service role key, Google client secret | Vercel environment variables, `.env.local` | Same | Until rotated | Manual | Dev | `lib/supabase/admin.ts:8-13`, `lib/gmail.ts:17-22`, `lib/extract/llm.ts:55-58` |
 
-## 2. Data processed but not stored by Subwatch
+## 2. Data processed but not stored by Phylax
 
 | Data | Where it goes | When | Code |
 |---|---|---|---|
@@ -54,7 +54,7 @@ Logging check: deployed code logs only through `logError` in `lib/log.ts`, which
 | Eval export reads the Gmail of `--user <uuid>` using the service role key, and refuses unless that id equals `EVAL_OWNER_USER_ID` (the developer's own account) | Google, then the local corpus | As above | As above | As above | The developer, for their own account only | `scripts/eval-export.ts`, `lib/eval/export.ts` `evalOwnerError` |
 | `eval:llm` and `eval:real:llm` send fixture or corpus emails (the developer's own) to Anthropic. This is the only path that calls the AI fallback | Anthropic | n/a | Anthropic retention (up to 30 days) | n/a | Developer | `package.json` scripts, `scripts/eval.ts --llm`, `lib/extract/llm.ts` |
 | Demo key file `data/.token-key` | Local disk, mode 0600 | n/a (it is the key) | Until deleted | Manual | Developer | `lib/crypto.ts:18-24` |
-| Legacy SQLite store `data/subwatch.db` (+ `-wal`, `-shm`): 45 rows in `records`, other tables empty. No code references it any more | Local disk | No | Until deleted | Manual | Developer | Found in `data/`; no references in `lib/`, `app/`, `scripts/` |
+| Legacy SQLite store `data/phylax.db` (+ `-wal`, `-shm`): 45 rows in `records`, other tables empty. No code references it any more | Local disk | No | Until deleted | Manual | Developer | Found in `data/`; no references in `lib/`, `app/`, `scripts/` |
 | Dev session notes and logs | `.superpowers/sdd/**` | No | Until deleted | Manual | Developer | No email content found by grep for `Subject:` and `bodyText` |
 
 ## 4. What deletion actually removes

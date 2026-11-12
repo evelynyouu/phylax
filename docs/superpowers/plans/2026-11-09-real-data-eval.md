@@ -23,7 +23,7 @@
 - The export uses exactly the production list query, `syncQuery(null)` from `lib/gmail.ts`, so "in query" means what sync sees.
 - `npm test`, `npm run eval`, `npm run eval:llm`, `npx tsc --noEmit`, and `npm run lint` must pass after every task.
 - No Next.js code is touched. If a task ends up touching `app/`, read `node_modules/next/dist/docs/` first (AGENTS.md).
-- Repo: https://github.com/evelynyouu/subwatch (public), baseline on `main`. Work on a feature branch. `.gitignore` excludes `/data` and `.env*`; never force-add them.
+- Repo: https://github.com/evelynyouu/phylax (public), baseline on `main`. Work on a feature branch. `.gitignore` excludes `/data` and `.env*`; never force-add them.
 
 ## Review Focus
 
@@ -436,8 +436,8 @@ git commit -m "feat(eval): blind terminal labeling CLI"
   export function formatRate(r: Rate): string; // "92.3% (85.1 to 96.4, n=130)" or "n/a (n=0)"
   export function formatReport(rules: EvalResult, llm: EvalResult | null, meta: ReportMeta): string;
   ```
-- `formatReport` emits markdown: a title `# Subwatch extraction eval`, a methodology paragraph (one labeler who is the author, blind labeling, seeded sample, Wilson 95% intervals, `n` per cell, query sample vs random sample), a table with rows Relevance precision, Relevance recall, Kind accuracy, then precision and recall for Merchant, Amount, Date, Cancel link, then a line `Gmail query recall (random sample): ...`, and `Extraction paths: rules N, llm M` per column. Columns: Metric, Rules only, With LLM (`not run` when `llm` is null). It never reads `mismatches`.
-- `scripts/eval.ts --real`: loads `.env.local`, `loadLabeledCases(EVAL_DIR)`; exits 1 with `No labeled emails in data/eval. Run npm run eval:export, then npm run eval:label.` when empty. Prints the same console summary as fixtures, mismatches included (terminal only). With `--report <path>` it runs rules-only always and with-LLM when `--llm` is set, then writes `formatReport` to `<path>`. `--report` without `--real` exits 1. `model` is `process.env.SUBWATCH_LLM_MODEL ?? "claude-haiku-5-5"` when `--llm`, else null.
+- `formatReport` emits markdown: a title `# Phylax extraction eval`, a methodology paragraph (one labeler who is the author, blind labeling, seeded sample, Wilson 95% intervals, `n` per cell, query sample vs random sample), a table with rows Relevance precision, Relevance recall, Kind accuracy, then precision and recall for Merchant, Amount, Date, Cancel link, then a line `Gmail query recall (random sample): ...`, and `Extraction paths: rules N, llm M` per column. Columns: Metric, Rules only, With LLM (`not run` when `llm` is null). It never reads `mismatches`.
+- `scripts/eval.ts --real`: loads `.env.local`, `loadLabeledCases(EVAL_DIR)`; exits 1 with `No labeled emails in data/eval. Run npm run eval:export, then npm run eval:label.` when empty. Prints the same console summary as fixtures, mismatches included (terminal only). With `--report <path>` it runs rules-only always and with-LLM when `--llm` is set, then writes `formatReport` to `<path>`. `--report` without `--real` exits 1. `model` is `process.env.PHYLAX_LLM_MODEL ?? "claude-haiku-5-5"` when `--llm`, else null.
 
 - [ ] **Step 1: Write the failing tests**
 

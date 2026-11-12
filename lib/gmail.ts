@@ -6,7 +6,7 @@ import type { RawEmail } from "./types";
 
 // Read-only. The app can never send, modify, label, or delete mail.
 // openid and email grant no mailbox access; they tell us which Gmail address was connected,
-// which may differ from the Subwatch account's email.
+// which may differ from the Phylax account's email.
 export const GMAIL_SCOPE = "https://www.googleapis.com/auth/gmail.readonly";
 export const SCOPES = [GMAIL_SCOPE, "openid", "email"];
 
@@ -101,7 +101,7 @@ export type GmailConnectResult = { ok: true; gmailEmail: string } | { ok: false;
 
 /**
  * Exchanges the OAuth code and stores the Gmail connection for the store's user. The caller has
- * already checked who is signed in; the connection belongs to that Subwatch user, whatever
+ * already checked who is signed in; the connection belongs to that Phylax user, whatever
  * Gmail address they picked.
  */
 export async function connectGmailWithCode(code: string, store: Store): Promise<GmailConnectResult> {

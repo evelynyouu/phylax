@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useSyncExternalStore } from "react";
 import type { AttentionItem } from "@/lib/views";
 
-const STORE = "subwatch.dismissed-attention";
+const STORE = "phylax.dismissed-attention";
 
 function readDismissed(): string {
   try {

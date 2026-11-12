@@ -8,7 +8,7 @@ const gloock = Gloock({ weight: "400", subsets: ["latin"], variable: "--font-glo
 const hanken = Hanken_Grotesk({ subsets: ["latin"], variable: "--font-hanken", display: "swap" });
 
 export const metadata: Metadata = {
-  title: "Subwatch",
+  title: "Phylax",
   description: "Recurring charges, upcoming payments, and deadlines found in your email.",
 };
 

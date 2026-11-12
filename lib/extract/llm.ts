@@ -12,7 +12,7 @@ import { isTrustedLink, resolveMerchant } from "./merchant";
 //     extracted link list, dates must appear in the text, amounts must appear in the text.
 //  4. The model never decides what the app does. It only fills fields.
 
-const MODEL = process.env.SUBWATCH_LLM_MODEL ?? "claude-haiku-5-5";
+const MODEL = process.env.PHYLAX_LLM_MODEL ?? "claude-haiku-5-5";
 
 const KINDS = [
   "receipt",

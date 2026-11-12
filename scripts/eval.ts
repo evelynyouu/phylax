@@ -79,7 +79,7 @@ async function main() {
       corpus: corpusSize,
       querySample: cases.filter((c) => c.samples?.includes("query")).length,
       randomSample: cases.filter((c) => c.samples?.includes("random")).length,
-      model: useLlm ? (process.env.SUBWATCH_LLM_MODEL ?? "claude-haiku-5-5") : null,
+      model: useLlm ? (process.env.PHYLAX_LLM_MODEL ?? "claude-haiku-5-5") : null,
       listing: readMeta(EVAL_DIR),
     });
     fs.mkdirSync(path.dirname(path.resolve(reportPath)), { recursive: true });

@@ -19,21 +19,21 @@ function sourceFiles(dir: string): string[] {
 }
 
 describe("Gmail disclosure before Google's consent screen", () => {
-  it("states what Subwatch will and can't do, and what it keeps", () => {
+  it("states what Phylax will and can't do, and what it keeps", () => {
     const html = renderToStaticMarkup(<GmailDisclosure />).replace(/&#x27;/g, "'");
     for (const s of [
-      "Subwatch will",
-      "Subwatch can't",
+      "Phylax will",
+      "Phylax can't",
       "Send, delete, label or archive mail",
-      "Subwatch won't",
+      "Phylax won't",
       "Store the text of your emails",
-      "When you sync, Subwatch reads the sender, subject, text and links of emails that look like billing, including some promotions, from about the last 13 months.",
+      "When you sync, Phylax reads the sender, subject, text and links of emails that look like billing, including some promotions, from about the last 13 months.",
       "It keeps the merchant, amount, currency, billing cycle, dates and cancel link from billing emails, plus each checked email's Gmail ID, date and type so it is not read twice.",
       "It also keeps your Gmail address and an encrypted Google access token until you disconnect.",
       "Records stay until you delete your account. Disconnecting removes the Google token but keeps your records.",
-      "Subwatch never uses your emails for ads or AI training.",
-      "Your emails are processed only on Subwatch's own server, hosted by Vercel.",
-      "What Subwatch keeps is saved in its database, hosted by Supabase.",
+      "Phylax never uses your emails for ads or AI training.",
+      "Your emails are processed only on Phylax's own server, hosted by Vercel.",
+      "What Phylax keeps is saved in its database, hosted by Supabase.",
       "You can disconnect or delete your account at any time.",
     ]) {
       expect(html).toContain(s);
@@ -67,7 +67,7 @@ describe("Gmail disclosure before Google's consent screen", () => {
     for (const f of ["app/signup/page.tsx", "app/connect-gmail/page.tsx"]) {
       const src = fs.readFileSync(path.join(ROOT, f), "utf8");
       expect(src).toContain("<GmailDisclosure />");
-      expect(src).not.toContain("Subwatch can&apos;t");
+      expect(src).not.toContain("Phylax can&apos;t");
     }
   });
 

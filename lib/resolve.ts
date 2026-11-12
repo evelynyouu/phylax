@@ -251,7 +251,7 @@ export function buildDashboard(
     edits?: SubscriptionEdit[]; // the user's corrections and hand-added recurring payments
   } = {}
 ): Dashboard {
-  const today = opts.today ?? process.env.SUBWATCH_TODAY ?? todayIso();
+  const today = opts.today ?? process.env.PHYLAX_TODAY ?? todayIso();
   const dismissed = opts.dismissed ?? new Set<string>();
   const manualCancels = opts.manualCancels ?? new Map<string, string>();
   const paid = opts.paid ?? new Set<string>();

@@ -28,7 +28,7 @@ export default function Home() {
       <header className="l-head">
         <Link href="/" className="l-brand">
           <Logo />
-          <span>Subwatch</span>
+          <span>Phylax</span>
         </Link>
         <nav aria-label="Main" className="l-nav">
           <a className="navlink" href="#how">
@@ -58,7 +58,7 @@ export default function Home() {
               <li>
                 <span className="num" aria-hidden="true">1</span>
                 <h3>Connect Gmail</h3>
-                <p>Sign in with Google and grant read-only access. Subwatch only looks at billing emails: receipts, invoices, renewal notices and trial reminders.</p>
+                <p>Sign in with Google and grant read-only access. Phylax only looks at billing emails: receipts, invoices, renewal notices and trial reminders.</p>
               </li>
               <li>
                 <span className="num" aria-hidden="true">2</span>
@@ -68,7 +68,7 @@ export default function Home() {
               <li>
                 <span className="num" aria-hidden="true">3</span>
                 <h3>Keep or cancel</h3>
-                <p>See what is due and when, then cancel straight from the link in the company&apos;s own email. Subwatch warns you if a link points anywhere else.</p>
+                <p>See what is due and when, then cancel straight from the link in the company&apos;s own email. Phylax warns you if a link points anywhere else.</p>
               </li>
             </ol>
           </div>
@@ -139,7 +139,7 @@ export default function Home() {
               <h2 id="privacy-h" className="l-h2">
                 Your email stays your email
               </h2>
-              <p>Subwatch is built to read as little as it can and keep even less.</p>
+              <p>Phylax is built to read as little as it can and keep even less.</p>
             </div>
             <ul>
               <li>
@@ -176,7 +176,7 @@ export default function Home() {
       <footer className="l-foot">
         <div>
           <span>
-            <span className="display" style={{ fontSize: 18, color: "var(--ink)" }}>Subwatch</span> is a student project and isn&apos;t affiliated with Google.
+            <span className="display" style={{ fontSize: 18, color: "var(--ink)" }}>Phylax</span> is a student project and isn&apos;t affiliated with Google.
           </span>
           <nav aria-label="Footer">
             <Link href="/signin">Sign in</Link>

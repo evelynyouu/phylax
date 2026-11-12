@@ -3,7 +3,7 @@ import CalendarView from "@/components/CalendarView";
 import { ConnectGmailEmpty } from "@/components/ConnectGmail";
 import { loadApp } from "@/lib/app-data";
 
-export const metadata = { title: "Calendar | Subwatch" };
+export const metadata = { title: "Calendar | Phylax" };
 
 export default function CalendarPage() {
   return (

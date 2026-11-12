@@ -37,7 +37,7 @@ import type { Store } from "../lib/store/types";
 import { runSync, type GmailLayer } from "../lib/sync";
 
 const KEY = "5a".repeat(32);
-const APP = "https://subwatch.example";
+const APP = "https://phylax.example";
 const env = process.env as Record<string, string | undefined>;
 const saved = { key: env.TOKEN_ENC_KEY, id: env.GOOGLE_CLIENT_ID, secret: env.GOOGLE_CLIENT_SECRET, app: env.APP_URL };
 
@@ -133,7 +133,7 @@ async function connect(next = "app", answer: Record<string, string> = { code: "4
 }
 
 describe("GET /api/auth/google", () => {
-  it("sends a signed-in user to Google's consent screen with the exact request Subwatch needs", async () => {
+  it("sends a signed-in user to Google's consent screen with the exact request Phylax needs", async () => {
     const res = await start(startReq());
     expect(res.status).toBe(307);
     const url = new URL(location(res));

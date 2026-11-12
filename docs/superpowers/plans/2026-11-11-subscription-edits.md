@@ -12,7 +12,7 @@
 
 ## Global Constraints
 
-- Branch `supabase-accounts`. No em dashes. Product copy stays "Subwatch".
+- Branch `supabase-accounts`. No em dashes. Product copy stays "Phylax".
 - Every new table: `user_id uuid not null references auth.users(id) on delete cascade`, RLS enabled, policy `for all to authenticated using (auth.uid() = user_id) with check (auth.uid() = user_id)` (FOR before TO), `revoke all ... from anon`, `grant select, insert, update, delete ... to authenticated`.
 - Mutating routes use `requireUser(req)` (same-origin plus session) and Zod; logs via lib/log.ts only.
 - Next 16 rules (AGENTS.md). UI changes minimal, reusing existing components and CSS; the user is redesigning the frontend.

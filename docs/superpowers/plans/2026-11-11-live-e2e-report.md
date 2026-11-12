@@ -5,15 +5,15 @@ Headless Chrome via CDP, fresh profile per run. Requests to accounts.google.com 
 and blocked after their URL was recorded, so no Google login was attempted. No secrets appear here;
 client_id was compared in code against GOOGLE_CLIENT_ID.
 
-Test user created: `e2e-1794436766@subwatch-e2e.test` (the first candidate domain was accepted;
+Test user created: `e2e-1794436766@phylax-e2e.test` (the first candidate domain was accepted;
 mailinator.com was not needed).
 
 Result: 7 PASS, 0 FAIL (two notes below).
 
 ## 1. Fresh sign-up through /signup: PASS
 - Expected: with Confirm email off, the form lands on /signup?step=2 signed in, and step 2 shows the Gmail disclosure with a Privacy Policy link.
-- Actual: after "Create account", the URL was `http://127.0.0.1:3000/signup?step=2`. Step 1 shows "(done)". The headings are "Connect Gmail", "Subwatch will", "Subwatch can't" and "Subwatch won't". The link "Read the Privacy Policy" points to `/privacy`. The Supabase auth-token cookie was set. No "Check your email" appeared, so Confirm email is off. The service role showed the user with `email_confirmed_at` set.
-- The `subwatch-e2e.test` domain was accepted (no email_address_invalid).
+- Actual: after "Create account", the URL was `http://127.0.0.1:3000/signup?step=2`. Step 1 shows "(done)". The headings are "Connect Gmail", "Phylax will", "Phylax can't" and "Phylax won't". The link "Read the Privacy Policy" points to `/privacy`. The Supabase auth-token cookie was set. No "Check your email" appeared, so Confirm email is off. The service role showed the user with `email_confirmed_at` set.
+- The `phylax-e2e.test` domain was accepted (no email_address_invalid).
 
 ## 2. Sign out, guard, sign in, wrong password: PASS
 - Expected: the sign-out form lands on /signin, then /app redirects to /signin. Signing in with the right password lands on /app showing "Connect Gmail to get started". A wrong password shows "That email and password don't match."
@@ -45,6 +45,6 @@ Result: 7 PASS, 0 FAIL (two notes below).
 - Actual: signed in as test user A, a same-origin browser fetch returned 400 `{"error":"Type delete to confirm."}`. A Node request with the session cookie and Origin http://127.0.0.1:3000 also returned 400 with the same body. Afterwards A could still open /app, and A still exists.
 
 ## 7. Cleanup: PASS
-- Users matching `e2e-<unix>@subwatch-e2e.test` or `e2e-<unix>@mailinator.com` before cleanup: 0 (the app's delete flow already removed the only one). After cleanup: 0. The service role deleted nothing.
+- Users matching `e2e-<unix>@phylax-e2e.test` or `e2e-<unix>@mailinator.com` before cleanup: 0 (the app's delete flow already removed the only one). After cleanup: 0. The service role deleted nothing.
 - `e2e-signup-1794386389@example.com`: **does not exist** (read-only check; nothing was deleted).
 - The local scratch files that held the generated password and cookies were removed.

@@ -15,10 +15,10 @@ const cookieOpts = {
 
 export async function GET(req: NextRequest) {
   await connection();
-  // Redirects that stay in Subwatch go to the browser's host, where its session lives. Only the
+  // Redirects that stay in Phylax go to the browser's host, where its session lives. Only the
   // Google redirect URI (lib/gmail.ts oauthClient) uses APP_URL.
   const base = requestOrigin(req.headers, req.url);
-  // Gmail belongs to a Subwatch account: sign in first, then connect.
+  // Gmail belongs to a Phylax account: sign in first, then connect.
   if (!(await getOptionalUser())) return NextResponse.redirect(new URL("/signin", base));
   // Only a known label travels; the callback maps it to a fixed path.
   const next = req.nextUrl.searchParams.get("next");

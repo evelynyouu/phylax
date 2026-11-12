@@ -60,7 +60,7 @@ export function formatReport(rules: EvalResult, llm: EvalResult | null, meta: Re
     ...rows.map(([name, fn]) => `| ${name} | ${fn(rules)} | ${llmCell(fn)} |`),
   ].join("\n");
 
-  return `# Subwatch extraction eval
+  return `# Phylax extraction eval
 
 Run ${meta.date}. ${meta.labeled} of ${meta.corpus} exported emails labeled.
 

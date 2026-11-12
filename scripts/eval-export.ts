@@ -1,6 +1,6 @@
 // Export a seeded sample of your Gmail into an encrypted local corpus for labeling.
 // Usage: npm run eval:export -- --user <uuid> [--query 160] [--random 60] [--seed 1] [--query-max 1500] [--all-max 5000] [--force]
-// --user is your Subwatch account id (Supabase Auth > Users). It must equal EVAL_OWNER_USER_ID
+// --user is your Phylax account id (Supabase Auth > Users). It must equal EVAL_OWNER_USER_ID
 // (your own account): the script refuses any other user. It reads that account's Gmail
 // connection with the service role key (SUPABASE_SERVICE_ROLE_KEY in .env.local).
 import { corpusExists, EVAL_DIR, writeCorpus, writeMeta } from "../lib/eval/corpus";
@@ -31,7 +31,7 @@ const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 function userFlag(): string {
   const i = process.argv.indexOf("--user");
   const id = i === -1 ? undefined : process.argv[i + 1];
-  if (!id || !UUID.test(id)) fail("Pass --user <uuid>, your Subwatch account id from Supabase Auth > Users.");
+  if (!id || !UUID.test(id)) fail("Pass --user <uuid>, your Phylax account id from Supabase Auth > Users.");
   const refused = evalOwnerError(id, process.env.EVAL_OWNER_USER_ID);
   if (refused) fail(refused);
   return id;

@@ -1,4 +1,4 @@
--- Subwatch per-user storage. Every table is owned by an auth user and locked
+-- Phylax per-user storage. Every table is owned by an auth user and locked
 -- down with row level security: a user can only see and write their own rows.
 
 create table public.records (

@@ -121,7 +121,7 @@ export default function LandingHero({ sampleHref, sampleLabel }: { sampleHref: s
           <div className="intro" style={{ opacity: L.introOpacity, transform: `translateY(${L.introShift}px)` }}>
             <h1 id="hero-h">Prune what you forgot you planted.</h1>
             <p className="intro-lede">
-              Subwatch reads the receipts, renewal notices and bills in your Gmail, then shows every subscription, every upcoming charge and the
+              Phylax reads the receipts, renewal notices and bills in your Gmail, then shows every subscription, every upcoming charge and the
               link to cancel, in one place.
             </p>
             <div className="intro-actions" style={{ pointerEvents: L.introClickable ? "auto" : "none" }}>
@@ -141,7 +141,7 @@ export default function LandingHero({ sampleHref, sampleLabel }: { sampleHref: s
                 <rect x="5" y="11" width="14" height="10" rx="2" />
                 <path d="M8 11V7a4 4 0 0 1 8 0v4" />
               </svg>
-              Read-only access. Subwatch can&apos;t send, change or delete mail.
+              Read-only access. Phylax can&apos;t send, change or delete mail.
             </p>
           </div>
         </div>

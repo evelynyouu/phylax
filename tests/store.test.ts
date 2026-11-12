@@ -23,7 +23,7 @@ describe("memory store", () => {
   });
 
   it("demoStore lives on globalThis, so pages and route handlers bundled apart share it", () => {
-    expect((globalThis as unknown as Record<symbol, unknown>)[Symbol.for("subwatch.demoStore")]).toBe(demoStore());
+    expect((globalThis as unknown as Record<symbol, unknown>)[Symbol.for("phylax.demoStore")]).toBe(demoStore());
   });
 });
 

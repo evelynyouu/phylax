@@ -10,8 +10,8 @@ describe("requestOrigin", () => {
 
   it("prefers x-forwarded-host and x-forwarded-proto from a proxy", () => {
     expect(
-      requestOrigin(h({ host: "internal:3000", "x-forwarded-host": "subwatch.vercel.app", "x-forwarded-proto": "https" }), "http://internal:3000/x"),
-    ).toBe("https://subwatch.vercel.app");
+      requestOrigin(h({ host: "internal:3000", "x-forwarded-host": "phylax.vercel.app", "x-forwarded-proto": "https" }), "http://internal:3000/x"),
+    ).toBe("https://phylax.vercel.app");
     // Comma lists from chained proxies: the first entry is the client-facing one.
     expect(requestOrigin(h({ host: "a", "x-forwarded-host": "app.example, b", "x-forwarded-proto": "https,http" }), "http://a/")).toBe("https://app.example");
   });

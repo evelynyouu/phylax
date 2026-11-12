@@ -7,7 +7,7 @@ export default function LegalPage({ children }: { children: ReactNode }) {
     <div className="su">
       <header className="su-head">
         <Link href="/" className="brand">
-          Subwatch
+          Phylax
         </Link>
         <p>
           <Link href="/privacy">Privacy</Link> · <Link href="/terms">Terms</Link>

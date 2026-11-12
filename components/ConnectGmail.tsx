@@ -1,5 +1,5 @@
 // Server components for the Gmail connection states an /app page can be in (lib/views.ts gmailState).
-// Every Connect or Reconnect button goes to /connect-gmail first, which shows what Subwatch does
+// Every Connect or Reconnect button goes to /connect-gmail first, which shows what Phylax does
 // with Gmail before Google's consent screen.
 
 import type { GmailState } from "@/lib/views";
@@ -27,7 +27,7 @@ export function ConnectGmailEmpty({ title, message }: { title: string; message?:
             {message}
           </p>
         )}
-        <p className="empty-body">Subwatch reads billing email from the last 13 months. It never stores the text of your emails.</p>
+        <p className="empty-body">Phylax reads billing email from the last 13 months. It never stores the text of your emails.</p>
         <div className="empty-actions">
           <a href={CONNECT_HREF} className="btn btn-primary">
             Connect Gmail
@@ -54,7 +54,7 @@ export function ReconnectNotice() {
 export function DisconnectedNotice() {
   return (
     <div role="status" className="notice-bar reconnect-bar app-notice">
-      <span>Gmail is not connected. You are seeing what Subwatch found before. Connect Gmail to keep it up to date.</span>
+      <span>Gmail is not connected. You are seeing what Phylax found before. Connect Gmail to keep it up to date.</span>
       <a href={CONNECT_HREF} className="btn btn-primary btn-sm">
         Connect Gmail
       </a>

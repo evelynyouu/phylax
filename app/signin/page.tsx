@@ -8,14 +8,14 @@ import { AUTH_MESSAGES } from "@/lib/auth-copy";
 import { getOptionalUser } from "@/lib/current-user";
 import { isDemo } from "@/lib/session";
 
-export const metadata = { title: "Sign in | Subwatch" };
+export const metadata = { title: "Sign in | Phylax" };
 
 export default function SignInPage({ searchParams }: PageProps<"/signin">) {
   return (
     <div className="split">
       <aside className="split-art">
         <Link href="/" className="brand">
-          Subwatch
+          Phylax
         </Link>
         <Flower />
         <p className="quote">Welcome back. Your list kept growing while you were away.</p>
@@ -30,7 +30,7 @@ export default function SignInPage({ searchParams }: PageProps<"/signin">) {
 
           <AuthForm mode="signin" demo={isDemo()} />
           <p className="auth-foot">
-            New to Subwatch? <Link href="/signup">Create an account</Link>
+            New to Phylax? <Link href="/signup">Create an account</Link>
           </p>
           <p className="auth-foot">
             <Link href="/privacy">Privacy</Link> · <Link href="/terms">Terms</Link>
