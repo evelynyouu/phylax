@@ -2,12 +2,15 @@ import { Suspense } from "react";
 import Account from "@/components/Account";
 import AppShell from "@/components/AppShell";
 import { GmailNotice } from "@/components/ConnectGmail";
+import { avatarSignedUrl } from "@/lib/avatar";
+import { supabaseServer } from "@/lib/supabase/server";
 import { loadApp, loadSyncNote } from "@/lib/app-data";
 
 async function AccountSlot() {
   const { user, store, connected } = await loadApp();
+  const avatarUrl = await avatarSignedUrl(await supabaseServer(), user.avatarPath);
   return (
-    <Account user={user} syncNote={await loadSyncNote(store, connected)} connected={connected} />
+    <Account user={user} syncNote={await loadSyncNote(store, connected)} connected={connected} avatarUrl={avatarUrl} />
   );
 }
 

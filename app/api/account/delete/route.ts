@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { avatarObjectPath, AVATAR_BUCKET } from "@/lib/avatar";
 import { DeleteBody } from "@/lib/auth-copy";
 import { revokeBestEffort } from "@/lib/gmail";
 import { logError } from "@/lib/log";
@@ -29,6 +30,13 @@ export async function POST(req: Request) {
     admin = supabaseAdmin();
   } catch (e) {
     return unavailable(e);
+  }
+
+  // Remove the profile photo first (the user's folder is not cascaded). Best effort: never blocks.
+  try {
+    await admin.storage.from(AVATAR_BUCKET).remove([avatarObjectPath(user.id)]);
+  } catch (e) {
+    logError("avatar cleanup failed", e);
   }
 
   // Read the Gmail connection (tokens) without removing it, so a failed delete changes nothing.

@@ -290,6 +290,7 @@
   font-weight: 700;
   font-size: 14px;
   flex: none;
+  object-fit: cover;
 }
 .account-name {
   flex: 1;

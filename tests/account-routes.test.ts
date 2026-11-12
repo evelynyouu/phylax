@@ -10,6 +10,8 @@ const s = vi.hoisted(() => ({
   revokeFailed: false,
   gmail: { gmailEmail: "g@x.co" } as { gmailEmail: string } | null,
   revokes: [] as { email: string; deletedAtCall: number }[],
+  removed: [] as string[][],
+  removeThrows: false,
 }));
 
 vi.mock("@/lib/route-auth", () => ({ requireUser: async () => ({ user: { id: "u1", email: "u@x.co", name: "U" } }) }));
@@ -38,6 +40,15 @@ vi.mock("@/lib/supabase/admin", () => ({
   supabaseAdmin: () => {
     if (s.adminThrows) throw s.adminThrows;
     return {
+      storage: {
+        from: (bucket: string) => ({
+          remove: async (paths: string[]) => {
+            if (s.removeThrows) throw new Error("storage down");
+            s.removed.push([bucket, ...paths]);
+            return { error: null };
+          },
+        }),
+      },
       auth: {
         admin: {
           deleteUser: async (id: string) => {
@@ -59,10 +70,19 @@ const del = () =>
   deleteAccount(new Request("http://localhost/api/account/delete", { method: "POST", body: JSON.stringify({ confirm: "delete" }), headers: { "content-type": "application/json" } }));
 
 beforeEach(() => {
-  Object.assign(s, { adminThrows: null, deleteError: null, deleted: [], signOuts: 0, disconnects: 0, revokeFailed: false, gmail: { gmailEmail: "g@x.co" }, revokes: [] });
+  Object.assign(s, { adminThrows: null, deleteError: null, deleted: [], signOuts: 0, disconnects: 0, revokeFailed: false, gmail: { gmailEmail: "g@x.co" }, revokes: [], removed: [], removeThrows: false });
 });
 
 describe("POST /api/account/delete", () => {
+  it("removes the profile photo through the admin client, and still succeeds if that fails", async () => {
+    expect((await del()).status).toBe(200);
+    expect(s.removed).toEqual([["avatars", "u1/avatar"]]);
+    s.removeThrows = true;
+    const res = await del();
+    expect(res.status).toBe(200);
+    expect((await res.json()).ok).toBe(true);
+  });
+
   it("answers plain JSON, keeps the session and the Gmail connection when the admin client is not configured", async () => {
     s.adminThrows = new Error("SUPABASE_SERVICE_ROLE_KEY is required");
     const log = vi.spyOn(console, "error").mockImplementation(() => {});

@@ -10,15 +10,21 @@ function initials(name: string): string {
 }
 
 /** Sidebar footer: dark mode switch, sync status, who is signed in, sign out, and the privacy and terms links. */
-export default function Account({ user, syncNote, connected }: { user: AppUser; syncNote: string; connected: boolean }) {
+export default function Account({ user, syncNote, connected, avatarUrl = null }: { user: AppUser; syncNote: string; connected: boolean; avatarUrl?: string | null }) {
   return (
     <>
       <ThemeToggle />
       <p className="sync-note">{syncNote}</p>
       <div className="account">
-        <span aria-hidden="true" className="avatar">
-          {initials(user.name)}
-        </span>
+        {avatarUrl ? (
+          // Signed Supabase Storage URL that changes each render; next/image remote config is not wanted.
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={avatarUrl} alt="" className="avatar" />
+        ) : (
+          <span aria-hidden="true" className="avatar">
+            {initials(user.name)}
+          </span>
+        )}
         <span className="account-name" title={user.email}>
           {user.name}
         </span>
