@@ -41,7 +41,7 @@ export default function ResetByCode({ initialEmail = "" }: { initialEmail?: stri
     setBusy(false);
     // Step 1 moves on whatever the result, so it can't be used to check which addresses have accounts.
     // Only "Send a new code" (already on step 2) shows a send error; see sendOutcome.
-    const outcome = sendOutcome(step, error);
+    const outcome = sendOutcome(step === "code" ? "code" : "email", error);
     setEmail(address);
     setCooldown(RESEND_SECONDS);
     if (outcome.error) return setError(outcome.error);
