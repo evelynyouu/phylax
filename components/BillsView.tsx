@@ -3,20 +3,10 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import CancelAction from "./CancelAction";
+import { deadlineGroup, type DeadlineRow } from "@/lib/views";
 import { Chip } from "./ui";
 
-export interface BillRow {
-  key: string;
-  kind: "payment_due" | "trial_ending" | "renewal_notice";
-  merchant: string;
-  date: string;
-  daysAway: number;
-  amount: number | null;
-  amountLabel: string;
-  cancelUrl: string | null;
-  cancelUrlTrusted: boolean;
-  reminder: boolean;
-}
+export type BillRow = DeadlineRow & { amountLabel: string };
 
 export interface PaidRow {
   key: string;
@@ -27,22 +17,13 @@ export interface PaidRow {
 
 const MON = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 const usd = (n: number) => n.toLocaleString("en-US", { style: "currency", currency: "USD" });
-const WHAT = { payment_due: "Payment due", trial_ending: "Free trial ends", renewal_notice: "Auto-renews" } as const;
-const BOX = { payment_due: "bill", trial_ending: "trial", renewal_notice: "renewal" } as const;
-
-function rel(n: number): string {
-  if (n < 0) return `${-n} day${n === -1 ? "" : "s"} late`;
-  if (n === 0) return "today";
-  if (n === 1) return "tomorrow";
-  return `in ${n} days`;
-}
-
-function groupOf(n: number): string {
-  if (n < 0) return "Overdue";
-  if (n < 7) return "This week";
-  if (n < 14) return "Next week";
-  return "Later";
-}
+const KINDS = [
+  ["all", "All"],
+  ["payment_due", "Bills"],
+  ["trial_ending", "Trials"],
+  ["renewal_notice", "Renewals"],
+  ["price_change", "Price changes"],
+] as const;
 
 async function post(url: string, body: unknown) {
   const res = await fetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
@@ -73,8 +54,8 @@ export default function BillsView({ rows, paid }: { rows: BillRow[]; paid: PaidR
   const trialsWeek = rows.filter((r) => r.kind === "trial_ending" && r.daysAway < 7).reduce((a, r) => a + (r.amount ?? 0), 0);
   const renewals = rows.filter((r) => r.kind === "renewal_notice").reduce((a, r) => a + (r.amount ?? 0), 0);
   const shown = rows.filter((r) => kind === "all" || r.kind === kind);
-  const groups = ["Overdue", "This week", "Next week", "Later"]
-    .map((title) => ({ title, items: shown.filter((r) => groupOf(r.daysAway) === title) }))
+  const groups = (["Overdue", "This week", "Next two weeks", "Later"] as const)
+    .map((title) => ({ title, items: shown.filter((r) => deadlineGroup(r.daysAway) === title) }))
     .filter((g) => g.items.length);
 
   return (
@@ -83,7 +64,7 @@ export default function BillsView({ rows, paid }: { rows: BillRow[]; paid: PaidR
         Bills and deadlines
       </h1>
       <p className="intro">
-        Bills to pay, free trials about to convert, and renewals you can still stop. Mark a bill paid once you&apos;ve paid it.
+        Bills to pay, free trials about to convert, and yearly renewals you can still stop. Mark a bill paid once you&apos;ve paid it.
       </p>
 
       <div className="tiles">
@@ -112,14 +93,7 @@ export default function BillsView({ rows, paid }: { rows: BillRow[]; paid: PaidR
         </div>
         {tab === "upcoming" && (
           <div role="group" aria-label="Type" className="kind-chips">
-            {(
-              [
-                ["all", "All"],
-                ["payment_due", "Bills"],
-                ["trial_ending", "Trials"],
-                ["renewal_notice", "Renewals"],
-              ] as const
-            ).map(([k, label]) => (
+            {KINDS.map(([k, label]) => (
               <Chip key={k} pressed={kind === k} onClick={() => setKind(k)}>
                 {label}
               </Chip>
@@ -142,15 +116,13 @@ export default function BillsView({ rows, paid }: { rows: BillRow[]; paid: PaidR
               <ul className="list-plain bill-items">
                 {g.items.map((r) => (
                   <li key={r.key} className="bill-item">
-                    <div className={`datebox ${BOX[r.kind]}`} aria-hidden="true">
+                    <div className={`datebox ${r.urgent ? "urgent" : r.kind === "payment_due" ? "bill" : "plain"}`} aria-hidden="true">
                       <span>{MON[Number(r.date.slice(5, 7)) - 1]}</span>
                       <span>{Number(r.date.slice(8, 10))}</span>
                     </div>
                     <div className="bill-main">
                       <p className="name">{r.merchant}</p>
-                      <p className={`what${r.daysAway <= 3 ? " urgent" : ""}`}>
-                        {WHAT[r.kind]}, {rel(r.daysAway)}
-                      </p>
+                      <p className={`what${r.urgent ? " urgent" : ""}`}>{r.what}</p>
                       {r.kind === "payment_due" && (
                         <label className="remind">
                           <input
@@ -159,7 +131,7 @@ export default function BillsView({ rows, paid }: { rows: BillRow[]; paid: PaidR
                             disabled={busy === r.key}
                             onChange={(e) => act(r.key, "/api/bills/reminder", { key: r.key, on: e.target.checked })}
                           />
-                          Remind me on the dashboard 2 days before
+                          Remind me 2 days before<span className="sr-only"> on the dashboard</span>
                         </label>
                       )}
                     </div>
@@ -171,12 +143,7 @@ export default function BillsView({ rows, paid }: { rows: BillRow[]; paid: PaidR
                         </button>
                       ) : r.cancelUrl ? (
                         <span style={{ display: "inline-flex", flexDirection: "column", alignItems: "flex-start" }}>
-                          <CancelAction
-                            url={r.cancelUrl}
-                            trusted={r.cancelUrlTrusted}
-                            merchant={r.merchant}
-                            label={r.kind === "trial_ending" ? "Cancel trial" : "Cancel before renewal"}
-                          />
+                          <CancelAction url={r.cancelUrl} trusted={r.cancelUrlTrusted} merchant={r.merchant} hostInLabel />
                         </span>
                       ) : (
                         <span className="muted" style={{ fontSize: 14 }}>

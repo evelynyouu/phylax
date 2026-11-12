@@ -1,5 +1,5 @@
 import { CATEGORY_LABELS, categoryFor, type Category } from "./categories";
-import { addDays } from "./extract/dates";
+import { addDays, daysBetween } from "./extract/dates";
 import { cadenceLabel, money, shortDate } from "./format";
 import type { Cadence, Dashboard, Subscription } from "./types";
 
@@ -224,4 +224,65 @@ export function leavingSummary(d: Dashboard, today: string, days: number): Leavi
     optional: round(total - groups[0].amount),
     cancelLinks: { found: running.filter((s) => s.cancelUrl).length, of: running.length },
   };
+}
+
+export type DeadlineKind = "payment_due" | "trial_ending" | "renewal_notice" | "price_change";
+
+export interface DeadlineRow {
+  key: string;
+  kind: DeadlineKind;
+  merchant: string;
+  date: string;
+  daysAway: number;
+  amount: number | null;
+  currency: string;
+  /** The line under the name, e.g. "Renews yearly, in 19 days". */
+  what: string;
+  /** Due within three days (or overdue): the date box and the line turn red. */
+  urgent: boolean;
+  cancelUrl: string | null;
+  cancelUrlTrusted: boolean;
+  reminder: boolean;
+}
+
+function relDays(n: number): string {
+  if (n < 0) return `${-n} day${n === -1 ? "" : "s"} late`;
+  if (n === 0) return "today";
+  if (n === 1) return "tomorrow";
+  return `in ${n} days`;
+}
+
+/** Bills and deadlines rows: unpaid due items plus upcoming price rises, soonest first (Bills.dc.html). */
+export function deadlineRows(d: Dashboard, today: string): DeadlineRow[] {
+  const subs = new Map(d.subscriptions.map((s) => [s.merchantKey, s]));
+  const rows: DeadlineRow[] = [];
+  for (const x of d.due) {
+    if (x.paid) continue;
+    const s = subs.get(x.merchantKey);
+    let what: string;
+    if (x.kind === "payment_due") what = "Payment due";
+    else if (x.kind === "trial_ending") {
+      const amt = s?.amount ?? x.amount;
+      what = amt !== null ? `Free trial ends, then ${money(amt, x.currency)} ${PER[s?.cadence ?? "monthly"]}` : "Free trial ends";
+    } else what = s?.cadence ? `Renews ${cadenceWord(s.cadence)}` : "Auto-renews";
+    rows.push({ key: x.key, kind: x.kind, merchant: x.merchant, date: x.date, daysAway: x.daysAway, amount: x.amount, currency: x.currency, what: `${what}, ${relDays(x.daysAway)}`, urgent: x.daysAway <= 3, cancelUrl: x.cancelUrl, cancelUrlTrusted: x.cancelUrlTrusted, reminder: x.reminder });
+  }
+  for (const s of d.subscriptions) {
+    const p = s.priceChange;
+    if (!p?.effective || p.effective < today || s.status === "cancelled") continue;
+    const n = daysBetween(today, p.effective);
+    const what = p.from !== null ? `Price rises from ${money(p.from, s.currency)}` : "Price rises";
+    rows.push({ key: `${s.merchantKey}|price|${p.effective}`, kind: "price_change", merchant: s.merchant, date: p.effective, daysAway: n, amount: p.to, currency: s.currency, what: `${what}, ${relDays(n)}`, urgent: n <= 3, cancelUrl: s.cancelUrl, cancelUrlTrusted: s.cancelUrlTrusted, reminder: false });
+  }
+  return rows.sort((a, b) => a.date.localeCompare(b.date) || a.merchant.localeCompare(b.merchant));
+}
+
+const cadenceWord = (c: Cadence) => ({ weekly: "weekly", monthly: "monthly", quarterly: "every 3 months", yearly: "yearly" })[c];
+
+/** The design's buckets on Bills and deadlines, plus Overdue for bills still unpaid. */
+export function deadlineGroup(daysAway: number): "Overdue" | "This week" | "Next two weeks" | "Later" {
+  if (daysAway < 0) return "Overdue";
+  if (daysAway < 7) return "This week";
+  if (daysAway < 21) return "Next two weeks";
+  return "Later";
 }

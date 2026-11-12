@@ -21,23 +21,34 @@ export default function CancelAction({
   trusted,
   merchant,
   label = "Cancel subscription",
+  hostInLabel = false,
 }: {
   url: string;
   trusted: boolean;
   merchant: string;
   label?: string;
+  /** Bills and deadlines: the button reads "Cancel on peacocktv.com" instead of a line underneath. */
+  hostInLabel?: boolean;
 }) {
   const dialog = useRef<HTMLDialogElement>(null);
   const host = safeHost(url);
   if (!host) return null;
+  const text = hostInLabel ? (
+    <>
+      Cancel on {host}
+      <span className="sr-only"> for {merchant}</span>
+    </>
+  ) : (
+    label
+  );
 
   if (trusted) {
     return (
       <>
         <a className="btn btn-danger btn-row" href={url} target="_blank" rel="noopener noreferrer">
-          {label}
+          {text}
         </a>
-        <span className="link-host">Opens {host}</span>
+        {!hostInLabel && <span className="link-host">Opens {host}</span>}
       </>
     );
   }
@@ -45,7 +56,7 @@ export default function CancelAction({
   return (
     <>
       <button type="button" className="btn btn-danger btn-row" onClick={() => dialog.current?.showModal()}>
-        {label}
+        {text}
       </button>
       <span className="link-host">Check link: {host}</span>
       <dialog ref={dialog} className="warn-dialog" aria-labelledby={`dlg-${merchant.replace(/[^a-z0-9]/gi, "")}`}>

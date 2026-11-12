@@ -227,9 +227,10 @@ input.pill-input { width: 200px; }
 .datebox span { display: block; }
 .datebox span:first-child { font-size: 12px; font-weight: 600; }
 .datebox span:last-child { font-family: var(--display); font-size: 26px; line-height: 1.1; }
-.datebox.bill { background: var(--sky); color: var(--slate); }
-.datebox.trial { background: var(--mauve-fill); color: var(--mauve-ink); }
-.datebox.renewal { background: var(--sage-fill); color: var(--sage-ink); }
+/* Final design: red within three days, blue for bills, plain otherwise. */
+.datebox.plain { background: var(--tile); color: var(--ink); }
+.datebox.bill { background: var(--sky); color: var(--ink); }
+.datebox.urgent { background: var(--mauve-fill); color: var(--mauve-ink); }
 .bill-main { flex: 1 1 220px; min-width: 0; }
 .bill-main .name { font-weight: 600; font-size: 16px; }
 .bill-main .what { margin-top: 3px; font-size: 14px; color: var(--moss); }
