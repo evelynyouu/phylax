@@ -1,14 +1,14 @@
 import Link from "next/link";
 import { Suspense } from "react";
 import AttentionList from "@/components/AttentionList";
-import DashboardChart from "@/components/DashboardChart";
+import LeavingCard from "@/components/LeavingCard";
 import { ConnectGmailEmpty } from "@/components/ConnectGmail";
 import SyncButton from "@/components/SyncButton";
 import { loadApp } from "@/lib/app-data";
 import { GMAIL_MESSAGES } from "@/lib/auth-copy";
 import { addDays } from "@/lib/extract/dates";
 import { longDate, money } from "@/lib/format";
-import { attentionItems, categoryTotals, dailySeries } from "@/lib/views";
+import { attentionItems, categoryTotals, dailySeries, LEAVING_RANGES, leavingSummary, type LeavingRange, type LeavingSummary } from "@/lib/views";
 
 export const metadata = { title: "Dashboard | Phylax" };
 
@@ -54,6 +54,7 @@ async function Dashboard({ searchParams }: { searchParams: PageProps<"/app">["se
   const weekEnd = addDays(today, 6);
   const week = d.upcoming.filter((u) => u.date <= weekEnd);
   const weekTotal = week.reduce((a, u) => a + (u.amount ?? 0), 0);
+  const summaries = Object.fromEntries(LEAVING_RANGES.map((r) => [r, leavingSummary(d, today, r)])) as Record<LeavingRange, LeavingSummary>;
   const cats = categoryTotals(d);
   const catMax = cats[0]?.monthly ?? 1;
 
@@ -73,7 +74,7 @@ async function Dashboard({ searchParams }: { searchParams: PageProps<"/app">["se
         </div>
       ) : (
         <>
-          <DashboardChart series={series} />
+          <LeavingCard summaries={summaries} series={series} weekTotal={weekTotal} />
 
           <section aria-label="Subscription costs" className="cost-strip">
             <div>

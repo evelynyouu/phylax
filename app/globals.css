@@ -32,6 +32,10 @@
   --track: #f1ecef;
   --divider: #e0d6db;
   --tile: #f7f3f5;
+  --tile2: #fbf9fa;
+  --shadow: rgba(30, 43, 34, 0.14);
+  --sage-soft: #b5c3a8;
+  --bar-day: #c9d3c1;
   --on-evergreen-soft: #e3dade;
 
   /* Category marks (fills) */
@@ -89,6 +93,8 @@
   --track: #1d2721;
   --divider: #3a4a40;
   --tile: #212c25;
+  --tile2: #1d2721;
+  --shadow: rgba(0, 0, 0, 0.5);
   --on-evergreen-soft: #2d3d2c;
   color-scheme: dark;
 }

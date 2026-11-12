@@ -164,3 +164,64 @@ export function subscriptionSubtitle(s: Subscription, today: string): string {
   if (!parts.length) return `Found in ${s.evidenceEmailIds.length} email${s.evidenceEmailIds.length === 1 ? "" : "s"}`;
   return parts.join(", ");
 }
+
+/** Range choices on the dashboard's "Leaving your account" card. */
+export const LEAVING_RANGES = [7, 30, 60] as const;
+export type LeavingRange = (typeof LEAVING_RANGES)[number];
+
+export type LeavingKind = "bill" | "subscription" | "renewal" | "trial";
+const LEAVING_GROUPS: { kind: LeavingKind; label: string }[] = [
+  { kind: "bill", label: "Bills" },
+  { kind: "subscription", label: "Subscriptions" },
+  { kind: "renewal", label: "Yearly renewals" },
+  { kind: "trial", label: "Trials converting" },
+];
+
+export interface LeavingSummary {
+  total: number;
+  count: number;
+  /** Always all four groups, in the design's order; pct is of total, two decimals. */
+  groups: { kind: LeavingKind; label: string; amount: number; count: number; pct: number }[];
+  avgPerDay: number;
+  biggest: { date: string; amount: number } | null;
+  /** Everything that is not a bill: what you could choose to cancel. */
+  optional: number;
+  /** Subscriptions still running (active or trial) and how many have a cancel link from their email. */
+  cancelLinks: { found: number; of: number };
+}
+
+/** The dashboard's "Leaving your account" card for the next `days` days (Dashboard.dc.html). */
+export function leavingSummary(d: Dashboard, today: string, days: number): LeavingSummary {
+  const end = addDays(today, days - 1);
+  const subs = new Map(d.subscriptions.map((s) => [s.merchantKey, s]));
+  const kindOf = (u: Dashboard["upcoming"][number]): LeavingKind => {
+    if (u.source === "bill") return "bill";
+    const s = subs.get(u.merchantKey);
+    if (s?.status === "trial") return "trial";
+    if (s?.cadence === "yearly") return "renewal";
+    return "subscription";
+  };
+  const items = d.upcoming.filter((u) => u.date >= today && u.date <= end);
+  const total = round(items.reduce((a, u) => a + (u.amount ?? 0), 0));
+  const groups = LEAVING_GROUPS.map((g) => {
+    const mine = items.filter((u) => kindOf(u) === g.kind);
+    const amount = round(mine.reduce((a, u) => a + (u.amount ?? 0), 0));
+    return { ...g, amount, count: mine.length, pct: total ? round((amount / total) * 100) : 0 };
+  });
+  const byDay = new Map<string, number>();
+  for (const u of items) byDay.set(u.date, (byDay.get(u.date) ?? 0) + (u.amount ?? 0));
+  let biggest: LeavingSummary["biggest"] = null;
+  for (const [date, amount] of [...byDay].sort(([a], [b]) => a.localeCompare(b))) {
+    if (!biggest || amount > biggest.amount) biggest = { date, amount: round(amount) };
+  }
+  const running = d.subscriptions.filter((s) => s.status === "active" || s.status === "trial");
+  return {
+    total,
+    count: items.length,
+    groups,
+    avgPerDay: round(total / days),
+    biggest,
+    optional: round(total - groups[0].amount),
+    cancelLinks: { found: running.filter((s) => s.cancelUrl).length, of: running.length },
+  };
+}
