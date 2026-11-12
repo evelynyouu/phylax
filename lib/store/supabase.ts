@@ -1,4 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { isCategory, type Category } from "../categories";
 import type { Cadence, ExtractedRecord } from "../types";
 import type { GmailConnection, MarkTable, Store } from "./types";
 
@@ -113,6 +114,25 @@ export function supabaseStore(client: SupabaseClient, userId: string): Store {
     async deleteEdit(merchantKey) {
       const { error } = await client.from("subscription_edits").delete().eq("user_id", userId).eq("merchant_key", merchantKey);
       check(error);
+    },
+    async listCategories() {
+      const { data, error } = await client.from("merchant_categories").select("merchant_key, category").eq("user_id", userId);
+      check(error);
+      const out = new Map<string, Category>();
+      for (const row of data ?? []) if (isCategory(row.category)) out.set(row.merchant_key as string, row.category);
+      return out;
+    },
+    async setCategory(merchantKey, category) {
+      if (category) {
+        const { error } = await client.from("merchant_categories").upsert(
+          { user_id: userId, merchant_key: merchantKey, category, updated_at: new Date().toISOString() },
+          { onConflict: "user_id,merchant_key" },
+        );
+        check(error);
+      } else {
+        const { error } = await client.from("merchant_categories").delete().eq("user_id", userId).eq("merchant_key", merchantKey);
+        check(error);
+      }
     },
   };
 }

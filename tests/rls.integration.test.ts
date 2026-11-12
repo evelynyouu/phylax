@@ -17,7 +17,7 @@ const emailB = env.SUPABASE_TEST_EMAIL_B;
 const password = env.SUPABASE_TEST_PASSWORD;
 const configured = Boolean(url && anon && emailA && emailB && password);
 
-const tables = ["records", "gmail_connections", "dismissed", "manual_cancels", "paid", "reminders", "subscription_edits"] as const;
+const tables = ["records", "gmail_connections", "dismissed", "manual_cancels", "paid", "reminders", "subscription_edits", "merchant_categories"] as const;
 
 describe.skipIf(!configured)("supabase (live, RLS)", () => {
   let clientA: SupabaseClient;
@@ -58,6 +58,7 @@ describe.skipIf(!configured)("supabase (live, RLS)", () => {
     paid: { key: "k" },
     reminders: { key: "k" },
     subscription_edits: { merchant_key: "k", merchant: "K", amount: 5, manual: true },
+    merchant_categories: { merchant_key: "k", category: "music" },
   };
   const patch: Record<(typeof tables)[number], Record<string, unknown>> = {
     records: { data: { hacked: true } },
@@ -67,6 +68,7 @@ describe.skipIf(!configured)("supabase (live, RLS)", () => {
     paid: { key: "hacked" },
     reminders: { key: "hacked" },
     subscription_edits: { amount: 999 },
+    merchant_categories: { category: "gaming" },
   };
 
   it.each(tables)("user B cannot read, insert, update or delete user A's rows in %s", async (t) => {
@@ -76,7 +78,7 @@ describe.skipIf(!configured)("supabase (live, RLS)", () => {
     expect(before).toHaveLength(1);
 
     expect((await clientB.from(t).select("*").eq("user_id", idA)).data).toEqual([]);
-    const ins = await clientB.from(t).insert({ user_id: idA, ...seed[t], ...(t === "records" ? { email_id: "b1" } : t === "gmail_connections" ? {} : t === "subscription_edits" ? { merchant_key: "bk" } : { key: "bk" }) });
+    const ins = await clientB.from(t).insert({ user_id: idA, ...seed[t], ...(t === "records" ? { email_id: "b1" } : t === "gmail_connections" ? {} : t === "subscription_edits" || t === "merchant_categories" ? { merchant_key: "bk" } : { key: "bk" }) });
     // 42501 = RLS violation. with check runs before the unique index, so a broken policy gives 23505 or null.
     expect(ins.error?.code).toBe("42501");
     await clientB.from(t).update(patch[t]).eq("user_id", idA);

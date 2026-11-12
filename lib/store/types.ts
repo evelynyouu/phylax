@@ -1,3 +1,4 @@
+import type { Category } from "../categories";
 import type { Cadence, ExtractedRecord } from "../types";
 
 export interface GmailConnection {
@@ -43,4 +44,8 @@ export interface Store {
   /** Upsert by merchantKey. */
   saveEdit(e: Omit<SubscriptionEdit, "updatedAt">): Promise<void>;
   deleteEdit(merchantKey: string): Promise<void>;
+  /** merchantKey -> the category the user chose. */
+  listCategories(): Promise<Map<string, Category>>;
+  /** null clears the choice. */
+  setCategory(merchantKey: string, category: Category | null): Promise<void>;
 }

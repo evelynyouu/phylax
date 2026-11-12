@@ -1,4 +1,5 @@
 import type { ExtractedRecord } from "../types";
+import type { Category } from "../categories";
 import type { GmailConnection, MarkTable, Store, SubscriptionEdit } from "./types";
 
 /** A fresh, empty in-memory store, for tests and local scripts. */
@@ -7,6 +8,7 @@ export function memoryStore(userId = "memory"): Store {
   const markTables = new Map<MarkTable, Map<string, string>>();
   let gmail: GmailConnection | null = null;
   const edits = new Map<string, SubscriptionEdit>();
+  const categories = new Map<string, Category>();
   const table = (t: MarkTable) => {
     let m = markTables.get(t);
     if (!m) markTables.set(t, (m = new Map()));
@@ -44,6 +46,13 @@ export function memoryStore(userId = "memory"): Store {
     },
     async deleteEdit(merchantKey) {
       edits.delete(merchantKey);
+    },
+    async listCategories() {
+      return new Map(categories);
+    },
+    async setCategory(merchantKey, category) {
+      if (category) categories.set(merchantKey, category);
+      else categories.delete(merchantKey);
     },
   };
 }

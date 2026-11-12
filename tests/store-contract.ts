@@ -39,6 +39,16 @@ export function describeStore(name: string, make: () => Store) {
       expect((await s.listEdits()).map((e) => e.merchantKey)).toEqual(["gym"]);
     });
 
+    it("sets, replaces, lists and clears category choices", async () => {
+      const s = make();
+      await s.setCategory("netflix", "music");
+      await s.setCategory("netflix", "streaming");
+      await s.setCategory("gym", "health");
+      expect(Object.fromEntries(await s.listCategories())).toEqual({ netflix: "streaming", gym: "health" });
+      await s.setCategory("netflix", null);
+      expect(Object.fromEntries(await s.listCategories())).toEqual({ gym: "health" });
+    });
+
     it("saves, dedupes and orders records", async () => {
       const s = make();
       await s.saveRecord(rec("b", "2026-10-02T00:00:00Z"));
