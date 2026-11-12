@@ -5,7 +5,7 @@ vi.mock("next/navigation", () => ({ useRouter: () => ({ push: () => {} }) }));
 
 import ForgotLink from "../components/ForgotLink";
 import ResetByCode from "../components/ResetByCode";
-import { cleanCode, isCodeShaped, resetErrorMessage, RESEND_SECONDS } from "../lib/password-reset";
+import { cleanCode, isCodeShaped, resetErrorMessage, RESEND_SECONDS, sendOutcome } from "../lib/password-reset";
 
 describe("reset code helpers", () => {
   it("strips spaces and dashes", () => {
@@ -49,5 +49,17 @@ describe("ForgotLink", () => {
     const html = renderToStaticMarkup(<ForgotLink emailInputId="si-email" />);
     expect(html).toContain('href="/forgot-password"');
     expect(html).toContain("Forgot password?");
+  });
+});
+
+describe("sendOutcome", () => {
+  it("step 1 shows no error for any send result, so it never reveals an account", () => {
+    expect(sendOutcome("email", { code: "over_email_send_rate_limit" })).toEqual({ error: "" });
+    expect(sendOutcome("email", { code: "unexpected_failure" })).toEqual({ error: "" });
+    expect(sendOutcome("email", null)).toEqual({ error: "" });
+  });
+  it("Send a new code shows the rate limit and nothing else", () => {
+    expect(sendOutcome("code", { code: "over_email_send_rate_limit" }).error).toBe("Too many emails were sent. Wait a minute and try again.");
+    expect(sendOutcome("code", { code: "unexpected_failure" })).toEqual({ error: "" });
   });
 });

@@ -26,3 +26,14 @@ const RESET_ERRORS: Record<string, string> = {
 export function resetErrorMessage(code?: string | null): string {
   return (code ? RESET_ERRORS[code] : undefined) ?? authErrorMessage("", code);
 }
+
+/**
+ * What to show after asking for a code. From step 1 ("email") the answer is always the same, whatever
+ * Supabase said: the per-user rate limit is only checked once an account is found, so showing it there
+ * would reveal which addresses have accounts. On "Send a new code" (step 2) the person has already
+ * moved on, so the rate limit is shown.
+ */
+export function sendOutcome(from: "email" | "code", error?: { code?: string | null } | null): { error: string } {
+  if (from === "code" && error?.code === "over_email_send_rate_limit") return { error: resetErrorMessage(error.code) };
+  return { error: "" };
+}

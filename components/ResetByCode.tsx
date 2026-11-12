@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useState, type FormEvent } from "react";
 import { AUTH_MESSAGES, passwordStrength, PASSWORD_HINT } from "@/lib/auth-copy";
-import { cleanCode, isCodeShaped, resetErrorMessage, RESEND_SECONDS } from "@/lib/password-reset";
+import { cleanCode, isCodeShaped, resetErrorMessage, RESEND_SECONDS, sendOutcome } from "@/lib/password-reset";
 import { supabaseEnv } from "@/lib/supabase/config";
 import { supabaseBrowser } from "@/lib/supabase/browser";
 import PasswordField from "./PasswordField";
@@ -39,12 +39,13 @@ export default function ResetByCode({ initialEmail = "" }: { initialEmail?: stri
     setError("");
     const { error } = await supabaseBrowser().auth.resetPasswordForEmail(address);
     setBusy(false);
-    // Always move on, even for an address with no account, so the form can't be used to check addresses.
-    // Only a rate limit is worth saying out loud: it does not depend on whether the account exists.
-    if (error?.code === "over_email_send_rate_limit") return setError(resetErrorMessage(error.code));
+    // Step 1 moves on whatever the result, so it can't be used to check which addresses have accounts.
+    // Only "Send a new code" (already on step 2) shows a send error; see sendOutcome.
+    const outcome = sendOutcome(step, error);
     setEmail(address);
-    setCode("");
     setCooldown(RESEND_SECONDS);
+    if (outcome.error) return setError(outcome.error);
+    setCode("");
     setStep("code");
   }
 
