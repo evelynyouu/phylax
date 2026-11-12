@@ -103,7 +103,7 @@ describe("category totals", () => {
       ],
     });
     expect(categoryTotals(d)).toEqual([
-      { category: "software", label: "Software and AI", monthly: 20 },
+      { category: "software", label: "AI and technology", monthly: 20 },
       { category: "streaming", label: "Streaming", monthly: 15.49 },
     ]);
   });

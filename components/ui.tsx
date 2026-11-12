@@ -77,6 +77,13 @@ const CAT_FILL: Record<Category, string> = {
   shopping: "var(--cat-shopping)",
   learning: "var(--cat-learning)",
   other: "var(--cat-other)",
+  housing: "var(--cat-housing)",
+  utilities: "var(--cat-utilities)",
+  phone: "var(--cat-phone)",
+  music: "var(--cat-music)",
+  gaming: "var(--cat-gaming)",
+  health: "var(--cat-health)",
+  insurance: "var(--cat-insurance)",
 };
 
 /** Leaf-cornered square in the category color. Decorative: the merchant name is always shown next to it. */

@@ -52,6 +52,20 @@
   --cat-shopping: var(--lavender);
   --cat-learning: var(--sage);
   --cat-other: var(--hairline);
+  --cat-housing: #c9a77c;
+  --cat-utilities: #e0c36a;
+  --cat-phone: #7fb3c8;
+  --cat-music: #d98aa6;
+  --cat-gaming: #8b7fc7;
+  --cat-health: #7fbf9a;
+  --cat-insurance: #9aa5b1;
+  --bar-housing: #b8935f;
+  --bar-utilities: #cfae4a;
+  --bar-phone: #5f9bb3;
+  --bar-music: #c46f8d;
+  --bar-gaming: #7266b5;
+  --bar-health: #5fa87d;
+  --bar-insurance: #808c99;
 
   /* Radii */
   --r-field: 14px;

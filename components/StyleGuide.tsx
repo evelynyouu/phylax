@@ -144,7 +144,7 @@ export default function StyleGuide() {
             <h3>Filter chips</h3>
             <p className="cap">Try them. Selected fills with evergreen.</p>
             <div role="group" aria-label="Example filter" className="demo">
-              {["All", "Streaming", "Software and AI", "Storage"].map((c) => (
+              {["All", "Streaming", "AI and technology", "Storage"].map((c) => (
                 <Chip key={c} pressed={c === chip} onClick={() => setChip(c)}>
                   {c}
                 </Chip>

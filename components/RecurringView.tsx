@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useRef, useState } from "react";
-import type { Category } from "@/lib/categories";
+import { CATEGORY_LABELS, CATEGORY_ORDER, type Category } from "@/lib/categories";
 import SubscriptionForm from "./SubscriptionForm";
 import type { FormValues } from "@/lib/subscription-edit";
 import { Chip, MerchantMark } from "./ui";
@@ -36,15 +36,8 @@ export interface SubRow {
   form: FormValues;
 }
 
-const ORDER: Category[] = ["streaming", "software", "storage", "shopping", "learning", "other"];
-const LABELS: Record<Category, string> = {
-  streaming: "Streaming",
-  software: "Software and AI",
-  storage: "Storage",
-  shopping: "Shopping",
-  learning: "Learning",
-  other: "Other",
-};
+const ORDER = CATEGORY_ORDER;
+const LABELS = CATEGORY_LABELS;
 const usd = (n: number) => n.toLocaleString("en-US", { style: "currency", currency: "USD" });
 
 export default function RecurringView({ rows }: { rows: SubRow[] }) {

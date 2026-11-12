@@ -20,6 +20,13 @@ const BAR: Record<string, string> = {
   storage: "var(--bar-storage)",
   shopping: "var(--bar-shopping)",
   other: "var(--bar-other)",
+  housing: "var(--bar-housing)",
+  utilities: "var(--bar-utilities)",
+  phone: "var(--bar-phone)",
+  music: "var(--bar-music)",
+  gaming: "var(--bar-gaming)",
+  health: "var(--bar-health)",
+  insurance: "var(--bar-insurance)",
 };
 
 export default function DashboardPage({ searchParams }: PageProps<"/app">) {

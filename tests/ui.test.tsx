@@ -36,6 +36,6 @@ describe("shared components", () => {
   });
 
   it("names every category in plain words", () => {
-    expect(Object.values(CATEGORY_LABELS)).toEqual(["Streaming", "Software and AI", "Storage", "Shopping", "Learning", "Other"]);
+    expect(Object.values(CATEGORY_LABELS)).toEqual(["Housing and rent", "Utilities", "Phone and internet", "AI and technology", "Streaming", "Music", "Gaming", "Storage", "Shopping", "Learning", "Health and fitness", "Insurance", "Other"]);
   });
 });
