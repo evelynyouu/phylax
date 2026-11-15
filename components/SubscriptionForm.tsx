@@ -151,7 +151,7 @@ export default function SubscriptionForm({
         <Field id="sf-date" label="Next charge" type="date" value={v.nextChargeDate} onChange={set("nextChargeDate")} />
         <div className="field">
           <label htmlFor="sf-category">Category</label>
-          <CategorySelect id="sf-category" label="Category" value={cat} onChange={setCat} emptyLabel={mode === "add" ? "Pick for me" : undefined} disabled={addedKey !== null} />
+          <CategorySelect id="sf-category" className="pill-input" label="Category" value={cat} onChange={setCat} emptyLabel={mode === "add" ? "Pick for me" : undefined} disabled={addedKey !== null} />
         </div>
       </div>
       {mode === "edit" && <p className="fine">Your changes stay after the next sync. Leave a field as it is to keep following the emails.</p>}
