@@ -40,6 +40,12 @@ export default function AuthForm({ mode }: { mode: "signin" | "signup" }) {
 
   async function google() {
     setError("");
+    // Sign-up with Google shows what Gmail access means first, then one Google screen creates the
+    // account and connects Gmail. Step 2 holds the disclosure and the only link to Google.
+    if (mode === "signup") {
+      window.location.assign("/signup?step=2");
+      return;
+    }
     setBusy(true);
     const { error } = await supabaseBrowser().auth.signInWithOAuth({
       provider: "google",

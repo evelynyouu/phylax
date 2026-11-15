@@ -5,7 +5,8 @@ Draft for review. Not legal advice.
 Phylax uses one Google Cloud project and one OAuth client for two things (README.md step 2.3):
 
 1. **Sign in with Google**, run by Supabase Auth. Scopes: `openid`, `userinfo.email`, `userinfo.profile` ([Supabase Google guide](https://supabase.com/docs/guides/auth/social-login/auth-google)).
-2. **Connect Gmail**, run by Phylax itself (`lib/gmail.ts:10-11`). Scopes: `https://www.googleapis.com/auth/gmail.readonly`, `openid`, `email`, requested with `access_type: "offline"` and `prompt: "consent"` (`lib/gmail.ts:28-36`).
+2. **Connect Gmail**, run by Phylax itself (`SCOPES` in `lib/gmail.ts`). Scopes: `https://www.googleapis.com/auth/gmail.readonly`, `openid`, `email`, requested with `access_type: "offline"` and `prompt: "consent"` (`authUrl` in `lib/gmail.ts`).
+3. **Sign up with Google**, also run by Phylax: the Connect Gmail request plus `profile` (`SIGNUP_SCOPES`), shown after the same disclosure on sign-up step 2. The callback signs the new user in to Supabase with Google's ID token (`signInWithIdToken`), so the Supabase Google provider must accept this OAuth client's ID (it does when Supabase uses the same client, per README step 2.3).
 
 Google lists `gmail.readonly` as a **restricted** scope ([Gmail scopes](https://developers.google.com/workspace/gmail/api/auth/scopes)). Workspace policy defines restricted Gmail scopes as any scope that lets an app "read, create, or modify message bodies (including attachments), metadata, or headers" ([Workspace policy](https://developers.google.com/workspace/workspace-api-user-data-developer-policy)).
 

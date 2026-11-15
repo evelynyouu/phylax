@@ -23,6 +23,7 @@ export const GMAIL_MESSAGES: Record<string, AuthMessage> = {
   invalid_state: { text: "Phylax could not verify the answer from Google. Please connect Gmail again." },
   failed: { text: "Connecting Gmail failed. Check the OAuth settings in the README and try again." },
   no_identity: { text: "Google did not say which Gmail account you chose. Please connect Gmail again." },
+  signin_failed: { text: "Google sign-in failed. Try again, or create your account with email instead." },
 };
 
 /**

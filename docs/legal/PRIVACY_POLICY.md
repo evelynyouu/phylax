@@ -36,7 +36,7 @@ In plain terms:
 | Profile photo (optional) | You upload it in the app | To show your picture next to your name. It is kept in a private storage area, shown to you through links that expire after an hour, and Phylax deletes it when you remove it or delete your account. PNG, JPEG or WebP, up to 2 MB. |
 | Sign-in session details (session tokens in cookies; Supabase also records session information such as IP address and browser type) | Your browser and Supabase | To keep you signed in and protect your account |
 
-Signing in with Google only shares your basic profile (name, email, picture). It does not give Phylax access to your Gmail. Gmail access is a separate step.
+Signing in with Google on the sign-in page only shares your basic profile (name, email, picture). It does not give Phylax access to your Gmail. When you create an account with Google, Phylax first shows what Gmail access means, then one Google screen both creates your account and asks for read-only Gmail access. You can untick Gmail on that screen and still get an account; Phylax then asks again before it reads anything.
 
 ### 2. Your Gmail connection
 

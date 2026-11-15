@@ -3,7 +3,10 @@ import { NextRequest, NextResponse } from "next/server";
 import { gmailFailureRedirect } from "@/lib/auth-copy";
 import { requestOrigin } from "@/lib/csrf";
 import { getOptionalUser } from "@/lib/current-user";
-import { connectGmailWithCode } from "@/lib/gmail";
+import { connectGmailWithCode, exchangeGoogleCode, saveGmailGrant } from "@/lib/gmail";
+import { logError } from "@/lib/log";
+import { supabaseStore } from "@/lib/store/supabase";
+import { supabaseServer } from "@/lib/supabase/server";
 import { storeFor } from "@/lib/store";
 
 function safeEqual(a: string, b: string): boolean {
@@ -15,8 +18,9 @@ function safeEqual(a: string, b: string): boolean {
 // Where to land after Google. Only these internal paths are allowed, never a value from the URL.
 const NEXT: Record<string, string> = { signup: "/signup?step=3", app: "/app" };
 
-// Gmail connection callback. Signing in is Supabase's job (/auth/callback); this only stores
-// the Gmail connection, for the signed-in Phylax user (any Gmail address they choose).
+// Gmail connection callback. It stores the Gmail connection for the signed-in Phylax user (any
+// Gmail address they choose). Sign-in is Supabase's job (/auth/callback), except for sign-up with
+// Google, where this one consent also creates the account from Google's ID token.
 export async function GET(req: NextRequest) {
   const url = new URL(req.url);
   // Google sends the browser here at APP_URL (the registered redirect URI), so the browser's host
@@ -34,7 +38,8 @@ export async function GET(req: NextRequest) {
   const fail = (reason: string) => done(new URL(gmailFailureRedirect(nextLabel, reason), base));
 
   const user = await getOptionalUser();
-  if (!user) return done(new URL("/signin", base));
+  // Signed out is only expected from sign-up's one-step Google flow; anything else signs in first.
+  if (!user && nextLabel !== "signup") return done(new URL("/signin", base));
 
   const state = url.searchParams.get("state");
   const code = url.searchParams.get("code");
@@ -47,7 +52,21 @@ export async function GET(req: NextRequest) {
 
   let result;
   try {
-    result = await connectGmailWithCode(code, await storeFor(user));
+    if (user) {
+      result = await connectGmailWithCode(code, await storeFor(user));
+    } else {
+      // Sign-up with Google: the same consent creates the Phylax account and connects Gmail.
+      const grant = await exchangeGoogleCode(code);
+      if (!grant.idToken || !grant.gmailEmail) return fail("no_identity");
+      const supabase = await supabaseServer();
+      const { data, error } = await supabase.auth.signInWithIdToken({ provider: "google", token: grant.idToken });
+      if (error || !data.user) {
+        logError("google sign-up: signInWithIdToken", error);
+        return fail("signin_failed");
+      }
+      // The new session lives on this client; the request's cookies do not have it yet.
+      result = await saveGmailGrant(grant, supabaseStore(supabase, data.user.id));
+    }
   } catch {
     return fail("failed");
   }

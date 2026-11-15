@@ -6,9 +6,11 @@ import type { RawEmail } from "./types";
 
 // Read-only. The app can never send, modify, label, or delete mail.
 // openid and email grant no mailbox access; they tell us which Gmail address was connected,
-// which may differ from the Phylax account's email.
+// which may differ from the Phylax account's email. profile (name and picture) is asked only
+// when Google sign-up creates the Phylax account in the same step.
 export const GMAIL_SCOPE = "https://www.googleapis.com/auth/gmail.readonly";
 export const SCOPES = [GMAIL_SCOPE, "openid", "email"];
+export const SIGNUP_SCOPES = [...SCOPES, "profile"];
 
 function appUrl(): string {
   return process.env.APP_URL ?? "http://localhost:3000";
@@ -25,11 +27,11 @@ export function gmailConfigured(): boolean {
   return !!process.env.GOOGLE_CLIENT_ID && !!process.env.GOOGLE_CLIENT_SECRET;
 }
 
-export function authUrl(state: string): string {
+export function authUrl(state: string, scope: string[] = SCOPES): string {
   return oauthClient().generateAuthUrl({
     access_type: "offline",
     prompt: "consent",
-    scope: SCOPES,
+    scope,
     state,
     include_granted_scopes: false,
   });
@@ -99,20 +101,41 @@ const clients = new WeakMap<Store, Promise<gmail_v1.Gmail>>();
 
 export type GmailConnectResult = { ok: true; gmailEmail: string } | { ok: false; reason: "no_identity" | "no_gmail" };
 
-/**
- * Exchanges the OAuth code and stores the Gmail connection for the store's user. The caller has
- * already checked who is signed in; the connection belongs to that Phylax user, whatever
- * Gmail address they picked.
- */
-export async function connectGmailWithCode(code: string, store: Store): Promise<GmailConnectResult> {
+type GoogleTokens = import("google-auth-library").Credentials;
+
+/** What Google answered for one consent: the tokens, the raw ID token, and whether Gmail was granted. */
+export interface GoogleGrant {
+  tokens: GoogleTokens;
+  idToken: string | null;
+  /** The verified Google address, or null when Google sent no usable ID token. */
+  gmailEmail: string | null;
+  hasGmail: boolean;
+}
+
+/** Exchanges the OAuth code and verifies the ID token. Stores nothing. */
+export async function exchangeGoogleCode(code: string): Promise<GoogleGrant> {
   const client = oauthClient();
   const { tokens } = await client.getToken(code);
   // Google's consent screen lets people untick individual scopes.
-  if (!tokens.scope?.split(" ").includes(GMAIL_SCOPE)) return { ok: false, reason: "no_gmail" };
-  if (!tokens.id_token) return { ok: false, reason: "no_identity" };
-  const ticket = await client.verifyIdToken({ idToken: tokens.id_token, audience: process.env.GOOGLE_CLIENT_ID });
-  const gmailEmail = ticket.getPayload()?.email;
+  const hasGmail = !!tokens.scope?.split(" ").includes(GMAIL_SCOPE);
+  const idToken = tokens.id_token ?? null;
+  let gmailEmail: string | null = null;
+  if (idToken) {
+    const ticket = await client.verifyIdToken({ idToken, audience: process.env.GOOGLE_CLIENT_ID });
+    gmailEmail = ticket.getPayload()?.email ?? null;
+  }
+  return { tokens, idToken, gmailEmail, hasGmail };
+}
+
+/**
+ * Stores a granted Gmail connection for the store's user. The caller has already checked who is
+ * signed in; the connection belongs to that Phylax user, whatever Gmail address they picked.
+ */
+export async function saveGmailGrant(grant: GoogleGrant, store: Store): Promise<GmailConnectResult> {
+  if (!grant.hasGmail) return { ok: false, reason: "no_gmail" };
+  const gmailEmail = grant.gmailEmail;
   if (!gmailEmail) return { ok: false, reason: "no_identity" };
+  const { tokens } = grant;
 
   const existing = await store.getGmail();
   const same = !!existing && sameMailbox(existing.gmailEmail, gmailEmail);
@@ -133,6 +156,14 @@ export async function connectGmailWithCode(code: string, store: Store): Promise<
   });
   clients.delete(store);
   return { ok: true, gmailEmail };
+}
+
+/** Exchanges the OAuth code and stores the Gmail connection for the store's (signed-in) user. */
+export async function connectGmailWithCode(code: string, store: Store): Promise<GmailConnectResult> {
+  const grant = await exchangeGoogleCode(code);
+  // Checked before the ID token, as before: an unticked Gmail box is the more useful message.
+  if (!grant.hasGmail) return { ok: false, reason: "no_gmail" };
+  return saveGmailGrant(grant, store);
 }
 
 export async function isConnected(store: Store): Promise<boolean> {

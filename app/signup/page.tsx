@@ -34,8 +34,9 @@ async function SignUpBody({ searchParams }: { searchParams: PageProps<"/signup">
   const sp = await searchParams;
   const asked = Number(sp.step);
   const user = await getOptionalUser();
-  // Steps 2 and 3 need a session: connecting Gmail belongs to a signed-in account.
-  const step = user && (asked === 2 || asked === 3) ? asked : 1;
+  // Step 3 needs a session. Step 2 works signed out too: that is "Continue with Google", where
+  // one Google screen creates the account and connects Gmail.
+  const step = asked === 2 || (user && asked === 3) ? asked : 1;
   const code = typeof sp.auth === "string" ? sp.auth : null;
   // Steps 2 and 3 only get codes from the Connect Gmail flow; step 2 already says inline when
   // Gmail is not configured, so that code is not repeated at the top.
@@ -51,20 +52,33 @@ async function SignUpBody({ searchParams }: { searchParams: PageProps<"/signup">
 
   if (step === 2) {
     const unconfigured = !gmailConfigured();
+    // Signed out here means "Continue with Google" from step 1: the one Google screen also creates the account.
+    const viaGoogle = !user;
     return (
       <>
         <GmailIcon />
-        <h1>Connect your Gmail</h1>
+        <h1>{viaGoogle ? "Sign up with Google" : "Connect your Gmail"}</h1>
         <p className="lede">
-          {first && `Nice to meet you, ${first}. `}Phylax needs read-only access to find receipts, renewals and trial reminders.
+          {viaGoogle
+            ? "One Google screen creates your Phylax account and gives read-only access to find receipts, renewals and trial reminders."
+            : `${first ? `Nice to meet you, ${first}. ` : ""}Phylax needs read-only access to find receipts, renewals and trial reminders.`}
         </p>
         {notice}
         <GmailDisclosure />
         {unconfigured && <p className="auth-msg">{GMAIL_MESSAGES.not_configured.text}</p>}
         <a href={connectHref} className="btn btn-primary btn-block auth-cta" aria-disabled={unconfigured ? true : undefined}>
-          Connect Gmail
+          {viaGoogle ? "Continue with Google" : "Connect Gmail"}
         </a>
-        <p className="fine">Google shows its permission screen next. You can disconnect at any time.</p>
+        <p className="fine">
+          {viaGoogle ? (
+            <>
+              Google shows its permission screen next. By creating an account you agree to the <Link href="/terms">Terms</Link> and{" "}
+              <Link href="/privacy">Privacy Policy</Link>.
+            </>
+          ) : (
+            "Google shows its permission screen next. You can disconnect at any time."
+          )}
+        </p>
         <Link href="/signup" className="auth-back">
           Back
         </Link>
