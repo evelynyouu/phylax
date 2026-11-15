@@ -905,12 +905,14 @@ function createField3D(canvas, opts) {
     return g;
   }
   var R = (function (s) { return function () { s = (s * 16807) % 2147483647; return (s - 1) / 2147483646; }; })(1234);
+  var SPREAD = phone ? 0.86 : 1.3, BACK = phone ? 0 : 1.5;
   function scatter(count, near, far, spread) {
     var off = new Float32Array(count * 3), prm = new Float32Array(count * 4);
     for (var i = 0; i < count; i++) {
       var u = R();
       var d = near * Math.pow(far / near, u);
-      var half = d * spread + 0.6;
+      // reach past the view edge on wide screens, and from where the camera starts the intro (1.4 back)
+      var half = (d + BACK) * spread + 0.6;
       var x = (R() * 2 - 1) * half, z = -d;
       off[i * 3] = x; off[i * 3 + 1] = groundY(z); off[i * 3 + 2] = z;
       prm[i * 4] = R(); prm[i * 4 + 1] = R(); prm[i * 4 + 2] = R(); prm[i * 4 + 3] = d;
@@ -964,7 +966,7 @@ function createField3D(canvas, opts) {
     var geo = new THREE.InstancedBufferGeometry();
     var base = bladeGeo();
     geo.index = base.index; geo.attributes.position = base.attributes.position;
-    var s = scatter(count, near, far, 0.86);
+    var s = scatter(count, near, far, SPREAD);
     geo.setAttribute('iOff', new THREE.InstancedBufferAttribute(s.off, 3));
     geo.setAttribute('iPrm', new THREE.InstancedBufferAttribute(s.prm, 4));
     geo.instanceCount = count;
@@ -978,12 +980,13 @@ function createField3D(canvas, opts) {
     scene.add(m);
     return { mesh: m, off: s.off, prm: s.prm, h: [hMin, hMax] };
   }
-  var N = phone ? 45000 : 95000;
+  // Desktop spreads blades wider so the sides stay covered; the extra count keeps the density the same.
+  var N = phone ? 45000 : 142000;
   bladeField(Math.round(N * 0.58), 0.8, 24, 0.16, 0.42, 0.022, 0);
   bladeField(Math.round(N * 0.42), 0.3, 9, 0.22, 0.46, 0.016, 0);
 
   // ---------- dandelion clocks: thin stems plus soft seed-head billboards ----------
-  var DN = phone ? 1000 : 2200;
+  var DN = phone ? 1000 : 3300;
   var stems = bladeField(DN, 3.2, 16, 0.3, 0.46, 0.006, 1);
   var hGeo = new THREE.InstancedBufferGeometry();
   var quad = new THREE.PlaneGeometry(1, 1);
